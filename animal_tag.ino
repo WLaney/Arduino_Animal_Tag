@@ -79,7 +79,7 @@ void loop() {
     float Y_accel = accel.cy;
     float Z_accel = accel.cz;
 
-    //print accel to serial with float values
+    //print accel to serial
     Serial.println(" ");
     Serial.print(X_accel);
     Serial.print("\t");
@@ -107,9 +107,12 @@ void loop() {
 struct ts t;
     // show time
     DS3234_get(cs, &t);
+
+ //format time output but MAKES THE PROGRAM NOT WORK
 //       snprintf(buff, BUFF_MAX, "%d.%02d.%02d %02d:%02d:%02d", t.year,
 //             t.mon, t.mday, t.hour, t.min, t.sec);
 //        Serial.print(buff); //print time to serial
+
 Serial.print(t.sec); //print second to serial to confirm time is working
 
 
@@ -121,14 +124,17 @@ Serial.print(t.sec); //print second to serial to confirm time is working
   // if the file is available, write to it:
   if (dataFile) {
     //data writen as tab seprated values in order of
-    //time,  accel in x,  accel in y,  accel in z,  temp
-    dataFile.print("working"); //test writing to SD
-    dataFile.print("\t");
-    dataFile.print(t.year);
-    dataFile.print("-");
+    //time (month\day\year Hr:min:sec) accel in x,  accel in y,  accel in z,  temp
+    
+    //dataFile.print("working"); //test writing to SD
+    //dataFile.print("\t");
+
+    //print time data
     dataFile.print(t.mon);
-    dataFile.print("-");
+    dataFile.print("/");
     dataFile.print(t.mday);
+    dataFile.print("/");
+    dataFile.print(t.year);
     dataFile.print("\t");
     dataFile.print(t.hour);
     dataFile.print(":");
@@ -136,19 +142,26 @@ Serial.print(t.sec); //print second to serial to confirm time is working
     dataFile.print(":");
     dataFile.print(t.sec);
     dataFile.print("\t");
+
+    //print accel data
     dataFile.print(X_accel);
     dataFile.print("\t");
     dataFile.print(Y_accel);
     dataFile.print("\t");
     dataFile.print(Z_accel);
     dataFile.print("\t");
+
+    //print temp data
     dataFile.print(celsius);
-    dataFile.print("\t");
+    dataFile.println("");
+
+    //write data and close
     dataFile.close(); //need to close the data file or can not wirte new data
+    
    Serial.println("done"); //confirm data has been writen
   }
 
-//wait 100ms before begingin the loop again
+//wait 100ms (10Hz) before begingin the loop again
 delay(100);
  
 }
