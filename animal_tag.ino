@@ -25,7 +25,7 @@ const int cs = 9; // chip select pin for RTC
 uint8_t time[8];
 char recv[BUFF_MAX];
 unsigned int recv_size = 0;
-unsigned long prev, interval = 5000;
+unsigned long prev, interval = 5000; //Test if I nead this, I think no
 
 //initialis accelormater
 //=====================================
@@ -72,27 +72,20 @@ void loop() {
 
 //Read accelerometer 
  //=====================================
- 
-  // strings for assembling the data to log:
-  String acx = "";
-  String acy = "";
-  String acz = "";
             
    // read the three directions in Gs and append to the strings:
    accel.read();
     float X_accel = accel.cx;
-    acx += String(X_accel);
     float Y_accel = accel.cy;
-    acy += String(Y_accel);
     float Z_accel = accel.cz;
-    acz += String(Z_accel);
 
-    //print accel to serial
-    Serial.println(acx);
+    //print accel to serial with float values
+    Serial.println(" ");
+    Serial.print(X_accel);
     Serial.print("\t");
-    Serial.print(acy);
+    Serial.print(Y_accel);
     Serial.print("\t");
-    Serial.print(acz);
+    Serial.print(Z_accel);
     Serial.print("\t");
 
  //read temp sensor in celsius
@@ -114,9 +107,10 @@ void loop() {
 struct ts t;
     // show time
     DS3234_get(cs, &t);
-        snprintf(buff, BUFF_MAX, "%d.%02d.%02d %02d:%02d:%02d", t.year,
-             t.mon, t.mday, t.hour, t.min, t.sec);
-        Serial.print(buff); //print time to serial
+//       snprintf(buff, BUFF_MAX, "%d.%02d.%02d %02d:%02d:%02d", t.year,
+//             t.mon, t.mday, t.hour, t.min, t.sec);
+//        Serial.print(buff); //print time to serial
+Serial.print(t.sec); //print second to serial to confirm time is working
 
 
  //Write data to SD
@@ -129,13 +123,24 @@ struct ts t;
     //data writen as tab seprated values in order of
     //time,  accel in x,  accel in y,  accel in z,  temp
     dataFile.print("working"); //test writing to SD
-    dataFile.print(buff);
     dataFile.print("\t");
-    dataFile.print(acx);
+    dataFile.print(t.year);
+    dataFile.print("-");
+    dataFile.print(t.mon);
+    dataFile.print("-");
+    dataFile.print(t.mday);
     dataFile.print("\t");
-    dataFile.print(acy);
+    dataFile.print(t.hour);
+    dataFile.print(":");
+    dataFile.print(t.min);
+    dataFile.print(":");
+    dataFile.print(t.sec);
     dataFile.print("\t");
-    dataFile.print(acz);
+    dataFile.print(X_accel);
+    dataFile.print("\t");
+    dataFile.print(Y_accel);
+    dataFile.print("\t");
+    dataFile.print(Z_accel);
     dataFile.print("\t");
     dataFile.print(celsius);
     dataFile.print("\t");
