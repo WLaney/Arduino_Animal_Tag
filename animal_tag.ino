@@ -113,7 +113,11 @@ struct ts t;
 //             t.mon, t.mday, t.hour, t.min, t.sec);
 //        Serial.print(buff); //print time to serial
 
-Serial.print(t.sec); //print second to serial to confirm time is working
+    Serial.print(t.hour); //print to serial to confirm time is working
+    Serial.print(":");
+    Serial.print(t.min);
+    Serial.print(":");
+    Serial.print(t.sec); 
 
 
  //Write data to SD
@@ -161,7 +165,7 @@ Serial.print(t.sec); //print second to serial to confirm time is working
    Serial.println("done"); //confirm data has been writen
   }
 
-//wait 100ms (10Hz) before begingin the loop again
-delay(100);
+//wait 80ms (approx 12Hz) before begingin the loop again
+delay(80);
  
 }
