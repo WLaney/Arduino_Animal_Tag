@@ -1,4 +1,4 @@
-//DO NOT FORGET TO SET DATA/TIME
+ //DO NOT FORGET TO SET DATA/TIME
 
 //include libraries
 //=====================================
@@ -8,7 +8,7 @@
 #include "ds3234.h"
 #include <SD.h>
 
-//initialise SD card
+//initialise SD card 
 //=====================================
 Sd2Card card;
 SdVolume volume;
@@ -16,16 +16,16 @@ SdFile root;
 
 const int chipSelect = 10; // chip select pin for SD
 
-#define BUFF_MAX 256
+//const int buff_max = 256;
 
 //initialise RTC
 //=====================================
 const int cs = 9; // chip select pin for RTC
 
 uint8_t time[8];
-char recv[BUFF_MAX];
-unsigned int recv_size = 0;
-unsigned long prev, interval = 5000; //Test if I nead this, I think no
+// char recv[buff_max];
+// unsigned int recv_size = 0;
+//unsigned long prev, interval = 5000; //Test if I nead this, I think no
 
 //initialis accelormater
 //=====================================
@@ -38,22 +38,21 @@ int tmp102Address = 0x48;
 
 void setup()
 {
-  // Open serial communications and wait for port to open:
+   // Open serial communications and wait for port to open:
    Serial.begin(9600);
 
- //begin RTC  
- //=====================================
- DS3234_init(cs, DS3234_INTCN);
- memset(recv, 0, BUFF_MAX - 1);
+   // Begin RTC
+   DS3234_init(cs, DS3234_INTCN);
+   //memset(recv, 0, buff_max - 1);
 
-//begin SD card  
- //===================================== 
-  SPI.setDataMode(SPI_MODE0); // switch mode to SD
-  // make sure that the default chip select pin is set to
-  // output, even if you don't use it:
-  pinMode(10, OUTPUT);
-  // intialize card:
- SD.begin(chipSelect);
+   //begin SD card  
+   //===================================== 
+   SPI.setDataMode(SPI_MODE0); // switch mode to SD
+   // make sure that the default chip select pin is set to
+   // output, even if you don't use it:
+   pinMode(10, OUTPUT);
+   // intialize card:
+   SD.begin(chipSelect);
  
  //begin I2c  
  //=====================================
@@ -88,30 +87,30 @@ void loop() {
     Serial.print(Z_accel);
     Serial.print("\t");
 
- //read temp sensor in celsius
- //=====================================
-  Wire.requestFrom(tmp102Address,2); 
-  byte MSB = Wire.read();
-  byte LSB = Wire.read();
-  //it's a 12bit int, using two's compliment for negative
-  int TemperatureSum = ((MSB << 8) | LSB) >> 4; 
-  float celsius = TemperatureSum*0.0625;
-  Serial.print(celsius); Serial.print("\t");//print temp to serial
+    //read temp sensor in celsius
+    //=====================================
+    Wire.requestFrom(tmp102Address,2); 
+    byte MSB = Wire.read();
+    byte LSB = Wire.read();
+    //it's a 12bit int, using two's compliment for negative
+    int TemperatureSum = ((MSB << 8) | LSB) >> 4; 
+    float celsius = TemperatureSum*0.0625;
+    Serial.print(celsius); Serial.print("\t");//print temp to serial
 
-//Read RTC  
- //=====================================
-   SPI.setDataMode(SPI_MODE1); //switch to RTC mode
-  char buff[BUFF_MAX];
-    unsigned long now = millis();
-    int in;
-struct ts t;
+    //Read RTC  
+    //=====================================
+    SPI.setDataMode(SPI_MODE1); //switch to RTC mode
+    //char buff[buff_max];
+    //unsigned long now = millis();
+    // int in;
+    struct ts t;
     // show time
     DS3234_get(cs, &t);
 
- //format time output but MAKES THE PROGRAM NOT WORK
-//       snprintf(buff, BUFF_MAX, "%d.%02d.%02d %02d:%02d:%02d", t.year,
-//             t.mon, t.mday, t.hour, t.min, t.sec);
-//        Serial.print(buff); //print time to serial
+//    format time output but MAKES THE PROGRAM NOT WORK
+//           snprintf(buff, buff_max, "%d.%02d.%02d %02d:%02d:%02d", t.year,
+//                 t.mon, t.mday, t.hour, t.min, t.sec);
+//            Serial.print(buff); //print time to serial
 
     Serial.print(t.hour); //print to serial to confirm time is working
     Serial.print(":");
@@ -120,52 +119,52 @@ struct ts t;
     Serial.print(t.sec); 
 
 
- //Write data to SD
- //=====================================       
- SPI.setDataMode(SPI_MODE0);  // switch mode to SD
-  File dataFile = SD.open("data.txt", FILE_WRITE);
+    //Write data to SD
+    //=====================================       
+    SPI.setDataMode(SPI_MODE0);  // switch mode to SD
+    File dataFile = SD.open("data.txt", FILE_WRITE);
 
-  // if the file is available, write to it:
-  if (dataFile) {
-    //data writen as tab seprated values in order of
-    //time (month\day\year Hr:min:sec) accel in x,  accel in y,  accel in z,  temp
+    // if the file is available, write to it:
+    if (dataFile) {
+        //data writen as tab seprated values in order of
+        //time (month\day\year Hr:min:sec) accel in x,  accel in y,  accel in z,  temp
+        
+        //dataFile.print("working"); //test writing to SD
+        //dataFile.print("\t");
+
+        //print time data
+        dataFile.print(t.mon);
+        dataFile.print("/");
+        dataFile.print(t.mday);
+        dataFile.print("/");
+        dataFile.print(t.year);
+        dataFile.print("\t");
+        dataFile.print(t.hour);
+        dataFile.print(":");
+        dataFile.print(t.min);
+        dataFile.print(":");
+        dataFile.print(t.sec);
+        dataFile.print("\t");
+
+        //print accel data
+        dataFile.print(X_accel);
+        dataFile.print("\t");
+        dataFile.print(Y_accel);
+        dataFile.print("\t");
+        dataFile.print(Z_accel);
+        dataFile.print("\t");
+
+        //print temp data
+        dataFile.print(celsius);
+        dataFile.println("");
+
+        //write data and close
+        dataFile.close(); //need to close the data file or can not wirte new data
     
-    //dataFile.print("working"); //test writing to SD
-    //dataFile.print("\t");
+        Serial.println("done"); //confirm data has been writen
+    }
 
-    //print time data
-    dataFile.print(t.mon);
-    dataFile.print("/");
-    dataFile.print(t.mday);
-    dataFile.print("/");
-    dataFile.print(t.year);
-    dataFile.print("\t");
-    dataFile.print(t.hour);
-    dataFile.print(":");
-    dataFile.print(t.min);
-    dataFile.print(":");
-    dataFile.print(t.sec);
-    dataFile.print("\t");
-
-    //print accel data
-    dataFile.print(X_accel);
-    dataFile.print("\t");
-    dataFile.print(Y_accel);
-    dataFile.print("\t");
-    dataFile.print(Z_accel);
-    dataFile.print("\t");
-
-    //print temp data
-    dataFile.print(celsius);
-    dataFile.println("");
-
-    //write data and close
-    dataFile.close(); //need to close the data file or can not wirte new data
-    
-   Serial.println("done"); //confirm data has been writen
-  }
-
-//wait 80ms (approx 12Hz) before begingin the loop again
-delay(80);
+    //wait 80ms (approx 12Hz) before begingin the loop again
+    delay(80);
  
 }
