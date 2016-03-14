@@ -61,9 +61,40 @@ void setup()
   //begin accel  
   //=====================================
   accel.init(SCALE_8G, ODR_6);
+
+  // Write the datetime that this was opened
+  //Read RTC  
+  //=====================================
+  SPI.setDataMode(SPI_MODE1); //switch to RTC mode
+  struct ts t;
+  DS3234_get(cs, &t);
+  Serial.print(t.hour);
+  Serial.print(":");
+  Serial.print(t.min);
+  Serial.print(":");
+  Serial.println(t.sec);
+  SPI.setDataMode(SPI_MODE0);
+  File dataFile = SD.open("data.txt", FILE_WRITE);
+  if (dataFile) {
+    dataFile.print(t.mon);
+    dataFile.print("/");
+    dataFile.print(t.mday);
+    dataFile.print("/");
+    dataFile.print(t.year);
+    dataFile.print("\t");
+    dataFile.print(t.hour);
+    dataFile.print(":");
+    dataFile.print(t.min);
+    dataFile.print(":");
+    dataFile.print(t.sec);
+    dataFile.println("");
+    dataFile.close(); //need to close the data file or can not wirte new data
+
+    Serial.println("Wrote date to SD");
+  }
  
   //confrim that the everything is working and there is serial communication
-  Serial.print("working");
+  Serial.println("\n====\nworking\n====");
 
 }
 
@@ -155,6 +186,16 @@ void flush_and_write()
 
   // if the file is available, write to it:
   if (dataFile) {
+
+    // accel
+    for (accel_data &d : buff) {
+      dataFile.print(d.x);
+      dataFile.print("\t");
+      dataFile.print(d.y);
+      dataFile.print("\t");
+      dataFile.println(d.z);
+    }
+    
     dataFile.print(t.mon);
     dataFile.print("/");
     dataFile.print(t.mday);
@@ -171,15 +212,6 @@ void flush_and_write()
     //print temp data
     dataFile.print(celsius);
     dataFile.println("");
-
-    // accel
-    for (accel_data &d : buff) {
-      dataFile.print(d.x);
-      dataFile.print("\t");
-      dataFile.print(d.y);
-      dataFile.print("\t");
-      dataFile.println(d.z);
-    }
       
     //write data and close
     dataFile.close(); //need to close the data file or can not wirte new data
