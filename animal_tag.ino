@@ -1,8 +1,8 @@
 //include libraries
 //=====================================
-#include <Wire.h>         // temperature; i2c
+#include <Wire.h>         // temperature, accelerometer; i2c
 #include <SFE_MMA8452Q.h> // accelerometer
-#include <SPI.h>          // serial and accelerometer
+#include <SPI.h>          // serial, rtc, sd card
 #include "ds3234.h"       // rtc
 #include <SD.h>           // sd card
 
