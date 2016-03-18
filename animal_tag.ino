@@ -6,7 +6,7 @@
 #include "ds3234.h"       // rtc
 #include <SD.h>           // sd card
 
-//initialise SD card
+// SD Card vars
 //=====================================
 Sd2Card card;
 SdVolume volume;
@@ -14,15 +14,15 @@ SdFile root;
 
 const int chipSelect = 10; // chip select pin for SD
 
-//initialise RTC
+// RTC Vars
 //=====================================
 const int cs = 9; // chip select pin for RTC
 
-//initialise accelerometer
+// Accelerometer vars
 //=====================================
 MMA8452Q accel;
 
-//initialise temp sensor
+// Temp sensor vars
 //=====================================
 int tmp102Address = 0x48;
 
@@ -62,38 +62,19 @@ void setup()
   accel.init(SCALE_8G, ODR_6);
 
   // Write the datetime that this was opened
-  //Read RTC
-  //=====================================
-  SPI.setDataMode(SPI_MODE1); //switch to RTC mode
-  struct ts t;
-  DS3234_get(cs, &t);
-  Serial.print(t.hour);
-  Serial.print(":");
-  Serial.print(t.min);
-  Serial.print(":");
-  Serial.println(t.sec);
+  ts t;
+  float celsius;
+  SPI.setDataMode(SPI_MODE1);
+  celsius = get_long_term(&t);
   SPI.setDataMode(SPI_MODE0);
-  File dataFile = SD.open("data.txt", FILE_WRITE);
-  if (dataFile) {
-    dataFile.print(t.mon);
-    dataFile.print("/");
-    dataFile.print(t.mday);
-    dataFile.print("/");
-    dataFile.print(t.year);
-    dataFile.print("\t");
-    dataFile.print(t.hour);
-    dataFile.print(":");
-    dataFile.print(t.min);
-    dataFile.print(":");
-    dataFile.print(t.sec);
-    dataFile.println("");
-    dataFile.close(); //need to close the data file or can not wirte new data
-
-    Serial.println("Wrote date to SD");
+  File f = SD.open("data.txt", FILE_WRITE);
+  if (f) {
+    write_long_term(f, celsius, t);
+    f.close();
+    Serial.println("Wrote SD at start");
   }
-
   //confrim that the everything is working and there is serial communication
-  Serial.println("\n====\nworking\n====");
+  Serial.println("setup done");
 
 }
 
@@ -150,33 +131,16 @@ void flush_and_write()
       dataFile.print("\t");
       dataFile.println(d.z);
     }
-    // Time
-    dataFile.print(t.mon);
-    dataFile.print("/");
-    dataFile.print(t.mday);
-    dataFile.print("/");
-    dataFile.print(t.year);
-    dataFile.print("\t");
-    dataFile.print(t.hour);
-    dataFile.print(":");
-    dataFile.print(t.min);
-    dataFile.print(":");
-    dataFile.print(t.sec);
-    dataFile.print("\t");
-    // Temperature
-    dataFile.print(celsius);
-    dataFile.println("");
-
-    //write data and close
-    dataFile.close(); //need to close the data file or can not wirte new data
-
-    Serial.println("sd data written"); //confirm data has been writen
+    write_long_term(dataFile, celsius, t);
+    dataFile.close();
+    Serial.println("sd data written");
   }
   // Reset the buffer to the beginning
   buff_length = 0;
 }
 
 // Returns celsius as a float and sets t to the current time
+// SPI must be in SPI_MODE1
 float get_long_term(ts *t) {
   //Read RTC
   DS3234_get(cs, t);
@@ -193,4 +157,24 @@ float get_long_term(ts *t) {
   //it's a 12bit int, using two's compliment for negative
   int TemperatureSum = ((MSB << 8) | LSB) >> 4;
   return TemperatureSum * 0.0625;
+}
+
+// Write this data to the SD card
+// SPI must be SPI_MODE0
+void write_long_term(File f, float celsius, ts t) {
+    // Time
+    f.print(t.mon);
+    f.print("/");
+    f.print(t.mday);
+    f.print("/");
+    f.print(t.year);
+    f.print("\t");
+    f.print(t.hour);
+    f.print(":");
+    f.print(t.min);
+    f.print(":");
+    f.print(t.sec);
+    f.print("\t");
+    // Temperature
+    f.println(celsius);
 }
