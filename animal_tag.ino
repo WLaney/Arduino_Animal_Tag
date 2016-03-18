@@ -130,34 +130,11 @@ void loop() {
 // data as you do.
 void flush_and_write()
 {
-  // +--NOTE--+
-  // We need to make sure that we can tell that data X was collected between
-  // times Y and Z!
-  //read temp sensor in celsius
-  //=====================================
-  Wire.requestFrom(tmp102Address, 2);
-  byte MSB = Wire.read();
-  byte LSB = Wire.read();
-  //it's a 12bit int, using two's compliment for negative
-  int TemperatureSum = ((MSB << 8) | LSB) >> 4;
-  float celsius = TemperatureSum * 0.0625;
-  // Serial prints
-  Serial.println("=====FLUSHING=====");
-  Serial.print(celsius);
-  Serial.print("\t");
-
-  //Read RTC
-  //=====================================
   SPI.setDataMode(SPI_MODE1); //switch to RTC mode
-  struct ts t;
-  DS3234_get(cs, &t);
-  Serial.print(t.hour);
-  Serial.print(":");
-  Serial.print(t.min);
-  Serial.print(":");
-  Serial.println(t.sec);
-  SPI.setDataMode(SPI_MODE0);
-
+  float celsius;
+  ts t;
+  celsius = get_long_term(&t);
+  
   //Write data to SD
   //=====================================
   SPI.setDataMode(SPI_MODE0);  // switch mode to SD
@@ -197,4 +174,23 @@ void flush_and_write()
   }
   // Reset the buffer to the beginning
   buff_length = 0;
+}
+
+// Returns celsius as a float and sets t to the current time
+float get_long_term(ts *t) {
+  //Read RTC
+  DS3234_get(cs, t);
+  Serial.print(t->hour);
+  Serial.print(":");
+  Serial.print(t->min);
+  Serial.print(":");
+  Serial.println(t->sec);
+  
+  // read celsius
+  Wire.requestFrom(tmp102Address, 2);
+  byte MSB = Wire.read();
+  byte LSB = Wire.read();
+  //it's a 12bit int, using two's compliment for negative
+  int TemperatureSum = ((MSB << 8) | LSB) >> 4;
+  return TemperatureSum * 0.0625;
 }
