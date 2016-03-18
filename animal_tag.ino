@@ -111,10 +111,16 @@ void loop() {
 // data as you do.
 void flush_and_write()
 {
-  SPI.setDataMode(SPI_MODE1); //switch to RTC mode
+  static int write_num;
+  const int write_max = 10;
   float celsius;
   ts t;
-  celsius = get_long_term(&t);
+  
+  write_num = (write_num + 1) % write_max;
+  if (write_num == 0) {
+    SPI.setDataMode(SPI_MODE1); //switch to RTC mode
+    celsius = get_long_term(&t);
+  }
   
   //Write data to SD
   //=====================================
@@ -131,7 +137,9 @@ void flush_and_write()
       dataFile.print("\t");
       dataFile.println(d.z);
     }
-    write_long_term(dataFile, celsius, t);
+    if (write_num == 0)
+      write_long_term(dataFile, celsius, t);
+    
     dataFile.close();
     Serial.println("sd data written");
   }
