@@ -1,10 +1,9 @@
 #include <SPI.h>
 #include "ds3234.h"
 
-#define BUFF_MAX 256
-
+// something for ds3234 compatibility
 using uint_8 = unsigned char;
-const int cs = 10; // chip select pin
+const int cs = 9; // chip select pin
 
 /*
  * This is a utility for displaying and changing the RTC's current time/date.
@@ -24,37 +23,34 @@ void setup()
 {
     // Initialization
     Serial.begin(9600);
-    SPI.setDataMode(SPI_MODE1);
-    DS3234_init(cs, DS3234_INTCN);
-    
-    // Print current time
-    Serial.print("Old time:");
-    print_time();
-    
-    // Get current time as a string
-    Serial.println("Enter time as hh:mm:ss MM/DD/YYYY:");
-    while (!Serial.available())
+    while (!Serial)
       ;
-    const char *s = Serial.readString().c_str();
-    set_time(s);
     
-    // Print new time
-    Serial.print("New time: ");
-    print_time();
+    DS3234_init(cs, DS3234_INTCN);
+    SPI.setDataMode(SPI_MODE1); // we don't use the SD card, just the RTC
+    Serial.println("Enter time as hh:mm:ss HH/DD/YYYY (include spaces, use zeroes):");
 }
 
 // Print the time once every second
 void loop()
 {
-  Serial.print("time: ");
-  print_time();
-  delay(1000);
+  static bool is_reading = true; // this is only initialized ocne
+  if (is_reading) {
+    while (Serial.available() > 0) {
+      String input = Serial.readString();
+      if (input.length() >= strlen("00:00:00 00/00/0000")) {
+        set_time(input.c_str());
+        is_reading = false;
+      }
+    }
+  } else {
+    print_time();
+    delay(1000);
+  }
 }
 
-// Set time from a format string (must be at least 15 chars)
+// Set time from a format string.
 void set_time(const char *s) {
-  if (strlen(s) == 0) return;
-  
   ts t;
   DS3234_get(cs, &t);
   sscanf(s, "%hhd:%hhd:%hhd %hhd/%hhd/%d", &(t.hour), &(t.min), &(t.sec),
@@ -65,10 +61,12 @@ void set_time(const char *s) {
 
 // Print the current time from the RTC
 void print_time() {
+  // should only need 20 bytes, but we can go a little over
+  const int buff_max = 24;
   ts t;
   DS3234_get(cs, &t);
-  char buff[BUFF_MAX];
-  snprintf(buff, BUFF_MAX, "%d.%02d.%02d %02d:%02d:%02d", t.year,
-           t.mon, t.mday, t.hour, t.min, t.sec);
+  char buff[buff_max];
+  snprintf(buff, buff_max, "%02d:%02d:%02d %02d/%02d/%d", t.hour,
+            t.min, t.sec, t.mon, t.mday, t.year);
   Serial.println(buff);
 }

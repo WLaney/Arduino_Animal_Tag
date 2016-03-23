@@ -111,19 +111,18 @@ void loop() {
 // data as you do.
 void flush_and_write()
 {
-  static int write_num;
-  const int write_max = 10;
+  static int write_num = 0;
+  const int write_max = 10; // Fastest for powers of two
   float celsius;
   ts t;
   
-  write_num = (write_num + 1) % write_max;
-  if (write_num == 0) {
+  if (write_num++ == write_max) {
+    write_num = 0;
     SPI.setDataMode(SPI_MODE1); //switch to RTC mode
     celsius = get_long_term(&t);
   }
   
   //Write data to SD
-  //=====================================
   SPI.setDataMode(SPI_MODE0);  // switch mode to SD
   File dataFile = SD.open("data.txt", FILE_WRITE);
 
@@ -150,6 +149,7 @@ void flush_and_write()
 // Returns celsius as a float and sets t to the current time
 // SPI must be in SPI_MODE1
 float get_long_term(ts *t) {
+  Serial.println("Read long term");
   //Read RTC
   DS3234_get(cs, t);
   Serial.print(t->hour);
@@ -170,19 +170,20 @@ float get_long_term(ts *t) {
 // Write this data to the SD card
 // SPI must be SPI_MODE0
 void write_long_term(File f, float celsius, ts t) {
-    // Time
-    f.print(t.mon);
-    f.print("/");
-    f.print(t.mday);
-    f.print("/");
-    f.print(t.year);
-    f.print("\t");
-    f.print(t.hour);
-    f.print(":");
-    f.print(t.min);
-    f.print(":");
-    f.print(t.sec);
-    f.print("\t");
-    // Temperature
-    f.println(celsius);
+  Serial.println("write long term");
+  // Time
+  f.print(t.mon);
+  f.print("/");
+  f.print(t.mday);
+  f.print("/");
+  f.print(t.year);
+  f.print("\t");
+  f.print(t.hour);
+  f.print(":");
+  f.print(t.min);
+  f.print(":");
+  f.print(t.sec);
+  f.print("\t");
+  // Temperature
+  f.println(celsius);
 }
