@@ -5,6 +5,14 @@
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>
 
+#define DEBUG // Comment this line out to remove Serial prints
+#ifdef DEBUG
+  #define DBG(s) Serial.print(s)
+  #define DBGLN(s) Serial.println(s)
+#else
+  #define DBG(s)
+  #define DBGLN(s) 
+#endif
 
 // SD Card vars
 //=====================================
@@ -39,7 +47,9 @@ size_t buff_length = 0;
 void setup()
 {
   // Open serial communications and wait for port to open:
+#ifdef DEBUG
   Serial.begin(9600);
+#endif
 
   // Begin RTC
   DS3234_init(cs, DS3234_INTCN);
@@ -71,11 +81,10 @@ void setup()
   if (f) {
     write_long_term(f, celsius, t);
     f.close();
-    Serial.println("Wrote SD at start");
+    DBGLN("Wrote SD at start");
   }
   //confrim that the everything is working and there is serial communication
-  Serial.println("setup done");
-
+  DBGLN("setup done");
 }
 
 void loop() {
@@ -94,19 +103,23 @@ void loop() {
     value->y = accel.cy;
     value->z = accel.cz;
 
-    Serial.print(value->x);
-    Serial.print("\t");
-    Serial.print(value->y);
-    Serial.print("\t");
-    Serial.print(value->z);
-    Serial.println("");
+    DBG(value->x);
+    DBG("\t");
+    DBG(value->y);
+    DBG("\t");
+    DBG(value->z);
+    DBGLN("");
 
     buff_length++;
   }
   //wait 80ms (approx 12Hz) before beginning the loop again
+#ifdef DEBUG
   Serial.end();
+#endif
   Narcoleptic.delay(80);
+#ifdef DEBUG
   Serial.begin(9600);
+#endif
 }
 
 // Flush the buffer to the SD card, writing temperature and time
@@ -142,7 +155,7 @@ void flush_and_write()
       write_long_term(dataFile, celsius, t);
     
     dataFile.close();
-    Serial.println("sd data written");
+    DBGLN("sd data written");
   }
   // Reset the buffer to the beginning
   buff_length = 0;
@@ -151,7 +164,7 @@ void flush_and_write()
 // Returns celsius as a float and sets t to the current time
 // SPI must be in SPI_MODE1
 float get_long_term(ts *t) {
-  Serial.println("Read long term");
+  DBGLN("Read long term");
   //Read RTC
   DS3234_get(cs, t);
   Serial.print(t->hour);
@@ -172,9 +185,9 @@ float get_long_term(ts *t) {
 // Write this data to the SD card
 // SPI must be SPI_MODE0
 void write_long_term(File f, float celsius, ts t) {
-  Serial.println("write long term");
+  DBGLN("write long term");
   // Time
-  f.print("\t\t\t");
+  f.print("\t\t\t\t");
   f.print(t.mon);
   f.print("/");
   f.print(t.mday);
