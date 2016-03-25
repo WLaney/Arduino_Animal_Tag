@@ -1,10 +1,10 @@
-//include libraries
-//=====================================
 #include <Wire.h>         // temperature, accelerometer; i2c
 #include <SFE_MMA8452Q.h> // accelerometer
 #include <SPI.h>          // serial, rtc, sd card
 #include "ds3234.h"       // rtc
 #include <SD.h>           // sd card
+#include <Narcoleptic.h>
+
 
 // SD Card vars
 //=====================================
@@ -103,8 +103,10 @@ void loop() {
 
     buff_length++;
   }
-  //wait 80ms (approx 12Hz) before begingin the loop again
-  delay(80);
+  //wait 80ms (approx 12Hz) before beginning the loop again
+  Serial.end();
+  Narcoleptic.delay(80);
+  Serial.begin(9600);
 }
 
 // Flush the buffer to the SD card, writing temperature and time
@@ -172,6 +174,7 @@ float get_long_term(ts *t) {
 void write_long_term(File f, float celsius, ts t) {
   Serial.println("write long term");
   // Time
+  f.print("\t\t\t");
   f.print(t.mon);
   f.print("/");
   f.print(t.mday);
