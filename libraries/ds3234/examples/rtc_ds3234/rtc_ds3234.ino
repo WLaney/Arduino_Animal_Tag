@@ -5,7 +5,7 @@
 
 #define BUFF_MAX 256
 
-const int cs = 10;              // chip select pin
+const int cs = 9;              // chip select pin
 
 uint8_t time[8];
 char recv[BUFF_MAX];
