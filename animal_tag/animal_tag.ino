@@ -18,66 +18,150 @@
   #define DBGLN(s) 
 #endif
 
-const int chipSelect = 10; // chip select pin for SD
-
-// RTC Vars
-//=====================================
-const int cs = 9; // chip select pin for RTC
-
-// Accelerometer vars
-//=====================================
-MMA8452Q accel;
-
-// Temp sensor vars
-//=====================================
-int tmp102Address = 0x48;
-
-// Struct for accelerometer data.
-struct accel_data {
-  float x, y, z;
+class Sensor {
+  virtual void setup() = 0;
+  virtual void read()  = 0;
+  virtual void flush(File sd) = 0;
 };
 
-// Our buffer will take up to N bytes of memory.
-const int buff_max_length = 256 / sizeof(accel_data);
-accel_data buff[buff_max_length];
-size_t buff_length = 0;
+class RTCSensor : Sensor {
+private:
+  const int cs = 9;
+  ts t;
+public:
+  void setup() {
+    DS3234_init(cs, DS3234_INTCN);
+  }
+
+  void read() {
+    DBG("Read time: ");
+    DS3234_get(cs, &t);
+    DBG(t.hour);
+    DBG(":");
+    DBG(t.min);
+    DBG(":");
+    DBGLN(t.sec);
+  }
+
+  // prints "YYYY:MM:DD hh:mm:ss"
+  void flush(File sd) {
+    DBGLN("Wrote time");
+    sd.print(t.year);
+    sd.print("-");
+    sd.print(t.mon);
+    sd.print("-");
+    sd.print(t.mday);
+    sd.print("\t");
+    sd.print(t.hour);
+    sd.print(":");
+    sd.print(t.min);
+    sd.print(":");
+    sd.print(t.sec);
+  }
+};
+
+class AccelSensor: Sensor {
+private:
+  MMA8452Q accel;
+  struct accel_data {
+    float x, y, z;
+  };
+  const static int buff_max_length = 256 / sizeof(accel_data);
+  accel_data buff[buff_max_length];
+  size_t buff_length = 0;
+public:
+  void setup() {
+    accel.init(SCALE_8G, ODR_6);
+  }
+  
+  void read() {
+    // ADD INVARIANT ASSERTION HERE
+    accel.read();
+    accel_data *v = &buff[buff_length];
+    v->x = accel.cx;
+    v->y = accel.cy;
+    v->z = accel.cz;
+
+    DBG(v->x);
+    DBG("\t");
+    DBG(v->y);
+    DBG("\t");
+    DBG(v->z);
+    DBG("\n");
+
+    buff_length++;
+  }
+
+  boolean needsFlush() {
+    return (buff_length >= buff_max_length);
+  }
+
+  // Prints "x y z"
+  void flush(File sd) {
+    for (accel_data &d : buff) {
+      sd.print(d.x);
+      sd.print("\t");
+      sd.print(d.y);
+      sd.print("\t");
+      sd.print(d.z);
+    }
+  }
+};
+
+class TempSensor : Sensor {
+private:
+  const int tmp102Address = 0x48;
+  float celsius;
+public:
+  void setup() { }
+
+  void read() {
+    Wire.requestFrom(tmp102Address, 2);
+    byte MSB = Wire.read();
+    byte LSB = Wire.read();
+    int temperatureSum = ((MSB << 8) | LSB) >> 4;
+    celsius = temperatureSum * 0.0625;
+  }
+
+  void flush(File sd) {
+    sd.println(celsius);
+  }
+};
+
+// Chip Select
+//=====================================
+const int cs_sd = 10; // chip select pin for SD
+
+RTCSensor rtc;
+AccelSensor accel;
+TempSensor temp;
 
 void setup()
 {
   // Open serial communications and wait for port to open:
   DBEGIN();
 
-  // Begin RTC
-  DS3234_init(cs, DS3234_INTCN);
-
-  //begin SD card
-  //=====================================
-  SPI.setDataMode(SPI_MODE0); // switch mode to SD
-  // make sure that the default chip select pin is set to
-  // output, even if you don't use it:
+  rtc.setup();
+  accel.setup();
+  temp.setup();
+  
+  // Setup SD card
+  sd_mode();
   pinMode(10, OUTPUT);
-  // intialize card:
-  SD.begin(chipSelect);
+  SD.begin(cs_sd);
 
-  //begin I2c
-  //=====================================
+  // Setup wire
   Wire.begin();
-
-  //begin accel
-  //=====================================
-  accel.init(SCALE_8G, ODR_6);
-
-  // Write the datetime that this was opened
-  ts t;
-  float celsius;
-  SPI.setDataMode(SPI_MODE1);
-  celsius = get_long_term(&t);
-  SPI.setDataMode(SPI_MODE0);
+  
+  // Write startup information
+  rtc_mode();
+  rtc.read();
+  sd_mode();
   File f = SD.open("data.txt", FILE_WRITE);
   if (f) {
-    write_long_term(f, celsius, t);
+    rtc.flush(f);
     f.close();
-    DBGLN("Wrote SD at start");
+    DBGLN("SD written");
   }
   //confrim that the everything is working and there is serial communication
   DBGLN("setup done");
@@ -89,24 +173,10 @@ void loop() {
   //print time data
   
   // If we're out of space, write to the SD card
-  if (buff_length == buff_max_length) {
+  if (accel.needsFlush()) {
     flush_and_write();
   } else {
-    // Get the value that we're working on
-    accel_data *value = &buff[buff_length];
     accel.read();
-    value->x = accel.cx;
-    value->y = accel.cy;
-    value->z = accel.cz;
-
-    DBG(value->x);
-    DBG("\t");
-    DBG(value->y);
-    DBG("\t");
-    DBG(value->z);
-    DBGLN("");
-
-    buff_length++;
   }
   //wait 80ms (approx 12Hz) before beginning the loop again
   DEND();
@@ -119,79 +189,37 @@ void loop() {
 void flush_and_write()
 {
   static int write_num = 0;
-  const int write_max = 10; // Fastest for powers of two
-  float celsius;
-  ts t;
+  const int write_max = 10;
   
   if (write_num++ == write_max) {
     write_num = 0;
-    SPI.setDataMode(SPI_MODE1); //switch to RTC mode
-    celsius = get_long_term(&t);
+    rtc_mode();
+    rtc.read();
+    temp.read();
   }
   
   //Write data to SD
-  SPI.setDataMode(SPI_MODE0);  // switch mode to SD
-  File dataFile = SD.open("data.txt", FILE_WRITE);
-
-  // if the file is available, write to it:
-  if (dataFile) {
-    // Accelerometer data
-    for (accel_data &d : buff) {
-      dataFile.print(d.x);
-      dataFile.print("\t");
-      dataFile.print(d.y);
-      dataFile.print("\t");
-      dataFile.println(d.z);
+  sd_mode();
+  File file = SD.open("data.txt", FILE_WRITE);
+  if (file) {
+    accel.flush(file);
+    file.print('\n');
+    if (write_num == 0) {
+      file.print("\t\t\t");
+      rtc.flush(file);
+      file.print('\t');
+      temp.flush(file);
+      file.print('\n');
     }
-    if (write_num == 0)
-      write_long_term(dataFile, celsius, t);
-    
-    dataFile.close();
+    file.close();
     DBGLN("sd data written");
   }
-  // Reset the buffer to the beginning
-  buff_length = 0;
 }
 
-// Returns celsius as a float and sets t to the current time
-// SPI must be in SPI_MODE1
-float get_long_term(ts *t) {
-  DBGLN("Read long term");
-  //Read RTC
-  DS3234_get(cs, t);
-  Serial.print(t->hour);
-  Serial.print(":");
-  Serial.print(t->min);
-  Serial.print(":");
-  Serial.println(t->sec);
-  
-  // read celsius
-  Wire.requestFrom(tmp102Address, 2);
-  byte MSB = Wire.read();
-  byte LSB = Wire.read();
-  //it's a 12bit int, using two's compliment for negative
-  int TemperatureSum = ((MSB << 8) | LSB) >> 4;
-  return TemperatureSum * 0.0625;
+inline void sd_mode() {
+  SPI.setDataMode(SPI_MODE0);
 }
 
-// Write this data to the SD card
-// SPI must be SPI_MODE0
-void write_long_term(File f, float celsius, ts t) {
-  DBGLN("write long term");
-  // Time
-  f.print("\t\t\t\t");
-  f.print(t.mon);
-  f.print("/");
-  f.print(t.mday);
-  f.print("/");
-  f.print(t.year);
-  f.print("\t");
-  f.print(t.hour);
-  f.print(":");
-  f.print(t.min);
-  f.print(":");
-  f.print(t.sec);
-  f.print("\t");
-  // Temperature
-  f.println(celsius);
+inline void rtc_mode() {
+  SPI.setDataMode(SPI_MODE1);
 }
