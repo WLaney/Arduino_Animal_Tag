@@ -3,22 +3,20 @@
 #include <SPI.h>          // serial, rtc, sd card
 #include "ds3234.h"       // rtc
 #include <SD.h>           // sd card
-#include <Narcoleptic.h>
+#include <Narcoleptic.h>  // sleeping
 
 #define DEBUG // Comment this line out to remove Serial prints
 #ifdef DEBUG
+  #define DBEGIN() Serial.begin(9600)
+  #define DEND()   Serial.end()
   #define DBG(s) Serial.print(s)
   #define DBGLN(s) Serial.println(s)
 #else
+  #define DBEGIN()
+  #define DEND()
   #define DBG(s)
   #define DBGLN(s) 
 #endif
-
-// SD Card vars
-//=====================================
-Sd2Card card;
-SdVolume volume;
-SdFile root;
 
 const int chipSelect = 10; // chip select pin for SD
 
@@ -47,9 +45,7 @@ size_t buff_length = 0;
 void setup()
 {
   // Open serial communications and wait for port to open:
-#ifdef DEBUG
-  Serial.begin(9600);
-#endif
+  DBEGIN();
 
   // Begin RTC
   DS3234_init(cs, DS3234_INTCN);
@@ -113,13 +109,9 @@ void loop() {
     buff_length++;
   }
   //wait 80ms (approx 12Hz) before beginning the loop again
-#ifdef DEBUG
-  Serial.end();
-#endif
+  DEND();
   Narcoleptic.delay(80);
-#ifdef DEBUG
-  Serial.begin(9600);
-#endif
+  DBEGIN();
 }
 
 // Flush the buffer to the SD card, writing temperature and time
