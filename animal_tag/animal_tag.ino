@@ -103,8 +103,9 @@ public:
       sd.print("\t");
       sd.print(d.y);
       sd.print("\t");
-      sd.print(d.z);
+      sd.println(d.z);
     }
+    buff_length = 0;
   }
 };
 
