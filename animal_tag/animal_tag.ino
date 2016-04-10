@@ -9,7 +9,7 @@
 #ifdef DEBUG
   #define DBEGIN() Serial.begin(9600)
   #define DEND()   Serial.end()
-  #define DBG(s) Serial.print(s)
+  #define DBG(s)   Serial.print(s)
   #define DBGLN(s) Serial.println(s)
 #else
   #define DBEGIN()
@@ -34,61 +34,68 @@ public:
   }
 
   void read() {
-    DBG("Read time: ");
+    DBGLN("Read RTC");
     DS3234_get(cs, &t);
-    DBG(t.hour);
-    DBG(":");
-    DBG(t.min);
-    DBG(":");
-    DBGLN(t.sec);
   }
 
   // prints "YYYY:MM:DD hh:mm:ss"
   void flush(File sd) {
     DBGLN("Wrote time");
+    
     sd.print(t.year);
-    sd.print("-");
+    sd.print('-');
     sd.print(t.mon);
-    sd.print("-");
+    sd.print('-');
     sd.print(t.mday);
-    sd.print("\t");
+    sd.print('\t');
     sd.print(t.hour);
-    sd.print(":");
+    sd.print(':');
     sd.print(t.min);
-    sd.print(":");
+    sd.print(':');
     sd.print(t.sec);
   }
 };
 
 class AccelSensor: Sensor {
 private:
-  MMA8452Q accel;
   struct accel_data {
-    float x, y, z;
+    // 3 12-bit integers, signed
+    short x: 12;
+    short y: 12;
+    short z: 12;
   };
+  
   const static int buff_max_length = 256 / sizeof(accel_data);
+  const float scale = 8.0;
+  
+  MMA8452Q accel;
   accel_data buff[buff_max_length];
   size_t buff_length = 0;
+
+  // Running mean and variance - used to see if the tag is moving or not
+  short mean;
+  short var;
+  
+  // Scale and convert an axis to a float
+  inline float axis_to_f(short s) {
+    // culled from SFE_MMA8452Q code
+    return (float) s / (float) (1 << 11) * scale;
+  }
+  
 public:
   void setup() {
     accel.init(SCALE_8G, ODR_6);
+    reset();
   }
   
   void read() {
-    // ADD INVARIANT ASSERTION HERE
+    DBGLN("read accel");
     accel.read();
     accel_data *v = &buff[buff_length];
-    v->x = accel.cx;
-    v->y = accel.cy;
-    v->z = accel.cz;
-
-    DBG(v->x);
-    DBG("\t");
-    DBG(v->y);
-    DBG("\t");
-    DBG(v->z);
-    DBG("\n");
-
+    v->x = accel.x;
+    v->y = accel.y;
+    v->z = accel.z;
+    
     buff_length++;
   }
 
@@ -96,17 +103,23 @@ public:
     return (buff_length >= buff_max_length);
   }
 
+  void reset() {
+    buff_length = 0;
+  }
+
   // Prints "x y z"
   void flush(File sd) {
     for (accel_data &d : buff) {
-      sd.print(d.x);
-      sd.print("\t");
-      sd.print(d.y);
-      sd.print("\t");
-      sd.println(d.z);
+      DBGLN("wrote accel");
+      
+      sd.print(axis_to_f(d.x));
+      sd.print('\t');
+      sd.print(axis_to_f(d.y));
+      sd.print('\t');
+      sd.println(axis_to_f(d.z));
     }
-    buff_length = 0;
   }
+  
 };
 
 class TempSensor : Sensor {
@@ -117,6 +130,7 @@ public:
   void setup() { }
 
   void read() {
+    DBGLN("Read temp");
     Wire.requestFrom(tmp102Address, 2);
     byte MSB = Wire.read();
     byte LSB = Wire.read();
@@ -125,7 +139,8 @@ public:
   }
 
   void flush(File sd) {
-    sd.println(celsius);
+    DBGLN("Wrote temp");
+    sd.print(celsius);
   }
 };
 
@@ -159,8 +174,11 @@ void setup()
   rtc.read();
   sd_mode();
   File f = SD.open("data.txt", FILE_WRITE);
+  // Need to wait for SD to start working for some reason
+  delay(100);
   if (f) {
     rtc.flush(f);
+    f.write('\n');
     f.close();
     DBGLN("SD written");
   }
@@ -190,31 +208,34 @@ void loop() {
 void flush_and_write()
 {
   static int write_num = 0;
-  const int write_max = 10;
+  const int write_max = 3;
   
-  if (write_num++ == write_max) {
+  // Read long-term from sensors
+  if (++write_num == write_max) {
     write_num = 0;
     rtc_mode();
     rtc.read();
     temp.read();
   }
   
-  //Write data to SD
+  //Write to SD
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
     accel.flush(file);
-    file.print('\n');
+    // Long-term
     if (write_num == 0) {
       file.print("\t\t\t");
       rtc.flush(file);
       file.print('\t');
       temp.flush(file);
-      file.print('\n');
+      file.write("\n");
     }
     file.close();
     DBGLN("sd data written");
   }
+
+  accel.reset();
 }
 
 inline void sd_mode() {

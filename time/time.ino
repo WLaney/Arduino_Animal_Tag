@@ -34,7 +34,7 @@ void setup()
 // Print the time once every second
 void loop()
 {
-  static bool is_reading = false; // this is only initialized ocne
+  static bool is_reading = true; // this is only initialized ocne
   if (is_reading) {
     while (Serial.available() > 0) {
       String input = Serial.readString();
