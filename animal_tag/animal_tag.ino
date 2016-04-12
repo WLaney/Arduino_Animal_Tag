@@ -38,7 +38,7 @@ public:
     DS3234_get(cs, &t);
   }
 
-  // prints "YYYY:MM:DD hh:mm:ss"
+  // prints "YYYY-MM-DD hh:mm:ss"
   void flush(File sd) {
     DBGLN("Wrote time");
     
@@ -47,7 +47,7 @@ public:
     sd.print(t.mon);
     sd.print('-');
     sd.print(t.mday);
-    sd.print('\t');
+    sd.print(' ');
     sd.print(t.hour);
     sd.print(':');
     sd.print(t.min);
@@ -177,6 +177,7 @@ void setup()
   // Need to wait for SD to start working for some reason
   delay(100);
   if (f) {
+    f.print("\t\t\t");
     rtc.flush(f);
     f.write('\n');
     f.close();
