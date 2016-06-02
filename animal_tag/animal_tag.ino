@@ -12,8 +12,6 @@
 #include "AccelSensor.hpp"
 #include "TempSensor.hpp"
 
-// Chip Select
-//=====================================
 const int cs_sd = 10; // chip select pin for SD
 
 RTCSensor rtc;

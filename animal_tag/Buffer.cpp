@@ -9,7 +9,7 @@ Buffer<value_type, size>::Buffer() {
 template <typename value_type, int size>
 void Buffer<value_type, size>::push(value_type datum) {
 #ifdef DEBUG
-	if (isFull()) {
+	if (is_full()) {
 		DBGLN("ERROR: Tried to push on a full buffer");
 		return;
 	}
@@ -18,7 +18,7 @@ void Buffer<value_type, size>::push(value_type datum) {
 }
 
 template <typename value_type, int size>
-bool Buffer<value_type, size>::isFull() {
+bool Buffer<value_type, size>::is_full() {
 	return index == size;
 }
 

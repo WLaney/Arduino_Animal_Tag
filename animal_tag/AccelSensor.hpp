@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <SD.h>
+#include "Buffer.cpp"
 #include "Sensor.hpp"
 #include "SFE_MMA8452Q.h"
 
@@ -14,12 +15,10 @@ private:
     short z: 12;
   };
   
-  const static int buff_max_length = 256 / sizeof(accel_data);
+  Buffer<accel_data, 256 / sizeof(accel_data)> buffer;
   const float scale = 8.0;
   
   MMA8452Q accel;
-  accel_data buff[buff_max_length];
-  size_t buff_length = 0;
   
   inline float axis_to_f(short s);
   

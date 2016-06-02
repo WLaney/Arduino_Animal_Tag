@@ -8,9 +8,8 @@ private:
 	size_t index;
 public:
 	Buffer();
-	~Buffer();
 	void push(T datum);
-	bool isFull();
+	bool is_full();
 	void reset();
 	// Returns a pointer to the front of the buffer
 	T *get_front();
