@@ -1,148 +1,16 @@
 #include <Wire.h>         // temperature, accelerometer; i2c
 #include <SFE_MMA8452Q.h> // accelerometer
-#include <SPI.h>          // serial, rtc, sd card
-#include "ds3234.h"       // rtc
+#include <SPI.h>          // serial, sd card
+
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
 
-#define DEBUG // Comment this line out to remove Serial prints
-#ifdef DEBUG
-  #define DBEGIN() Serial.begin(9600)
-  #define DEND()   Serial.end()
-  #define DBG(s)   Serial.print(s)
-  #define DBGLN(s) Serial.println(s)
-#else
-  #define DBEGIN()
-  #define DEND()
-  #define DBG(s)
-  #define DBGLN(s) 
-#endif
+#include "debug.h"
+#include "Sensor.hpp"
 
-class Sensor {
-  virtual void setup() = 0;
-  virtual void read()  = 0;
-  virtual void flush(File sd) = 0;
-};
-
-class RTCSensor : Sensor {
-private:
-  const int cs = 9;
-  ts t;
-public:
-  void setup() {
-    DS3234_init(cs, DS3234_INTCN);
-  }
-
-  void read() {
-    DBGLN("Read RTC");
-    DS3234_get(cs, &t);
-  }
-
-  // prints "YYYY-MM-DD hh:mm:ss"
-  void flush(File sd) {
-    DBGLN("Wrote time");
-    
-    sd.print(t.year);
-    sd.print('-');
-    sd.print(t.mon);
-    sd.print('-');
-    sd.print(t.mday);
-    sd.print(' ');
-    sd.print(t.hour);
-    sd.print(':');
-    sd.print(t.min);
-    sd.print(':');
-    sd.print(t.sec);
-  }
-};
-
-class AccelSensor: Sensor {
-private:
-  struct accel_data {
-    // 3 12-bit integers, signed
-    short x: 12;
-    short y: 12;
-    short z: 12;
-  };
-  
-  const static int buff_max_length = 256 / sizeof(accel_data);
-  const float scale = 8.0;
-  
-  MMA8452Q accel;
-  accel_data buff[buff_max_length];
-  size_t buff_length = 0;
-
-  // Running mean and variance - used to see if the tag is moving or not
-  short mean;
-  short var;
-  
-  // Scale and convert an axis to a float
-  inline float axis_to_f(short s) {
-    // culled from SFE_MMA8452Q code
-    return (float) s / (float) (1 << 11) * scale;
-  }
-  
-public:
-  void setup() {
-    accel.init(SCALE_8G, ODR_6);
-    reset();
-  }
-  
-  void read() {
-    DBGLN("read accel");
-    accel.read();
-    accel_data *v = &buff[buff_length];
-    v->x = accel.x;
-    v->y = accel.y;
-    v->z = accel.z;
-    
-    buff_length++;
-  }
-
-  boolean needsFlush() {
-    return (buff_length >= buff_max_length);
-  }
-
-  void reset() {
-    buff_length = 0;
-  }
-
-  // Prints "x y z"
-  void flush(File sd) {
-    for (accel_data &d : buff) {
-      DBGLN("wrote accel");
-      
-      sd.print(axis_to_f(d.x));
-      sd.print('\t');
-      sd.print(axis_to_f(d.y));
-      sd.print('\t');
-      sd.println(axis_to_f(d.z));
-    }
-  }
-  
-};
-
-class TempSensor : Sensor {
-private:
-  const int tmp102Address = 0x48;
-  float celsius;
-public:
-  void setup() { }
-
-  void read() {
-    DBGLN("Read temp");
-    Wire.requestFrom(tmp102Address, 2);
-    byte MSB = Wire.read();
-    byte LSB = Wire.read();
-    int temperatureSum = ((MSB << 8) | LSB) >> 4;
-    celsius = temperatureSum * 0.0625;
-  }
-
-  void flush(File sd) {
-    DBGLN("Wrote temp");
-    sd.print(celsius);
-  }
-};
+#include "RTCSensor.hpp"
+#include "AccelSensor.hpp"
+#include "TempSensor.hpp"
 
 // Chip Select
 //=====================================
