@@ -1,5 +1,6 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+#include <Arduino.h>
 
 #define DEBUG // Comment this line out to remove Serial prints
 #ifdef DEBUG

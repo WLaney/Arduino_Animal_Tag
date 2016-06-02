@@ -1,10 +1,10 @@
 #ifndef AccelSensor_H
 #define AccelSensor_H
 
-#include "Sensor.hpp"
-#include "SFE_MMA8452Q.h"
 #include <Arduino.h>
 #include <SD.h>
+#include "Sensor.hpp"
+#include "SFE_MMA8452Q.h"
 
 class AccelSensor: Sensor {
 private:
