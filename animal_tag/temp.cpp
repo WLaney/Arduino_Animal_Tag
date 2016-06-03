@@ -11,7 +11,7 @@ float celsius;
 void temp_setup() {}
 
 void temp_update() {
-    DBGLN("Read temp");
+    DBGSTR("Read temp\n");
     Wire.requestFrom(TMP102ADDRESS, 2);
     byte MSB = Wire.read();
     byte LSB = Wire.read();
@@ -20,6 +20,6 @@ void temp_update() {
 }
 
 void temp_write(File sd) {
-	DBGLN("Wrote temp");
+	DBGSTR("Wrote temp\n");
 	sd.print(celsius);
 }

@@ -1,0 +1,86 @@
+Sharkduino File Format
+======================
+This format holds data written from the Arduino to the SD card. It
+consists of a header and alternating sections of buffered data
+(accelerometer and gyroscope) and long-term data (temperature,
+pressure, and time).
+
+I'm not sure if we're going to go with the total sizes presented;
+depending on how we encode or decode the data, there might be some
+extra padding to make encoding and decoding easier (i.e. not require
+bit-packing).
+
+`ts`
+--
+The `ts` structure is used internally in ds3234.h (the RTC library we're
+using) to represent time. The struct is as follows (pulled from the
+source code):
+
+```c
+struct ts {
+    uint8_t sec;         /* seconds */
+    uint8_t min;         /* minutes */
+    uint8_t hour;        /* hours */
+    uint8_t mday;        /* day of the month */
+    uint8_t mon;         /* month */
+    int year;            /* year */
+    uint8_t wday;        /* day of the week */
+    uint8_t yday;        /* day in the year */
+    uint8_t isdst;       /* daylight saving time */
+    uint8_t year_s;      /* year in short notation*/
+// we're not using unix time
+#ifdef CONFIG_UNIXTIME
+    uint32_t unixtime;   /* seconds since 01.01.1970 00:00:00 UTC*/
+#endif
+};
+```
+Its total size is 13 bytes.
+
+Header
+------
+The header contains information that contextualizes the rest of the
+data in the file. A buffered data section is guaranteed to follow it.
+
+name            | type    | description
+----------------|---------|-----------------------------------------------
+`magic_name`    | char[4] | A magic name: 'SHRK'
+`startup_date`  | ts      | Date and time on startup
+`bdata_size`    | int     | Size, in bytes, of buffered data section.
+`accel_scale`   | float   | Accelerometer scale. Used to convert raw data.
+`gyro_scale`    | float   | Gyroscope scale. Used to convert raw data.
+   Total Size:  | 29      |
+
+Buffered Data
+-------------
+This section contains a continuous stream of accelerometer and
+gyroscope data. Its size can be calculated as
+
+(number of writes per long-term write) * (size of buffer, in bytes)
+
+A long-term data section (or EOF) is guaranteed to follow it.
+
+name      | type  | description
+----------|-------|-------------
+`accel_x` | short | 
+`accel_y` | short | 
+`accel_z` | short | 
+`gyro_x`  | short | 
+`gyro_y`  | short | 
+`gyro_z`  | short | 
+    Total:| 12    |
+
+The above section repeats itself (bytes in buffer / 12) times.
+
+Long-Term Data
+--------------
+This section contains time, temperature, and pressure data, all of which
+is infrequently read and written.
+
+A buffered data section (or EOF) is guaranteed to follow it.
+
+name          | type  | description
+--------------|-------|-------------
+`time`        | ts    |
+`temperature` | float |
+`pressure`    | float |
+   Total Size:| 21    |

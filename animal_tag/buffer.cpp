@@ -5,11 +5,16 @@
 #include <Arduino.h>
 #include <SD.h>
 
-#define BUFFER_SIZE (256 / sizeof(buffer_data))
+#ifdef DEBUG
+  #define BUFFER_SIZE (410 / sizeof(buffer_data))
+#else
+  #define BUFFER_SIZE (440 / sizeof(buffer_data))
+#endif
+
 #define SCALE 8.0
 
 typedef struct buffer_data_s {
-  float gx, gy, gz;
+//~ float gx, gy, gz;
   short ax, ay, az;
 } buffer_data;
 
@@ -19,8 +24,8 @@ size_t buffer_index = 0;
 
 // accelerometer data is in G's
 MMA8452Q accel;
-// gyroscope data is in degrees per second
-Adafruit_L3GD20 gyro;
+//~ // gyroscope data is in degrees per second
+//~ Adafruit_L3GD20 gyro;
 
 inline float axis_to_f(short s) {
   // culled from SFE_MMA8452Q code
@@ -28,21 +33,28 @@ inline float axis_to_f(short s) {
 }
 
 void buffer_setup() {
-  DBGLN("buffer setup");
+  DBG("Buffer size is: ");
+  DBGLN(BUFFER_SIZE);
   accel.init(SCALE_8G, ODR_6);
-  gyro.begin(gyro.L3DS20_RANGE_250DPS);
+//~  gyro.begin(gyro.L3DS20_RANGE_250DPS);
 }
 
 // Read data into the buffer.
 // If this fills, we get buffer overflow
 void buffer_update() {
-  DBGLN("buffer update");
-  accel.read();
-  gyro.read();
+  if (buffer_needs_write()) {
+    DBGSTR("ERROR: Buffer full but not flushed\n");
+  } else {
+    DBGSTR("buffer update\n");
+    accel.read();
+  }
+//~  gyro.read();
   buffer_data &d = buffer[buffer_index];
+  /*~ 
   d.gx = gyro.data.x;
   d.gy = gyro.data.y;
   d.gz = gyro.data.z;
+  */
   d.ax = accel.x;
   d.ay = accel.y;
   d.az = accel.z;
@@ -51,7 +63,7 @@ void buffer_update() {
 
 // This invalidates the buffer after it's called
 void buffer_write(File sd) {
-  DBGLN("buffer write");
+  DBGSTR("buffer write\n");
   for (size_t i = 0; i < BUFFER_SIZE; i++) {
     buffer_data d = buffer[i];
     sd.print(axis_to_f(d.ax));
@@ -60,13 +72,16 @@ void buffer_write(File sd) {
     sd.print('\t');
     sd.print(axis_to_f(d.az));
     sd.print('\t');
-    
+
+    sd.println();
+    /*~
     sd.print(d.gx);
     sd.print('\t');
     sd.print(d.gy);
     sd.print('\t');
     sd.print(d.gz);
-    sd.prinln();
+    sd.println();
+    */
   }
   buffer_index = 0;
 }

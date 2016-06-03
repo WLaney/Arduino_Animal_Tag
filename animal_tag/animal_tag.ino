@@ -34,14 +34,14 @@ void setup()
   // Need to wait for SD to start working for some reason
   delay(100);
   if (f) {
-    f.print("\t\t\t");
+    f.print(F("\t\t\t\t\t\t"));
     rtc_write(f);
     f.write('\n');
     f.close();
-    DBGLN("SD written");
+    DBGSTR("SD written\n");
   }
   //confrim that the everything is working and there is serial communication
-  DBGLN("setup done");
+  DBGSTR("setup done\n");
 }
 
 void loop() {
@@ -52,13 +52,12 @@ void loop() {
   // Keep updating until we run out of buffer space
   while (!buffer_needs_write()) {
     buffer_update();
+    // 12hz delay, approximately
+    DEND();
+    Narcoleptic.delay(80);
+    DBEGIN();
   }
   flush_and_write();
-  
-  //wait 80ms (approx 12Hz) before beginning the loop again
-  DEND();
-  Narcoleptic.delay(80);
-  DBEGIN();
 }
 
 // Flush the buffer to the SD card, writing temperature and time
@@ -83,14 +82,14 @@ void flush_and_write()
     buffer_write(file);
     // Long-term
     if (write_num == 0) {
-      file.print("\t\t\t\t\t\t");
+      file.print(F("\t\t\t\t\t\t"));
       rtc_write(file);
       file.print('\t');
       temp_write(file);
-      file.write("\n");
+      file.print("\n");
     }
     file.close();
-    DBGLN("sd data written");
+    DBGSTR("sd data written\n");
   }
 }
 
