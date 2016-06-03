@@ -19,7 +19,7 @@ void rtc_update() {
 
 void rtc_write(File sd) {
 	DBGLN("Wrote time");
-
+  // year-month-mday hour:min:sec
 	sd.print(tme.year);
 	sd.print('-');
 	sd.print(tme.mon);

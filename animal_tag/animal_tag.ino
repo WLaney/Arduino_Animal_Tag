@@ -2,10 +2,11 @@
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
-#include "debug.hpp"
+#include "debug.h"
 #include "buffer.hpp"
 #include "rtc.hpp"
 #include "temp.hpp"
+#include "pressure.hpp"
 
 #define CS_SD 10
 
@@ -14,7 +15,6 @@ void setup()
   // Open serial communications and wait for port to open:
   DBEGIN();
 
-  //DO SETUP HERE
   buffer_setup();
   temp_setup();
   rtc_setup();

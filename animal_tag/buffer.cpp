@@ -17,7 +17,9 @@ typedef struct buffer_data_s {
 buffer_data buffer[BUFFER_SIZE];
 size_t buffer_index = 0;
 
+// accelerometer data is in G's
 MMA8452Q accel;
+// gyroscope data is in degrees per second
 Adafruit_L3GD20 gyro;
 
 inline float axis_to_f(short s) {
@@ -64,7 +66,7 @@ void buffer_write(File sd) {
     sd.print(d.gy);
     sd.print('\t');
     sd.print(d.gz);
-    sd.prinln('');
+    sd.println();
   }
   buffer_index = 0;
 }

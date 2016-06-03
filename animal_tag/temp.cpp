@@ -6,6 +6,7 @@
 
 #define TMP102ADDRESS 0x48
 
+// pretty obvious
 float celsius;
 
 void temp_setup() {}
