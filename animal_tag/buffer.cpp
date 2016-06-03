@@ -66,7 +66,7 @@ void buffer_write(File sd) {
     sd.print(d.gy);
     sd.print('\t');
     sd.print(d.gz);
-    sd.println();
+    sd.prinln();
   }
   buffer_index = 0;
 }

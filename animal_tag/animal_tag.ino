@@ -12,7 +12,6 @@
 
 void setup()
 {
-  // Open serial communications and wait for port to open:
   DBEGIN();
 
   buffer_setup();
