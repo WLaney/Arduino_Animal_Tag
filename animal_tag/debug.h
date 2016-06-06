@@ -8,7 +8,7 @@
   #define DEND()    Serial.end()
   #define DBG(s)    Serial.print(s)
   #define DBGLN(s)  Serial.println(s)
-  #define DBGSTR(s) Serial.println(F(s))
+  #define DBGSTR(s) Serial.print(F(s))
 #else
   #define DBEGIN()
   #define DEND()

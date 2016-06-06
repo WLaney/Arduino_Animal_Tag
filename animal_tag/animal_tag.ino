@@ -17,15 +17,20 @@ void setup()
   buffer_setup();
   temp_setup();
   rtc_setup();
-  
+
   // Setup SD card
   sd_mode();
   pinMode(10, OUTPUT);
-  SD.begin(CS_SD);
+  while (!SD.begin(CS_SD)) {
+    DBGSTR("Please insert an SD card to continue.");
+    DEND();
+    Narcoleptic.delay(2500);
+    DBEGIN();
+  }
 
   // Setup wire
   Wire.begin();
-  
+
   // Write startup information
   rtc_mode();
   rtc_update();
@@ -66,7 +71,7 @@ void flush_and_write()
 {
   static int write_num = 0;
   const int write_max = 3;
-  
+
   // Read long-term from sensors
   if (++write_num == write_max) {
     write_num = 0;
@@ -74,7 +79,7 @@ void flush_and_write()
     rtc_update();
     temp_update();
   }
-  
+
   //Write to SD
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
