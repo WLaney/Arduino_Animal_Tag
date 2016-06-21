@@ -6,6 +6,8 @@
 
 #define RTC_CS 9
 
+inline void print_02d(File,int);
+
 // Time data is on the heap since
 // it doesn't always need to be
 // present (fragmentation?)
@@ -29,17 +31,24 @@ void rtc_write(File sd) {
   }
   DBGLN("Wrote time");
   // year-month-mday hour:min:sec
-  sd.print(tme->year);
+  print_02d(sd, tme->year);
   sd.print('-');
-  sd.print(tme->mon);
+  print_02d(sd, tme->mon);
   sd.print('-');
-  sd.print(tme->mday);
+  print_02d(sd, tme->mday);
   sd.print(' ');
-  sd.print(tme->hour);
+  print_02d(sd, tme->hour);
   sd.print(':');
-  sd.print(tme->min);
+  print_02d(sd, tme->min);
   sd.print(':');
-  sd.print(tme->sec);
+  print_02d(sd, tme->sec);
   delete tme;
   tme = NULL;
+}
+
+// Sleeker than ssprintf
+inline void print_02d(File sd, int d) {
+  if (d < 10)
+    sd.print('0');
+  sd.print(d);
 }

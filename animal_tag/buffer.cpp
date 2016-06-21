@@ -35,7 +35,7 @@ inline float axis_to_f(short s) {
 void buffer_setup() {
   DBG("Buffer size is: ");
   DBGLN(BUFFER_SIZE);
-  accel.init(SCALE_8G, ODR_6);
+  accel.init(SCALE_8G, ODR_12);
   gyro.begin(gyro.L3DS20_RANGE_250DPS);
 }
 
@@ -73,11 +73,11 @@ void buffer_write(File sd) {
     sd.print(axis_to_f(d.az));
     sd.print('\t');
 
-    sd.print(d.gx);
+    sd.print(d.gx, 4);
     sd.print('\t');
-    sd.print(d.gy);
+    sd.print(d.gy, 4);
     sd.print('\t');
-    sd.println(d.gz);
+    sd.println(d.gz, 4);
   }
   buffer_index = 0;
 }

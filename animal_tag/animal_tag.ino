@@ -20,7 +20,7 @@ void setup()
 
   // Setup SD card
   sd_mode();
-  pinMode(10, OUTPUT);
+  pinMode(CS_SD, OUTPUT);
   while (!SD.begin(CS_SD)) {
     DBGSTR("Please insert an SD card to continue.");
     DEND();
