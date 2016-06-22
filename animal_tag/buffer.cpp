@@ -14,7 +14,9 @@
 #define SCALE 8.0
 
 typedef struct buffer_data_s {
+#ifdef USE_GYRO
   float gx, gy, gz;
+#endif
   short ax, ay, az;
 } buffer_data;
 
@@ -25,7 +27,9 @@ size_t buffer_index = 0;
 // accelerometer data is in G's
 MMA8452Q accel;
 // gyroscope data is in degrees per second
+#ifdef USE_GYRO
 Adafruit_L3GD20 gyro;
+#endif
 
 inline float axis_to_f(short s) {
   // culled from SFE_MMA8452Q code
@@ -36,7 +40,9 @@ void buffer_setup() {
   DBG("Buffer size is: ");
   DBGLN(BUFFER_SIZE);
   accel.init(SCALE_8G, ODR_12);
+#ifdef USE_GYRO
   gyro.begin(gyro.L3DS20_RANGE_250DPS);
+#endif USE_GYRO
 }
 
 // Read data into the buffer.
@@ -44,17 +50,20 @@ void buffer_setup() {
 void buffer_update() {
   if (buffer_needs_write()) {
     DBGSTR("ERROR: Buffer full but not flushed\n");
+    return;
   } else {
     DBGSTR("buffer update\n");
-    accel.read();
   }
-  gyro.read();
   buffer_data &d = buffer[buffer_index];
 
+#ifdef USE_GYRO
+  gyro.read();
   d.gx = gyro.data.x;
   d.gy = gyro.data.y;
   d.gz = gyro.data.z;
+#endif
 
+  accel.read();
   d.ax = accel.x;
   d.ay = accel.y;
   d.az = accel.z;
@@ -73,11 +82,13 @@ void buffer_write(File sd) {
     sd.print(axis_to_f(d.az));
     sd.print('\t');
 
+#ifdef USE_GYRO
     sd.print(d.gx, 4);
     sd.print('\t');
     sd.print(d.gy, 4);
     sd.print('\t');
     sd.println(d.gz, 4);
+#endif
   }
   buffer_index = 0;
 }
