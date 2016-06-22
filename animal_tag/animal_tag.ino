@@ -1,3 +1,4 @@
+
 #include <Wire.h>
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
@@ -21,11 +22,10 @@ void setup()
   // Setup SD card
   sd_mode();
   pinMode(CS_SD, OUTPUT);
-  while (!SD.begin(CS_SD)) {
-    DBGSTR("Please insert an SD card to continue.");
-    DEND();
-    Narcoleptic.delay(2500);
-    DBEGIN();
+  if (!SD.begin(CS_SD)) {
+    DBGSTR("SD card not inserted. Insert it and restart.");
+    while (true)
+      ;
   }
 
   // Setup wire

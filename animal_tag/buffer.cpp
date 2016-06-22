@@ -75,20 +75,26 @@ void buffer_write(File sd) {
   DBGSTR("buffer write\n");
   for (size_t i = 0; i < BUFFER_SIZE; i++) {
     buffer_data d = buffer[i];
-    sd.print(axis_to_f(d.ax));
+    sd.print(axis_to_f(d.ax),3);
     sd.print('\t');
-    sd.print(axis_to_f(d.ay));
+    sd.print(axis_to_f(d.ay),3);
     sd.print('\t');
-    sd.print(axis_to_f(d.az));
-    sd.print('\t');
+    sd.print(axis_to_f(d.az),3);
 
 #ifdef USE_GYRO
+    sd.print('\t');
     sd.print(d.gx, 4);
     sd.print('\t');
     sd.print(d.gy, 4);
     sd.print('\t');
-    sd.println(d.gz, 4);
+    sd.print(d.gz, 4);
+#else
+    for (char i=0; i<3; i++) {
+      sd.print(F("\t3.1415")); // here for alignment only
+    }
 #endif
+
+    sd.println();
   }
   buffer_index = 0;
 }
