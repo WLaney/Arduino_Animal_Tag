@@ -8,8 +8,7 @@
 #include <Arduino.h>
 #include <SD.h>
 
-// Comment this out to get rid of gyroscope code.
-// Some of our older prototypes don't have a gyroscope.
+// Leave this commented out.
 // #define USE_GYRO
 
 void buffer_setup();
