@@ -57,8 +57,6 @@ void loop() {
   // Keep updating until we run out of buffer space
   while (!buffer_needs_write()) {
     buffer_update();
-	// Not necessary, but we want to simulate gyro power drains
-	temp_update();
     // 12hz delay, approximately
     DEND();
     Narcoleptic.delay(80);

@@ -1,8 +1,0 @@
-Hi there. If you're reading this, you're using a version of the
-code that intentionally reads from the temperature sensor far
-too frequently!  This was done to simulate the power draw
-of the gyro for boards that didn't use them.
-
-Unless you really want to do this, choose a different branch.
-
---Ben
