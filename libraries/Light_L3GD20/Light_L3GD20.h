@@ -1,3 +1,7 @@
+/**
+ * Gutted and pillaged Adafruit library. Removed all state, SPI code,
+ * and class system.
+ */
 /***************************************************
   This is a library for the L3GD20 GYROSCOPE
 
@@ -34,9 +38,8 @@
 #define L3GD20_SENSITIVITY_2000DPS (0.070F)        // Roughly 18/256
 #define L3GD20_DPS_TO_RADS         (0.017453293F)  // degress/s to rad/s multiplier
 
-class Light_L3GD20
-{
-  public:
+namespace Gyro {
+
     typedef enum
     {                                               // DEFAULT    TYPE
       L3GD20_REGISTER_WHO_AM_I            = 0x0F,   // 11010100   r
@@ -75,28 +78,8 @@ class Light_L3GD20
     } l3gd20Range_t;
 
     bool begin(void);
-    void read(int16_t *);
-
-    static float s2f(short s) {
-		switch (range) {
-			case L3DS20_RANGE_250DPS:
-				return s * L3GD20_SENSITIVITY_250DPS;
-				break;
-			case L3DS20_RANGE_500DPS:
-				return s * L3GD20_SENSITIVITY_500DPS;
-				break;
-			case L3DS20_RANGE_2000DPS:
-				return s * L3GD20_SENSITIVITY_2000DPS;
-				break;
-		}
-	}
-
-  private:
-    static const byte address = L3GD20_ADDRESS;
-    static const l3gd20Range_t range = L3DS20_RANGE_250DPS;
-
-    byte read8(l3gd20Registers_t reg);
-    void write8(l3gd20Registers_t reg, byte value);
+    void read(int16_t *);	
+    float s2f(short s);
 };
 
 #endif
