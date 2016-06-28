@@ -40,6 +40,9 @@
 
 namespace Gyro {
 
+	const float read_rate = 12.5;
+	const byte buffer_size = 32;
+
     typedef enum
     {                                               // DEFAULT    TYPE
       L3GD20_REGISTER_WHO_AM_I            = 0x0F,   // 11010100   r
@@ -82,7 +85,16 @@ namespace Gyro {
 	} l3gd20Data_t;
 
     bool begin(void);
+	// Read a single data point from the FIFO buffer
+	// into l3gd20Data_t.
     void read(l3gd20Data_t *);	
+	// Burst-read data from the internal FIFO buffer.
+	// 0 < size < buffer_size
+	// I'm not sure what happens if you try to read undefined
+	// values. Can a gyroscope segfault?
+	void fifo_burst_read(l3gd20Data_t *, byte size);
+	// Check if the FIFO buffer is full or not. 
+	bool fifo_check();
     float s2f(short s);
 };
 

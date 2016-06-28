@@ -1,4 +1,3 @@
-
 #include <Wire.h>
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
