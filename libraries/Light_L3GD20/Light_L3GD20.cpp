@@ -109,6 +109,23 @@ namespace Gyro {
     }
     /* ------------------------------------------------------------------ */
 
+    /* Set LOW_ODR (0x39)
+     ====================================================================
+     BIT  Symbol    Description                                   Default
+     ---  ------    --------------------------------------------- -------
+     7    N/A 
+     6    N/A 
+     5    DRDY_HL   DRDY/INT2 pin active level                          0
+	 4    0         Keep this at 0!                                     0
+     3    I2C_dis   Disable I2C if set to 1.                            0
+	 2    SW_RES    Software reset.                                     0
+	 1    0         Keep this at 0!                                     0
+	 0    Low_ODR   Low speed ODR; 1 to enable.                         0*/
+
+	// We want Low_ODR enabled!
+	write8(L3GD20_REGISTER_LOW_ODR, 0x01);
+    /* ------------------------------------------------------------------ */
+	
 #ifdef L3GD20_USE_FIFO
     /* Set CTRL_REG5 (0x24)
      ====================================================================

@@ -79,7 +79,8 @@ namespace Gyro {
       L3GD20_REGISTER_TSH_YL              = 0x35,   // 00000000   rw
       L3GD20_REGISTER_TSH_ZH              = 0x36,   // 00000000   rw
       L3GD20_REGISTER_TSH_ZL              = 0x37,   // 00000000   rw
-      L3GD20_REGISTER_INT1_DURATION       = 0x38    // 00000000   rw
+      L3GD20_REGISTER_INT1_DURATION       = 0x38,   // 00000000   rw
+	  L3GD20_REGISTER_LOW_ODR             = 0x39    // 00000000   rw
     } l3gd20Registers_t;
 
     typedef enum
