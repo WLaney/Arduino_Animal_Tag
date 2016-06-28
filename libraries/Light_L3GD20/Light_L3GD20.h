@@ -38,10 +38,19 @@
 #define L3GD20_SENSITIVITY_2000DPS (0.070F)        // Roughly 18/256
 #define L3GD20_DPS_TO_RADS         (0.017453293F)  // degress/s to rad/s multiplier
 
+// Comment this out to remove FIFO functionality.
+// FIFO functions will be callable, but will not do anything
+#define L3GD20_USE_FIFO
+
 namespace Gyro {
 
 	const float read_rate = 12.5;
-	const byte buffer_size = 32;
+
+#ifdef L3GD20_USE_FIFO
+	const byte buffer_size = 31;
+#else
+	const byte buffer_size = 1;
+#endif
 
     typedef enum
     {                                               // DEFAULT    TYPE
@@ -88,14 +97,18 @@ namespace Gyro {
 	// Read a single data point from the FIFO buffer
 	// into l3gd20Data_t.
     void read(l3gd20Data_t *);	
-	// Burst-read data from the internal FIFO buffer.
-	// 0 < size < buffer_size
-	// I'm not sure what happens if you try to read undefined
-	// values. Can a gyroscope segfault?
-	void fifo_burst_read(l3gd20Data_t *, byte size);
-	// Check if the FIFO buffer is full or not. 
-	bool fifo_check();
     float s2f(short s);
+
+    // DEBUG METHOD - PLEASE REMOVE
+	byte get_fifo_src(void);
+
+    // Burst-read data from the internal FIFO buffer.
+    // 0 < size < buffer_size
+    void fifo_burst_read(l3gd20Data_t *, byte size);
+    // Check if the FIFO buffer is full or not. 
+    bool fifo_check();
+
 };
+
 
 #endif

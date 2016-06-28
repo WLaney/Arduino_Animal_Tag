@@ -109,6 +109,7 @@ namespace Gyro {
     }
     /* ------------------------------------------------------------------ */
 
+#ifdef L3GD20_USE_FIFO
     /* Set CTRL_REG5 (0x24)
      ====================================================================
      BIT  Symbol    Description                                   Default
@@ -116,7 +117,7 @@ namespace Gyro {
      7  BOOT      Reboot memory content (0=normal, 1=reboot)          0
      6  FIFO_EN   FIFO enable (0=FIFO disable, 1=enable)              0
      4  HPen      High-pass filter enable (0=disable,1=enable)        0
-		 5  StopOnFTH Limit FIFO depth to FIFO_CTRL FTH4's limit          0
+         5  StopOnFTH Limit FIFO depth to FIFO_CTRL FTH4's limit          0
      3-2  INT1_SEL  INT1 Selection config                              00
      1-0  OUT_SEL   Out selection config                               00 */
 
@@ -127,20 +128,21 @@ namespace Gyro {
      ====================================================================
      BIT  Symbol    Description                                   Default
      ---  ------    --------------------------------------------- -------
-		 7-5  FM2:0     FIFO mode selection.                              000
-		 0-4  FTH4:0    FIFO threshold setting.                             0*/
+         7-5  FM2:0     FIFO mode selection.                              000
+         0-4  FTH4:0    FIFO threshold setting.                             0*/
 
-	  /*
-		 * FM2 FM1 FM0 FIFO mode
-		 * --- --- --- ---------
-		 *   0   0   0  Bypass
-		 *   0   0   1  FIFO; reading stops when buffer full
-		 *   0   1   0  Stream; oldest values discarded
-		 *   Look up the rest on the datasheet...
-		 */
-		
-		write8(L3GD20_REGISTER_FIFO_CTRL_REG, 0x40); // FIFO stream mode on
+      /*
+         * FM2 FM1 FM0 FIFO mode
+         * --- --- --- ---------
+         *   0   0   0  Bypass
+         *   0   0   1  FIFO; reading stops when buffer full
+         *   0   1   0  Stream; oldest values discarded
+         *   Look up the rest on the datasheet...
+         */
+        
+        write8(L3GD20_REGISTER_FIFO_CTRL_REG, 0x40); // FIFO stream mode on
     /* ------------------------------------------------------------------ */
+#endif
 
     return true;
   }
@@ -149,6 +151,12 @@ namespace Gyro {
    PUBLIC FUNCTIONS
    ***************************************************************************/
 
+  /*
+   * Read a single XYZ value from the gyroscope into *d.
+   * If FIFO is enabled, this will pop the oldest value in the FIFO queue.
+   * For more efficient FIFO reading, though, it is reccomended that you use
+   * burst_read instead.
+   */
   void read(l3gd20Data_t *d)
   { 
     Wire.beginTransmission(address);
@@ -184,6 +192,72 @@ namespace Gyro {
         break;
     }
   }
+
+#ifdef L3GD20_USE_FIFO
+    /*
+     * Read multiple values from the gyroscope's FIFO queue into memory.
+     * *ds is assumed to be an array of l3gd20Data_t at least as large
+     * as size, with 0 < size < buffer_size.
+     *
+     * ISSUE: If there are not enough values in the FIFO queue, the system
+     * will wait until they are available. I should probably implement some
+     * sort of timeout...
+     */
+    void fifo_burst_read(l3gd20Data_t *ds, byte size) {
+      byte bytes_requested = size * 6;
+
+      Wire.beginTransmission(address);
+      // Make sure to set address auto-increment bit
+      Wire.write(L3GD20_REGISTER_OUT_X_L | 0x80);
+      Wire.endTransmission();
+      Wire.requestFrom(address, bytes_requested);
+      
+      while (Wire.available() < bytes_requested && millis());
+      
+      // dirty, but direct
+      char *c = (char *) ds;
+      for (byte i = 0; i < bytes_requested; i++) {
+        c[i] = Wire.read();
+      }
+    }
+
+    /*
+     * See if the FIFO is full yet. As it stands, if FIFO is enabled, the
+     * gyroscope will discard the oldest values to make room for new ones.
+     * If it isn't, then this returns true.
+     */
+     bool fifo_check(void) {
+       // Write to the slave with the address to read (auto-increment bit off)
+       Wire.beginTransmission(address);
+       Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
+       Wire.endTransmission();
+       // Read and wait for a response
+       Wire.requestFrom(address, (byte)1);
+       while (!Wire.available())
+           ;
+       byte src_reg = Wire.read();
+
+       // Overrun bit is at index 6
+       return src_reg & 0x40;
+     }
+
+	 // DEBUG METHOD - PLEASE REMOVE
+     byte get_fifo_src(void) {
+       // Write to the slave with the address to read (auto-increment bit off)
+       Wire.beginTransmission(address);
+       Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
+       Wire.endTransmission();
+       // Read and wait for a response
+       Wire.requestFrom(address, (byte)1);
+       while (!Wire.available() && millis())
+           ;
+       return Wire.read();
+     }
+#else
+    void fifo_burst_read(l3gd20Data_t *ds, byte size) { }
+    bool fifo_check(void) { return true; }
+#endif
+
 
   /***************************************************************************
    PRIVATE FUNCTIONS
