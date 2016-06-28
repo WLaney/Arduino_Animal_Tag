@@ -46,7 +46,7 @@ namespace Gyro {
 	   ---  ------    --------------------------------------------- -------
 	   7-6  DR1/0     Output data rate                                   00
 	   5-4  BW1/0     Bandwidth selection                                00
-		 3  PD        0 = Power-down mode, 1 = normal/sleep mode          0
+		 3  PD        0 = Power-down mode, 1 = normal/sleep mode          1
 		 2  ZEN       Z-axis enable (0 = disabled, 1 = enabled)           1
 		 1  YEN       Y-axis enable (0 = disabled, 1 = enabled)           1
 		 0  XEN       X-axis enable (0 = disabled, 1 = enabled)           1 */
@@ -76,7 +76,7 @@ namespace Gyro {
 		 3  I2_DRDY   Data ready on DRDY/INT2 (0=disable,1=enable)        0
 		 2  I2_WTM    FIFO wtrmrk int on DRDY/INT2 (0=dsbl,1=enbl)        0
 		 1  I2_ORun   FIFO overrun int on DRDY/INT2 (0=dsbl,1=enbl)       0
-		 0  I2_Empty  FIFI empty int on DRDY/INT2 (0=dsbl,1=enbl)         0 */
+		 0  I2_Empty  FIFO empty int on DRDY/INT2 (0=dsbl,1=enbl)         0 */
 
 	  /* Nothing to do ... keep default values */
 	  /* ------------------------------------------------------------------ */
@@ -129,10 +129,7 @@ namespace Gyro {
 	 PUBLIC FUNCTIONS
 	 ***************************************************************************/
 
-	// Read from the gyroscope into an array of shorts with at least 3 elements.
-	// The compiler will accept arrays with less than (or more than) 3 elements,
-	// so be careful!
-	void read(int16_t s[3])
+	void read(l3gd20Data_t *d)
 	{ 
 	  Wire.beginTransmission(address);
 	  // Make sure to set address auto-increment bit
@@ -141,11 +138,10 @@ namespace Gyro {
 	  Wire.requestFrom(address, (byte)6);
 	  
 	  // Wait around until enough data is available
-		// Is there a nicer way to do this (without interrupts)?
 	  while (Wire.available() < 6);
 	  
-		// Faintly horrifying. Be careful.
-		uint8_t *c = (uint8_t *) s;
+	  // Kind of sick, but direct
+	  char *c = (char *) d;
 	  c[0] = Wire.read();
 	  c[1] = Wire.read();
 	  c[2] = Wire.read();

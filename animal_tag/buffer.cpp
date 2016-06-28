@@ -1,6 +1,6 @@
 #include "buffer.hpp"
 #include "SFE_MMA8452Q.h"
-#include "Adafruit_L3GD20.h"
+#include "Light_L3GD20.h"
 #include "debug.h"
 #include <Arduino.h>
 #include <SD.h>
@@ -15,21 +15,18 @@
 
 typedef struct buffer_data_s {
 #ifdef USE_GYRO
-  float gx, gy, gz;
+  Gyro::l3gd20Data_t gdata;
 #endif
   short ax, ay, az;
 } buffer_data;
 
-// Buffer to hold accelerometer data until needed
+// Buffer holds data until needed
 buffer_data buffer[BUFFER_SIZE];
 size_t buffer_index = 0;
 
 // accelerometer data is in G's
 MMA8452Q accel;
 // gyroscope data is in degrees per second
-#ifdef USE_GYRO
-Adafruit_L3GD20 gyro;
-#endif
 
 inline float axis_to_f(short s) {
   // culled from SFE_MMA8452Q code
@@ -41,8 +38,8 @@ void buffer_setup() {
   DBGLN(BUFFER_SIZE);
   accel.init(SCALE_8G, ODR_12);
 #ifdef USE_GYRO
-  gyro.begin(gyro.L3DS20_RANGE_250DPS);
-#endif USE_GYRO
+  Gyro::begin();
+#endif
 }
 
 // Read data into the buffer.
@@ -57,10 +54,7 @@ void buffer_update() {
   buffer_data &d = buffer[buffer_index];
 
 #ifdef USE_GYRO
-  gyro.read();
-  d.gx = gyro.data.x;
-  d.gy = gyro.data.y;
-  d.gz = gyro.data.z;
+  Gyro::read(&d.gdata);
 #endif
 
   accel.read();
@@ -83,14 +77,14 @@ void buffer_write(File sd) {
 
 #ifdef USE_GYRO
     sd.print('\t');
-    sd.print(d.gx, 4);
+    sd.print(Gyro::s2f(d.gdata.x));
     sd.print('\t');
-    sd.print(d.gy, 4);
+    sd.print(Gyro::s2f(d.gdata.y));
     sd.print('\t');
-    sd.print(d.gz, 4);
+    sd.print(Gyro::s2f(d.gdata.z));
 #else
     for (char i=0; i<3; i++) {
-      sd.print(F("\t3.1415")); // here for alignment only
+      sd.print(F("\t3.1415")); // dummy data
     }
 #endif
 

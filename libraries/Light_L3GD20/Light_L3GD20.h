@@ -77,8 +77,12 @@ namespace Gyro {
       L3DS20_RANGE_2000DPS
     } l3gd20Range_t;
 
+	typedef struct {
+	  int16_t x, y, z;	
+	} l3gd20Data_t;
+
     bool begin(void);
-    void read(int16_t *);	
+    void read(l3gd20Data_t *);	
     float s2f(short s);
 };
 

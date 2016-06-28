@@ -25,17 +25,17 @@ void setup()
   // Try to initialise and warn if we couldn't detect the chip
   if (!Gyro::begin())
   {
-    Serial.println("Oops ... unable to initialize the L3GD20. Check your wiring!");
+    Serial.println(F("Oops ... unable to initialize the L3GD20. Check your wiring!"));
     while (1);
   }
 }
 
 void loop() 
 {
-  int16_t data[3];
-  Gyro::read(data);
-  Serial.print(Gyro::s2f(data[0]));   Serial.print(" ");
-  Serial.print(Gyro::s2f(data[1]));   Serial.print(" ");
-  Serial.println(Gyro::s2f(data[2])); Serial.print(" ");
+  Gyro::l3gd20Data_t data;
+  Gyro::read(&data);
+  Serial.print(Gyro::s2f(data.x));   Serial.print(" ");
+  Serial.print(Gyro::s2f(data.y));   Serial.print(" ");
+  Serial.println(Gyro::s2f(data.z)); Serial.print(" ");
   delay(100);
 }
