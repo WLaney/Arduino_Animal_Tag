@@ -5,24 +5,26 @@
 #include <Arduino.h>
 #include <SD.h>
 
-#ifdef DEBUG
-  #define BUFFER_SIZE (410 / sizeof(buffer_data))
-#else
-  #define BUFFER_SIZE (440 / sizeof(buffer_data))
-#endif
-
+#define ACCEL_SIZE (200 / sizeof(accel_data))
+#define GYRO_SIZE  (200 / sizeof(Gyro::l3gd20Data_t))
+#define GYRO_FIFO_SIZE 31 // ugh. sick.
 #define SCALE 8.0
 
-typedef struct buffer_data_s {
-#ifdef USE_GYRO
-  Gyro::l3gd20Data_t gdata;
-#endif
-  short ax, ay, az;
-} buffer_data;
+typedef struct {
+  short x, y, z;
+} accel_data;
 
-// Buffer holds data until needed
-buffer_data buffer[BUFFER_SIZE];
-size_t buffer_index = 0;
+// The buffers hold data until they are written to the SD card.
+// Since data is received asynchronously, and since values are
+// written directly from the sensor to an array, we use two
+// separate buffers.
+accel_data adata[ACCEL_SIZE];
+byte aind = 0;
+byte areads = 0;
+// The gyro is slightly faster, so we give it
+// more of the allotted buffer size.
+Gyro::l3gd20Data_t gdata[GYRO_SIZE];
+byte gind = 0;
 
 // accelerometer data is in G's
 MMA8452Q accel;
@@ -34,12 +36,8 @@ inline float axis_to_f(short s) {
 }
 
 void buffer_setup() {
-  DBG("Buffer size is: ");
-  DBGLN(BUFFER_SIZE);
   accel.init(SCALE_8G, ODR_12);
-#ifdef USE_GYRO
   Gyro::begin();
-#endif
 }
 
 // Read data into the buffer.
@@ -51,48 +49,54 @@ void buffer_update() {
   } else {
     DBGSTR("buffer update\n");
   }
-  buffer_data &d = buffer[buffer_index];
-
-#ifdef USE_GYRO
-  Gyro::read(&d.gdata);
-#endif
-
+  // update accel
   accel.read();
-  d.ax = accel.x;
-  d.ay = accel.y;
-  d.az = accel.z;
-  buffer_index++;
+  accel_data &ad = adata[aind];
+  ad.x = accel.x;
+  ad.y = accel.y;
+  ad.z = accel.z;
+  // if gryo needs read, burst read it
+  if (++areads == GYRO_FIFO_SIZE) {
+    Gyro::fifo_burst_read(&gdata[gind], GYRO_FIFO_SIZE);
+    gind += GYRO_FIFO_SIZE;
+  }
 }
 
 // This invalidates the buffer after it's called
 void buffer_write(File sd) {
   DBGSTR("buffer write\n");
-  for (size_t i = 0; i < BUFFER_SIZE; i++) {
-    buffer_data d = buffer[i];
-    sd.print(axis_to_f(d.ax),3);
-    sd.print('\t');
-    sd.print(axis_to_f(d.ay),3);
-    sd.print('\t');
-    sd.print(axis_to_f(d.az),3);
-
-#ifdef USE_GYRO
-    sd.print('\t');
-    sd.print(Gyro::s2f(d.gdata.x));
-    sd.print('\t');
-    sd.print(Gyro::s2f(d.gdata.y));
-    sd.print('\t');
-    sd.print(Gyro::s2f(d.gdata.z));
-#else
-    for (char i=0; i<3; i++) {
-      sd.print(F("\t3.1415")); // dummy data
+  char ai = 0;
+  char gi = 0;
+  bool gf = false;
+  bool af = false;
+  while (!(gf && af)) {
+    if (!af) {
+      accel_data &ad = adata[ai];
+      sd.print(axis_to_f(ad.x), 3);
+      sd.print('\t');
+      sd.print(axis_to_f(ad.y), 3);
+      sd.print('\t');
+      sd.print(axis_to_f(ad.z), 3);
+      ai++;
+      af = (ai == ACCEL_SIZE);
     }
-#endif
-
+    if (!gf) {
+      Gyro::l3gd20Data_t &gd = gdata[gi];
+      sd.print(Gyro::s2f(gd.x), 3);
+      sd.print('\t');
+      sd.print(Gyro::s2f(gd.y), 3);
+      sd.print('\t');
+      sd.print(Gyro::s2f(gd.z), 3);
+      gi++;
+      gf = (gi == ACCEL_SIZE);
+    }
     sd.println();
   }
-  buffer_index = 0;
+  gind = 0;
+  aind = 0;
 }
 
 bool buffer_needs_write() {
-  return buffer_index == BUFFER_SIZE;
+  return aind >= ACCEL_SIZE ||
+         gind >= GYRO_SIZE;
 }

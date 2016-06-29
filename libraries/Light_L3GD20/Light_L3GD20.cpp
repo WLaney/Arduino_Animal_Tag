@@ -116,16 +116,16 @@ namespace Gyro {
      7    N/A 
      6    N/A 
      5    DRDY_HL   DRDY/INT2 pin active level                          0
-	 4    0         Keep this at 0!                                     0
+     4    0         Keep this at 0!                                     0
      3    I2C_dis   Disable I2C if set to 1.                            0
-	 2    SW_RES    Software reset.                                     0
-	 1    0         Keep this at 0!                                     0
-	 0    Low_ODR   Low speed ODR; 1 to enable.                         0*/
+     2    SW_RES    Software reset.                                     0
+     1    0         Keep this at 0!                                     0
+     0    Low_ODR   Low speed ODR; 1 to enable.                         0*/
 
-	// We want Low_ODR enabled!
-	write8(L3GD20_REGISTER_LOW_ODR, 0x01);
+    // We want Low_ODR enabled!
+    write8(L3GD20_REGISTER_LOW_ODR, 0x01);
     /* ------------------------------------------------------------------ */
-	
+    
 #ifdef L3GD20_USE_FIFO
     /* Set CTRL_REG5 (0x24)
      ====================================================================
@@ -211,68 +211,81 @@ namespace Gyro {
   }
 
 #ifdef L3GD20_USE_FIFO
-    /*
-     * Read multiple values from the gyroscope's FIFO queue into memory.
-     * *ds is assumed to be an array of l3gd20Data_t at least as large
-     * as size, with 0 < size < buffer_size.
-     *
-     * ISSUE: If there are not enough values in the FIFO queue, the system
-     * will wait until they are available. I should probably implement some
-     * sort of timeout...
-     */
-    void fifo_burst_read(l3gd20Data_t *ds, byte size) {
-      byte bytes_requested = size * 6;
+// For reasons known to no one, I can't request more than 5 reads at a time... 
+// in other words, 30 bytes. There's probably some sort of rational
+// explanation (like a 32-byte request limit), but hell if I know
+// what it is.
+const byte max_wire_request = 30;
+  /*
+   * Read multiple values from the gyroscope's FIFO queue into memory.
+   * *ds is assumed to be an array of l3gd20Data_t at least as large
+   * as size, with 0 < size < buffer_size.
+   */
+  void fifo_burst_read(l3gd20Data_t *ds, byte size) {
+    short to_read = size*6;
 
-      Wire.beginTransmission(address);
-      // Make sure to set address auto-increment bit
-      Wire.write(L3GD20_REGISTER_OUT_X_L | 0x80);
-      Wire.endTransmission();
-      Wire.requestFrom(address, bytes_requested);
-      
-      while (Wire.available() < bytes_requested && millis());
-      
-      // dirty, but direct
-      char *c = (char *) ds;
-      for (byte i = 0; i < bytes_requested; i++) {
-        c[i] = Wire.read();
+    Wire.beginTransmission(address);
+    // Make sure to set address auto-increment bit
+    Wire.write(L3GD20_REGISTER_OUT_X_L | 0x80);
+    Wire.endTransmission();
+
+    char *c = (char *) ds;
+    
+    short burst = max_wire_request * (to_read / max_wire_request);
+    for (short i = 0; i < burst; i += max_wire_request+1) {
+      Wire.requestFrom(address, (byte) max_wire_request, false);
+      while (Wire.available() < max_wire_request)
+        ;
+      for (short j = i; j < i+max_wire_request; j++) {
+        c[j] = Wire.read();
       }
     }
+    
+    byte leftovers = to_read % max_wire_request;
+    Wire.requestFrom(address, (byte) leftovers, true);
+    while (Wire.available() < leftovers)
+      ;
+    for (short i = to_read-leftovers; i<to_read; i++) {
+      c[i] = Wire.read();
+    }
 
-    /*
-     * See if the FIFO is full yet. As it stands, if FIFO is enabled, the
-     * gyroscope will discard the oldest values to make room for new ones.
-     * If it isn't, then this returns true.
-     */
-     bool fifo_check(void) {
-       // Write to the slave with the address to read (auto-increment bit off)
-       Wire.beginTransmission(address);
-       Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
-       Wire.endTransmission();
-       // Read and wait for a response
-       Wire.requestFrom(address, (byte)1);
-       while (!Wire.available())
-           ;
-       byte src_reg = Wire.read();
+  }
 
-       // Overrun bit is at index 6
-       return src_reg & 0x40;
-     }
+  /*
+   * See if the FIFO is full yet. As it stands, if FIFO is enabled, the
+   * gyroscope will discard the oldest values to make room for new ones.
+   * If it isn't, then this returns true.
+   */
+   bool fifo_check(void) {
+     // Write to the slave with the address to read (auto-increment bit off)
+     Wire.beginTransmission(address);
+     Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
+     Wire.endTransmission();
+     // Read and wait for a response
+     Wire.requestFrom(address, (byte)1);
+     while (!Wire.available())
+         ;
+     byte src_reg = Wire.read();
 
-	 // DEBUG METHOD - PLEASE REMOVE
-     byte get_fifo_src(void) {
-       // Write to the slave with the address to read (auto-increment bit off)
-       Wire.beginTransmission(address);
-       Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
-       Wire.endTransmission();
-       // Read and wait for a response
-       Wire.requestFrom(address, (byte)1);
-       while (!Wire.available() && millis())
-           ;
-       return Wire.read();
-     }
+     // Overrun bit is at index 6
+     return src_reg & 0x40;
+   }
+
+   // DEBUG METHOD - PLEASE REMOVE
+   byte get_fifo_src(void) {
+     // Write to the slave with the address to read (auto-increment bit off)
+     Wire.beginTransmission(address);
+     Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
+     Wire.endTransmission();
+     // Read and wait for a response
+     Wire.requestFrom(address, (byte)1);
+     while (!Wire.available() && millis())
+         ;
+     return Wire.read();
+   }
 #else
-    void fifo_burst_read(l3gd20Data_t *ds, byte size) { }
-    bool fifo_check(void) { return true; }
+  void fifo_burst_read(l3gd20Data_t *ds, byte size) { }
+  bool fifo_check(void) { return true; }
 #endif
 
 
@@ -300,5 +313,6 @@ namespace Gyro {
 
     return value;
   }
+
 
 }
