@@ -6,8 +6,8 @@
 #include <SD.h>
 
 #define ACCEL_SIZE (200 / sizeof(accel_data))
-#define GYRO_SIZE  (200 / sizeof(Gyro::l3gd20Data_t))
-#define GYRO_FIFO_SIZE 31 // ugh. sick.
+#define GYRO_SIZE  31
+#define GYRO_FIFO_SIZE 31
 #define SCALE 8.0
 
 typedef struct {
@@ -38,6 +38,8 @@ inline float axis_to_f(short s) {
 void buffer_setup() {
   accel.init(SCALE_8G, ODR_12);
   Gyro::begin();
+  DBGSTR("Accel size: "); DBGLN(ACCEL_SIZE);
+  DBGSTR("Gyro size:  "); DBGLN(GYRO_SIZE);
 }
 
 // Read data into the buffer.
@@ -46,8 +48,6 @@ void buffer_update() {
   if (buffer_needs_write()) {
     DBGSTR("ERROR: Buffer full but not flushed\n");
     return;
-  } else {
-    DBGSTR("buffer update\n");
   }
   // update accel
   accel.read();
@@ -55,10 +55,14 @@ void buffer_update() {
   ad.x = accel.x;
   ad.y = accel.y;
   ad.z = accel.z;
+  aind++;
+  DBGSTR("read accel\n");
   // if gryo needs read, burst read it
   if (++areads == GYRO_FIFO_SIZE) {
     Gyro::fifo_burst_read(&gdata[gind], GYRO_FIFO_SIZE);
     gind += GYRO_FIFO_SIZE;
+    areads = 0;
+    DBGSTR("read gyro\n");
   }
 }
 

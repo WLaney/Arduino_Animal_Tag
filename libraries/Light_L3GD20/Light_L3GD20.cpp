@@ -211,11 +211,7 @@ namespace Gyro {
   }
 
 #ifdef L3GD20_USE_FIFO
-// For reasons known to no one, I can't request more than 5 reads at a time... 
-// in other words, 30 bytes. There's probably some sort of rational
-// explanation (like a 32-byte request limit), but hell if I know
-// what it is.
-const byte max_wire_request = 30;
+  const byte max_wire_request = 32;
   /*
    * Read multiple values from the gyroscope's FIFO queue into memory.
    * *ds is assumed to be an array of l3gd20Data_t at least as large
