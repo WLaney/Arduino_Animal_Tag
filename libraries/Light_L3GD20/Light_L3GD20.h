@@ -91,7 +91,7 @@ namespace Gyro {
     } l3gd20Range_t;
 
 	typedef struct {
-	  int16_t x, y, z;	
+	  uint16_t x, y, z;	
 	} l3gd20Data_t;
 
     bool begin(void);
@@ -100,15 +100,11 @@ namespace Gyro {
     void read(l3gd20Data_t *);	
     float s2f(short s);
 
-    // DEBUG METHOD - PLEASE REMOVE
-	byte get_fifo_src(void);
+    byte fifo_burst_read(l3gd20Data_t *, byte);
+	byte fifo_get_length(void);
 
-    // Burst-read data from the internal FIFO buffer.
-    // 0 < size < buffer_size
-    void fifo_burst_read(l3gd20Data_t *, byte size);
-    // Check if the FIFO buffer is full or not. 
-    bool fifo_check();
-
+	// DEBUG METHOD - PLEASE REMOVE
+	byte fifo_get_src_reg(void);
 };
 
 
