@@ -3,6 +3,7 @@
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
+#include <EEPROM.h>
 #include "debug.h"
 #include "buffer.hpp"
 #include "rtc.hpp"
@@ -27,18 +28,31 @@ void setup()
     while (true)
       ;
   }
-
   // Setup wire
   Wire.begin();
-
-  // Write startup information
+  // Header info and time
+  char name[5];
+  byte orient;
+  for (byte i=0; i<4; i++) {
+    name[i] = EEPROM.read(i);
+  }
+  name[4] = '\0';
+  orient = EEPROM.read(4);
   rtc_mode();
   rtc_update();
+  
   sd_mode();
   File f = SD.open("data.txt", FILE_WRITE);
-  // Need to wait for SD to start working for some reason
+  // Wait for SD startup
   delay(100);
   if (f) {
+    // Name, Orient
+    if (name[0] != 255) {
+      f.print(name);
+      f.print('\t');
+      f.println(orient);
+    }
+    // Time
     f.print(F("\t\t\t\t\t\t"));
     rtc_write(f);
     f.write('\n');
