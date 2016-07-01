@@ -1,0 +1,59 @@
+BASICS
+
+For this simple process, we assume that the accelerometer and gyroscope
+(FIFO + software) have the same buffer size. Furthermore, we assume
+that the gyroscope is full by the time the accelerometer is full (this
+is correct).
+
+for every accelerometer value:
+	Write the accelerometer value to the SD card
+	
+	Write a gyroscope value from the software buffer
+	If the software buffer is empty:
+		Use Gyro::read() to the SD card
+
+This is already assumed by our input format, so that's fine.
+
+OPTIMIZATION
+
+We can burst the Gyro buffer into the SD card to decrease polling.
+Since we're basing our work on accelerometer reads, we don't have to
+keep track of when to stop reading. We just pull as many bytes as
+we can and discard the ones we don't need.
+
+This also synchronizes the two sensors further.
+
+FURTHER OPTIMIZATION
+Only pull the N bytes that you need. Then, after you're done reading,
+clear the FIFO buffer by doing to standby->bypass->FIFO (?).
+
+
+Think about it this way: a lot of the energy we consume is in keeping
+the SD card open. Any time spent during this state is energy wasted.
+(Confirm this with William, but it rings true.)
+
+FINAL PSEUDOCODE
+
+for every accelerometer value:
+	Write the accelerometer value to the SD card
+	
+	Write a gyroscope value from the software buffer
+	If the software buffer is empty:
+		Fill it with Gyro::fifo_burst_read(min(31, bytes left))
+		
+Clear the gyroscope buffer
+
+CHANGES TO CODEBASE
+
+byte fifo_burst_read(l3gd20Data_t *d, byte max);
+	Pulls at most `max` sensor reads into `d`. Returns the number of
+	software reads made.
+
+void init()
+	Change mode to FIFO, not stream. This holds values in the buffer instead
+	of losing them.
+
+Change #ACCEL_SIZE and #GYRO size to account for buffer.
+
+void buffer_write(File sd)
+	Use buffer as extension.
