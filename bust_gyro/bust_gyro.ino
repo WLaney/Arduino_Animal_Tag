@@ -55,10 +55,13 @@ void loop()
   PRINTSTR("Length: "); Serial.println(reads);
   
   PRINTSTR("Reading...\n");
+  long bytes_read;
   long tme = millis();
-  Serial.println(Gyro::fifo_burst_read(data, 31));
+  bytes_read = Gyro::fifo_burst_read(data, 31);
   Serial.print(millis() - tme);
   PRINTSTR("ms to read gyro\n");
+  Serial.print(bytes_read);
+  Serial.println(" read");
 
   for (byte i=0; i<Gyro::buffer_size; i++) {
     Serial.print(Gyro::s2f(data[i].x)); Serial.print(' ');
@@ -71,6 +74,6 @@ void loop()
   }
 
   Serial.end();
-  Narcoleptic.delay(2600);
+  Narcoleptic.delay(2400);
   Serial.begin(38400);
 }

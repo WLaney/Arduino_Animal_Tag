@@ -103,8 +103,6 @@ namespace Gyro {
     byte fifo_burst_read(l3gd20Data_t *, byte);
 	byte fifo_get_length(void);
 
-	// DEBUG METHOD - PLEASE REMOVE
-	byte fifo_get_src_reg(void);
 };
 
 

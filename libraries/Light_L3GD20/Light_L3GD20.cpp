@@ -16,6 +16,8 @@
  ****************************************************/
 
 #include <Light_L3GD20.h>
+#include "Wire.h"
+#include "Arduino.h"
 
 /***************************************************************************
  CONSTRUCTOR
@@ -214,11 +216,13 @@ namespace Gyro {
   const byte max_wire = 32;
   /*
    * Pull at most max sensor reads into the ds array.
-   * Returns the number of bytes written, and doesn't try
-   * to pull more bytes than the sensor has.
+   * Returns the number of reads written, and doesn't try
+   * to pull more reads than the sensor has.
    */
   byte fifo_burst_read(l3gd20Data_t *ds, byte max) {
-    byte to_read = max*6;
+    byte fl = fifo_get_length();
+	byte mn = (fl < max) ? fl : max;
+	byte to_read = mn * 6;
 
     Wire.beginTransmission(address);
     // Make sure to set address auto-increment bit
@@ -245,8 +249,7 @@ namespace Gyro {
 		b[i] = Wire.read();
 	}
 
-    return max;
-
+    return mn;
   }
 
   /*
@@ -254,38 +257,11 @@ namespace Gyro {
    * If FIFO is disabled, this returns 1, since, well, that's how
    * bypass mode works.
    */
-   byte fifo_get_length(void) {
-     // Write to the slave with the address to read (auto-increment bit off)
-     Wire.beginTransmission(address);
-     Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
-     Wire.endTransmission();
-     // Read and wait for a response
-     Wire.requestFrom(address, (byte)1);
-     while (!Wire.available())
-         ;
-     byte src_reg = Wire.read();
-
-   // First 5 bits constitute the number of elements
-     return src_reg & 0x1F;
-   }
-
-   // DEBUG METHOD - PLEASE REMOVE
-   byte fifo_get_src_reg(void) {
-     // Write to the slave with the address to read (auto-increment bit off)
-     Wire.beginTransmission(address);
-     Wire.write(L3GD20_REGISTER_FIFO_SRC_REG);
-     Wire.endTransmission();
-     // Read and wait for a response
-     Wire.requestFrom(address, (byte)1);
-     while (!Wire.available() && millis())
-         ;
-     return Wire.read();
-   }
-#else
-  byte fifo_burst_read(l3gd20Data_t *ds, byte max) { }
-  byte fifo_get_length(void) { return 1; }
-#endif
-
+  byte fifo_get_length(void) {
+    byte src_reg = read8(L3GD20_REGISTER_FIFO_SRC_REG);
+    return src_reg & 0x1F;
+  }
+#endif /*USE_FIFO */
 
   /***************************************************************************
    PRIVATE FUNCTIONS
