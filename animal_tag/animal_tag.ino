@@ -38,6 +38,12 @@ void setup()
   }
   name[4] = '\0';
   orient = EEPROM.read(4);
+  // Gyroscope bias
+  float gx, gy, gz;
+  EEPROM.get(5, gx);
+  EEPROM.get(9, gy);
+  EEPROM.get(13, gz);
+  
   rtc_mode();
   rtc_update();
   
@@ -51,6 +57,9 @@ void setup()
       f.print(name);
       f.print('\t');
       f.println(orient);
+      f.print(gx); f.print('\t');
+      f.print(gy); f.print('\t');
+      f.println(gz);
     }
     // Time
     f.print(F("\t\t\t\t\t\t"));

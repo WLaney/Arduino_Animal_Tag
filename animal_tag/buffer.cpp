@@ -75,18 +75,12 @@ void buffer_write(File sd) {
     sd.print('\t');
     sd.print(axis_to_f(d.az),3);
 
-#ifdef USE_GYRO
     sd.print('\t');
     sd.print(Gyro::s2f(d.gdata.x));
     sd.print('\t');
     sd.print(Gyro::s2f(d.gdata.y));
     sd.print('\t');
     sd.print(Gyro::s2f(d.gdata.z));
-#else
-    for (char i=0; i<3; i++) {
-      sd.print(F("\t3.1415")); // dummy data
-    }
-#endif
 
     sd.println();
   }
