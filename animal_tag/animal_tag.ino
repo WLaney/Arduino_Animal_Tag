@@ -2,8 +2,10 @@
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
+#include <EEPROM.h>
 #include "debug.h"
-#include "buffer.hpp"
+#include "accel.hpp"
+#include "gyro.hpp"
 #include "rtc.hpp"
 #include "temp.hpp"
 #include "pressure.hpp"
@@ -14,7 +16,8 @@ void setup()
 {
   DBEGIN();
 
-  buffer_setup();
+  accel_setup();
+  gyro_setup();
   temp_setup();
   rtc_setup();
 
@@ -26,18 +29,40 @@ void setup()
     while (true)
       ;
   }
-
   // Setup wire
   Wire.begin();
-
-  // Write startup information
+  // Header info and time
+  char name[5];
+  byte orient;
+  for (byte i=0; i<4; i++) {
+    name[i] = EEPROM.read(i);
+  }
+  name[4] = '\0';
+  orient = EEPROM.read(4);
+  // Gyroscope bias
+  float gx, gy, gz;
+  EEPROM.get(5, gx);
+  EEPROM.get(9, gy);
+  EEPROM.get(13, gz);
+  
   rtc_mode();
   rtc_update();
+  
   sd_mode();
   File f = SD.open("data.txt", FILE_WRITE);
-  // Need to wait for SD to start working for some reason
+  // Wait for SD startup
   delay(100);
   if (f) {
+    // Name, Orient
+    if (name[0] != 255) {
+      f.print(name);
+      f.print('\t');
+      f.println(orient);
+      f.print(gx); f.print('\t');
+      f.print(gy); f.print('\t');
+      f.println(gz);
+    }
+    // Time
     f.print(F("\t\t\t\t\t\t"));
     rtc_write(f);
     f.write('\n');
@@ -49,14 +74,17 @@ void setup()
 }
 
 void loop() {
-  //data writen as tab seprated values in order of
-  //time (month\day\year Hr:min:sec), temp, accel in x,  accel in y,  accel in z
-  //print time data
-
-  // Keep updating until we run out of buffer space
-  while (!buffer_needs_write()) {
-    buffer_update();
-    // 12hz delay, approximately
+  // We hold the first N gyroscope values in the software buffer; the rest
+  // are kept in the hardware buffer
+  for (byte i=0; i<gyro_size(); i++) {
+    accel_read();
+    DEND();
+    Narcoleptic.delay(80);
+    DBEGIN();
+  }
+  gyro_read_all();
+  while (!accel_full()) {
+    accel_read();
     DEND();
     Narcoleptic.delay(80);
     DBEGIN();
@@ -83,7 +111,18 @@ void flush_and_write()
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
-    buffer_write(file);
+    // Write buffered data, interleaving lines.
+    byte ai, gi;
+    for (ai=0; ai<accel_size(); ai++) {
+      accel_write(file, ai);
+      file.write('\t');
+      gyro_write(file, gi++);
+      if (gi == gyro_size()) {
+        gyro_read_all();
+        gi = 0;
+      }
+      file.println();
+    }
     // Long-term
     if (write_num == 0) {
       file.print(F("\t\t\t\t\t\t"));
@@ -94,7 +133,11 @@ void flush_and_write()
     }
     file.close();
     DBGSTR("sd data written\n");
+  } else {
+    DBGSTR("sd could not be opened\n");
   }
+  accel_reset();
+  gyro_reset();
 }
 
 inline void sd_mode() {
