@@ -62,9 +62,9 @@ void setup() {
     PRINTSTR("Z: ") ; Serial.print(gz) ; Serial.write('\n');
   } else {
     PRINTSTR("Assuming bias of (12,-12,12)...");
-    gx = 12.0;
-    gy = -12.0;
-    gz = 12.0;
+    gx = 0.0;
+    gy = 0.0;
+    gz = 0.0;
   }
 
   PRINTSTR("Writing values to EEPROM...\n");
