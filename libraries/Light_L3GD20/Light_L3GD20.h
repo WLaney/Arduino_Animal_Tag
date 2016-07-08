@@ -38,7 +38,19 @@
 #define L3GD20_SENSITIVITY_2000DPS (0.070F)        // Roughly 18/256
 #define L3GD20_DPS_TO_RADS         (0.017453293F)  // degress/s to rad/s multiplier
 
+// Comment this out to remove FIFO functionality.
+// FIFO functions will be callable, but will not do anything
+#define L3GD20_USE_FIFO
+
 namespace Gyro {
+
+	const float read_rate = 12.5;
+
+#ifdef L3GD20_USE_FIFO
+	const byte buffer_size = 31;
+#else
+	const byte buffer_size = 1;
+#endif
 
     typedef enum
     {                                               // DEFAULT    TYPE
@@ -67,7 +79,8 @@ namespace Gyro {
       L3GD20_REGISTER_TSH_YL              = 0x35,   // 00000000   rw
       L3GD20_REGISTER_TSH_ZH              = 0x36,   // 00000000   rw
       L3GD20_REGISTER_TSH_ZL              = 0x37,   // 00000000   rw
-      L3GD20_REGISTER_INT1_DURATION       = 0x38    // 00000000   rw
+      L3GD20_REGISTER_INT1_DURATION       = 0x38,   // 00000000   rw
+	  L3GD20_REGISTER_LOW_ODR             = 0x39    // 00000000   rw
     } l3gd20Registers_t;
 
     typedef enum
@@ -78,12 +91,19 @@ namespace Gyro {
     } l3gd20Range_t;
 
 	typedef struct {
-	  int16_t x, y, z;	
+	  uint16_t x, y, z;	
 	} l3gd20Data_t;
 
     bool begin(void);
+	// Read a single data point from the FIFO buffer
+	// into l3gd20Data_t.
     void read(l3gd20Data_t *);	
     float s2f(short s);
+
+    byte fifo_burst_read(l3gd20Data_t *, byte);
+	byte fifo_get_length(void);
+
 };
+
 
 #endif

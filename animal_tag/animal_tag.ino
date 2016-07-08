@@ -1,11 +1,11 @@
-
 #include <Wire.h>
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
 #include <EEPROM.h>
 #include "debug.h"
-#include "buffer.hpp"
+#include "accel.hpp"
+#include "gyro.hpp"
 #include "rtc.hpp"
 #include "temp.hpp"
 #include "pressure.hpp"
@@ -16,7 +16,8 @@ void setup()
 {
   DBEGIN();
 
-  buffer_setup();
+  accel_setup();
+  gyro_setup();
   temp_setup();
   rtc_setup();
 
@@ -73,14 +74,17 @@ void setup()
 }
 
 void loop() {
-  //data writen as tab seprated values in order of
-  //time (month\day\year Hr:min:sec), temp, accel in x,  accel in y,  accel in z
-  //print time data
-
-  // Keep updating until we run out of buffer space
-  while (!buffer_needs_write()) {
-    buffer_update();
-    // 12hz delay, approximately
+  // We hold the first N gyroscope values in the software buffer; the rest
+  // are kept in the hardware buffer
+  for (byte i=0; i<gyro_size(); i++) {
+    accel_read();
+    DEND();
+    Narcoleptic.delay(80);
+    DBEGIN();
+  }
+  gyro_read_all();
+  while (!accel_full()) {
+    accel_read();
     DEND();
     Narcoleptic.delay(80);
     DBEGIN();
@@ -104,10 +108,22 @@ void flush_and_write()
   }
 
   //Write to SD
+  DBGSTR("Writing to SD...\n");
+  long time = millis();
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
-    buffer_write(file);
+    // Write buffered data, interleaving writes
+    for (byte ai=0, gi=0; ai<accel_size(); ai++) {
+      accel_write(file, ai);
+      file.write('\t');
+      gyro_write(file, gi++);
+      if (gi == gyro_size()) {
+        gyro_read_all();
+        gi = 0;
+      }
+      file.println();
+    }
     // Long-term
     if (write_num == 0) {
       file.print(F("\t\t\t\t\t\t"));
@@ -118,7 +134,14 @@ void flush_and_write()
     }
     file.close();
     DBGSTR("sd data written\n");
+  } else {
+    DBGSTR("sd could not be opened\n");
   }
+  time = millis() - time;
+  DBG(time);
+  DBGSTR(" ms to write\n");
+  accel_reset();
+  gyro_reset();
 }
 
 inline void sd_mode() {
