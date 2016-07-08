@@ -230,9 +230,9 @@ namespace Gyro {
     Wire.endTransmission();
     
     byte *b = (byte *) ds;
-    byte left = (to_read / max_wire) * max_wire;
-    for (byte i=0; i<left; i+=max_wire) {
-		Wire.requestFrom(address, max_wire-1, false);
+    byte full = (to_read / max_wire) * max_wire;
+    for (byte i=0; i<full; i+=max_wire) {
+		Wire.requestFrom(address, max_wire-1);
 		while (Wire.available() < max_wire-1)
 			;
 		// get reads
@@ -242,13 +242,16 @@ namespace Gyro {
 	}
 	
 	// Leftovers
-	Wire.requestFrom(address, to_read-left, true);
-	while (Wire.available() < to_read-left)
-		;
-	for (byte i=left; i<to_read; i++) {
-		b[i] = Wire.read();
+	byte left = to_read-full;
+	if (left > 0) {
+		Wire.requestFrom(address, left);
+		while (Wire.available() < left)
+			;
+		for (byte i=full; i<to_read; i++) {
+			b[i] = Wire.read();
+		}
 	}
-
+	
     return mn;
   }
 
