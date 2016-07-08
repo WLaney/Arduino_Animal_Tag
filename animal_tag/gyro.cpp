@@ -27,7 +27,6 @@ byte gyro_size() {
 }
 
 void gyro_write(File sd, byte i) {
-  DBGSTR("G-WRITE\n");
 	gyro_data &d = buffer[i];
   float cx, cy, cz;
   cx = Gyro::s2f(d.x);

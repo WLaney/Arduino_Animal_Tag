@@ -108,6 +108,8 @@ void flush_and_write()
   }
 
   //Write to SD
+  DBGSTR("Writing to SD...\n");
+  long time = millis();
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
@@ -135,6 +137,9 @@ void flush_and_write()
   } else {
     DBGSTR("sd could not be opened\n");
   }
+  time = millis() - time;
+  DBG(time);
+  DBGSTR(" ms to write\n");
   accel_reset();
   gyro_reset();
 }

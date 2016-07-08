@@ -46,7 +46,6 @@ byte accel_size() {
 // write data as "{x}\t{y}\t{z}"
 inline float s2f(short);
 void accel_write(File sd, byte i) {
-  DBGSTR("a.write\n");
 	float cx, cy, cz;
 	accel_data &d = buffer[i];
 	cx = s2f(d.x);
