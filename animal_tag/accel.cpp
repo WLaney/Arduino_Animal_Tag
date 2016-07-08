@@ -17,6 +17,8 @@ static accel_data buffer[ACCEL_BUFFER_SIZE];
 static byte buffer_i=0;
 
 void accel_setup() {
+  DBGSTR("Accelerometer buffer: ");
+  DBGLN(ACCEL_BUFFER_SIZE);
 	accel.init(SCALE_8G, ODR_12);
 }
 
@@ -51,9 +53,9 @@ void accel_write(File sd, byte i) {
 	cy = s2f(d.y);
 	cz = s2f(d.z);
 	
-	sd.print(cx); sd.write('\t');
-	sd.print(cy); sd.write('\t');
-	sd.print(cz);
+	sd.print(cx, 3); sd.write('\t');
+	sd.print(cy, 3); sd.write('\t');
+	sd.print(cz, 3);
 }
 
 void accel_reset() {

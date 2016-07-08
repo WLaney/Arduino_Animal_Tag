@@ -44,6 +44,14 @@ void setup()
 
 void loop() 
 {
+  test_read(4,  500);
+  test_read(10, 700);
+  test_read(16, 1000);
+  test_read(20, 1200);
+  test_read(31, 2000);
+}
+
+void test_read(byte reads, long wait) {
   // Clear the array with a suspicious value so that we can
   // figure out which cells were overwritten
   for (byte i = 0; i < 31; i++) {
@@ -51,16 +59,16 @@ void loop()
     data[i].y = 0x00000000;
     data[i].z = 0x00000000;
   }
-  byte reads = Gyro::fifo_get_length();
-  PRINTSTR("Length: "); Serial.println(reads);
+  byte fifo_length = Gyro::fifo_get_length();
+  PRINTSTR("Length: "); Serial.println(fifo_length);
   
   PRINTSTR("Reading...\n");
-  long bytes_read;
+  long total_reads;
   long tme = millis();
-  bytes_read = Gyro::fifo_burst_read(data, 31);
+  total_reads = Gyro::fifo_burst_read(data, reads);
   Serial.print(millis() - tme);
   PRINTSTR("ms to read gyro\n");
-  Serial.print(bytes_read);
+  Serial.print(total_reads);
   Serial.println(" read");
 
   for (byte i=0; i<Gyro::buffer_size; i++) {
@@ -77,3 +85,4 @@ void loop()
   Narcoleptic.delay(2400);
   Serial.begin(38400);
 }
+

@@ -111,9 +111,8 @@ void flush_and_write()
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
-    // Write buffered data, interleaving lines.
-    byte ai, gi;
-    for (ai=0; ai<accel_size(); ai++) {
+    // Write buffered data, interleaving writes
+    for (byte ai=0, gi=0; ai<accel_size(); ai++) {
       accel_write(file, ai);
       file.write('\t');
       gyro_write(file, gi++);
