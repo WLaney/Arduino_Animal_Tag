@@ -9,7 +9,6 @@
 typedef Gyro::l3gd20Data_t gyro_data;
 
 static gyro_data buffer[GYRO_BUFFER_SIZE];
-static byte buffer_i;
 
 void gyro_setup() {
 	Gyro::begin();
@@ -17,7 +16,8 @@ void gyro_setup() {
 
 void gyro_read_all() {
   DBGSTR("GYRO-read\n");
-	Gyro::fifo_burst_read(buffer, GYRO_BUFFER_SIZE);
+  // possible segfault location
+	// Gyro::fifo_burst_read(buffer, GYRO_BUFFER_SIZE);
 }
 
 byte gyro_size() {
@@ -37,6 +37,4 @@ void gyro_write(File sd, byte i) {
   sd.print(cz);
 }
 
-void gyro_reset() {
-	buffer_i = 0;
-}
+void gyro_reset() { }

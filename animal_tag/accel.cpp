@@ -21,6 +21,9 @@ void accel_setup() {
 }
 
 void accel_read() {
+  if (accel_full()) {
+    DBGSTR("ERROR: ACCEL FULL");
+  }
   DBGSTR("a.read\n");
 	accel.read();
 	accel_data &d = buffer[buffer_i];
