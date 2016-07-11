@@ -15,7 +15,7 @@ void temp_update() {
     Wire.requestFrom(TMP102ADDRESS, 2);
     byte MSB = Wire.read();
     byte LSB = Wire.read();
-    int temperatureSum = ((MSB << 8) | LSB) >> 4;
+    short temperatureSum = ((MSB << 8) | LSB) >> 4;
     celsius = temperatureSum * 0.0625;
 }
 

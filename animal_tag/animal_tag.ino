@@ -1,8 +1,7 @@
-#include <Wire.h>
 #include <SPI.h>          // serial, sd card
 #include <SD.h>           // sd card
 #include <Narcoleptic.h>  // sleeping
-#include <EEPROM.h>
+#include <EEPROM.h>       // Configuration
 #include "debug.h"
 #include "accel.hpp"
 #include "gyro.hpp"
@@ -14,8 +13,11 @@
 
 void setup()
 {
+  // Debug commands won't show up if they're
+  // turned off in debug.h
   DBEGIN();
-
+  
+  // Setup sensors
   accel_setup();
   gyro_setup();
   temp_setup();
@@ -29,11 +31,10 @@ void setup()
     while (true)
       ;
   }
-  // Setup wire
-  Wire.begin();
-  // Header info and time
-  char name[5];
-  byte orient;
+  
+  // Collect and write tag's configuration data to SD
+  char name[5]; // 4-char name
+  byte orient;  // incorrect orientation? (swap gyroscope x and y)
   for (byte i=0; i<4; i++) {
     name[i] = EEPROM.read(i);
   }
@@ -44,7 +45,7 @@ void setup()
   EEPROM.get(5, gx);
   EEPROM.get(9, gy);
   EEPROM.get(13, gz);
-  
+  // Time
   rtc_mode();
   rtc_update();
   
@@ -69,7 +70,7 @@ void setup()
     f.close();
     DBGSTR("SD written\n");
   }
-  //confrim that the everything is working and there is serial communication
+  
   DBGSTR("setup done\n");
 }
 
@@ -78,16 +79,12 @@ void loop() {
   // are kept in the hardware buffer
   for (byte i=0; i<gyro_size(); i++) {
     accel_read();
-    DEND();
-    Narcoleptic.delay(80);
-    DBEGIN();
+    n_delay(80);
   }
   gyro_read_all();
   while (!accel_full()) {
     accel_read();
-    DEND();
-    Narcoleptic.delay(80);
-    DBEGIN();
+    n_delay(80);
   }
   flush_and_write();
 }
@@ -107,9 +104,7 @@ void flush_and_write()
     temp_update();
   }
 
-  //Write to SD
   DBGSTR("Writing to SD...\n");
-  long time = millis();
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
@@ -124,7 +119,7 @@ void flush_and_write()
       }
       file.println();
     }
-    // Long-term
+    // Long-term writes
     if (write_num == 0) {
       file.print(F("\t\t\t\t\t\t"));
       rtc_write(file);
@@ -137,17 +132,26 @@ void flush_and_write()
   } else {
     DBGSTR("sd could not be opened\n");
   }
-  time = millis() - time;
-  DBG(time);
   DBGSTR(" ms to write\n");
   accel_reset();
   gyro_reset();
 }
 
+// Prep SPI to write to the SD card
 inline void sd_mode() {
   SPI.setDataMode(SPI_MODE0);
 }
 
+// Prep to work with RTC
 inline void rtc_mode() {
   SPI.setDataMode(SPI_MODE1);
 }
+
+// A special version of delay() with
+// less accuracy, lower power use
+inline void n_delay(long duration) {
+  DEND();
+  Narcoleptic.delay(duration);
+  DBEGIN();
+}
+

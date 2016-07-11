@@ -8,9 +8,8 @@
 
 inline void print_02d(File,int);
 
-// Time data is on the heap since
-// it doesn't always need to be
-// present (fragmentation?)
+// Time data is on the heap to avoid overuse
+// (does this actually help?)
 ts *tme = NULL;
 
 void rtc_setup() {
