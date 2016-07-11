@@ -32,7 +32,12 @@ void setup()
       ;
   }
   
-  // Collect and write tag's configuration data to SD
+  /*
+   * HEADER DATA
+   * NAME 0                        Device name and orientation
+   * 4.0 3.0 2.0                   Gyroscope biases
+   *          01/01/1000 01:01:01  Date and time
+   */
   char name[5]; // 4-char name
   byte orient;  // incorrect orientation? (swap gyroscope x and y)
   for (byte i=0; i<4; i++) {
@@ -110,9 +115,9 @@ void flush_and_write()
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
     // Write accelerometer, then gyro, data
-    file.println("\nACCEL");
+    file.print("ACCEL");
     accel_write(file);
-    file.println("\nGYRO");
+    file.print("GYRO");
     gyro_write(file);
     // Long-term writes
     if (write_num == 0) {

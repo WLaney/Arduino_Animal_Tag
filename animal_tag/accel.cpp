@@ -11,7 +11,7 @@
 #include <SD.h>
 #include <SFE_MMA8452Q.h>
 
-constexpr int accel_buffer_size = 48;
+constexpr int accel_buffer_packs = 24;
 constexpr float scale = 8.0;
 
 static MMA8452Q accel;
@@ -20,16 +20,16 @@ PackedBuffer<24> buffer;
 
 void accel_setup() {
   DBGSTR("Accelerometer buffer: ");
-  DBGLN(accel_buffer_size);
+  DBG(accel_buffer_packs);
+  DBGSTR(" (x2)\n");
 	accel.init(SCALE_8G, ODR_12);
 }
 
 void accel_read() {
-  if (accel_full()) {
+  accel.read();
+  if (!buffer.push(accel.x, accel.y, accel.z)) {
     DBGSTR("ERROR: ACCEL FULL");
   }
-  accel.read();
-  buffer.push(accel.x, accel.y, accel.z);
   DBGSTR("a.read\n");
 }
 

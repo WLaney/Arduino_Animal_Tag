@@ -1,0 +1,9 @@
+I think that, for the sake of sanity, we should go with a more or less
+wholly binary format. That way, we don't have to worry about parsing
+binary as text or vice versa, which could quickly get annoying.
+
+Anyway, we have four chunks to our file type: a header (gives
+configuration data, specifies size of other chunks), an accelerometer
+chunk (packed accel data), a gyroscope chunk (packed gyro data),
+and a long-term data chunk (date/time, temperature, pressure). Some
+of those chunks can be ripped from the old binary work we did.

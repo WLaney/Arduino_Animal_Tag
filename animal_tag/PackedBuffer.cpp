@@ -113,7 +113,7 @@ bool PackedBuffer<packs>::push(read x, read y, read z) {
  * Return if the buffer is full.
  */
 template<byte packs>
-bool PackedBuffer<packs>::full() {
+bool const PackedBuffer<packs>::full() {
 	return buffer_i == packs;
 }
 
@@ -121,7 +121,7 @@ bool PackedBuffer<packs>::full() {
  * Return the total capacity of the buffer.
  */
 template<byte packs>
-byte PackedBuffer<packs>::capacity() {
+byte const PackedBuffer<packs>::capacity() {
 	return packs * 2;
 }
 

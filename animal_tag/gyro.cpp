@@ -13,8 +13,8 @@ static gyro_data buffer[gyro_buffer_size];
 
 void gyro_setup() {
   DBGSTR("Gyroscope buffer size: ");
-  DBG(gyro_buffer_size);
-  DBGSTR(" (+32 in hardware)\n");
+  DBG(gyro_buffer_size + gyro_fifo_size);
+  DBGSTR(" (software + hardware)\n");
 	Gyro::begin();
 }
 
@@ -28,8 +28,7 @@ byte gyro_size() {
 }
 
 /*
- * Print every value in the software and hardware buffer.
- * Currently, this leads to some data loss...
+ * Write every value in the software and hardware buffer to the SD card.
  */
 void gyro_write(File sd) {
   DBGSTR("Gyro write\n");

@@ -57,8 +57,8 @@ public:
 	PackedBuffer();
 	virtual ~PackedBuffer();
 	bool push(read x, read y, read z);
-	bool full();
-	byte capacity();
+	bool const full();
+	byte const capacity();
 	void write_all(File sd);
 	void reset();
 };
