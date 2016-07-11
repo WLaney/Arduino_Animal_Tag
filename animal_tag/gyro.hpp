@@ -6,7 +6,7 @@
 void gyro_setup();
 void gyro_read_all();
 byte gyro_size();
-void gyro_write(File, byte);
+void gyro_write(File);
 void gyro_reset();
 
 #endif

@@ -9,7 +9,7 @@
 #include "temp.hpp"
 #include "pressure.hpp"
 
-#define CS_SD 10
+constexpr byte cs_sd = 10;
 
 void setup()
 {
@@ -25,8 +25,8 @@ void setup()
 
   // Setup SD card
   sd_mode();
-  pinMode(CS_SD, OUTPUT);
-  if (!SD.begin(CS_SD)) {
+  pinMode(cs_sd, OUTPUT);
+  if (!SD.begin(cs_sd)) {
     DBGSTR("SD card not inserted. Insert it and restart.");
     while (true)
       ;
@@ -108,19 +108,14 @@ void flush_and_write()
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
-    // Write buffered data, interleaving writes
-    for (byte ai=0, gi=0; ai<accel_size(); ai++) {
-      accel_write(file, ai);
-      file.write('\t');
-      gyro_write(file, gi++);
-      if (gi == gyro_size()) {
-        gyro_read_all();
-        gi = 0;
-      }
-      file.println();
-    }
+    // Write accelerometer, then gyro, data
+    file.println("ACCEL");
+    accel_write(file);
+    file.println("GYRO");
+    gyro_write(file);
     // Long-term writes
     if (write_num == 0) {
+      file.println("LONG");
       file.print(F("\t\t\t\t\t\t"));
       rtc_write(file);
       file.print('\t');

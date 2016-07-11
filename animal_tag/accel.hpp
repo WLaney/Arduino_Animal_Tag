@@ -8,7 +8,7 @@ void accel_setup();
 void accel_read();
 bool accel_full();
 byte accel_size();
-void accel_write(File, byte);
+void accel_write(File);
 void accel_reset();
 
 #endif

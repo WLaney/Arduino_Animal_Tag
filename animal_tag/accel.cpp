@@ -1,11 +1,18 @@
+/**
+ * Handles reading from and storing accelerometer data.
+ * This is currently a wrapper for a Packed Buffer, which
+ * means that I should either move the code into animal_tag.ino
+ * or the SFE code into this file.
+ */
 #include "accel.hpp"
+#include "debug.h"
+#include "PackedBuffer.h"
 #include <Arduino.h>
 #include <SD.h>
 #include <SFE_MMA8452Q.h>
-#include "debug.h"
 
-#define ACCEL_BUFFER_SIZE 48
-#define SCALE 8.0
+constexpr int accel_buffer_size = 48;
+constexpr float scale = 8.0;
 
 static MMA8452Q accel;
 
@@ -13,12 +20,12 @@ typedef struct {
 	short x, y, z;
 } accel_data;
 
-static accel_data buffer[ACCEL_BUFFER_SIZE];
+static accel_data buffer[accel_buffer_size];
 static byte buffer_i=0;
 
 void accel_setup() {
   DBGSTR("Accelerometer buffer: ");
-  DBGLN(ACCEL_BUFFER_SIZE);
+  DBGLN(accel_buffer_size);
 	accel.init(SCALE_8G, ODR_12);
 }
 
@@ -36,31 +43,32 @@ void accel_read() {
 }
 
 bool accel_full() {
-	return buffer_i == ACCEL_BUFFER_SIZE;
+	return buffer_i == accel_buffer_size;
 }
 
 byte accel_size() {
-	return ACCEL_BUFFER_SIZE;
+	return accel_buffer_size;
 }
 
-// write data as "{x}\t{y}\t{z}"
-inline float s2f(short);
-void accel_write(File sd, byte i) {
-	float cx, cy, cz;
-	accel_data &d = buffer[i];
-	cx = s2f(d.x);
-	cy = s2f(d.y);
-	cz = s2f(d.z);
-	
-	sd.print(cx, 3); sd.write('\t');
-	sd.print(cy, 3); sd.write('\t');
-	sd.print(cz, 3);
+inline float s2f(short s) {
+  return (float) s / (float)(1<<11) * scale;
+}
+
+// write data as "{x}\t{y}\t{z}\n"
+void accel_write(File sd) {
+  for (byte i = 0; i < accel_size(); i++) {
+    float cx, cy, cz;
+    accel_data &d = buffer[i];
+    cx = s2f(d.x);
+    cy = s2f(d.y);
+    cz = s2f(d.z);
+    
+    sd.print(cx, 3); sd.write('\t');
+    sd.print(cy, 3); sd.write('\t');
+    sd.println(cz, 3);
+  }
 }
 
 void accel_reset() {
 	buffer_i = 0;
-}
-
-inline float s2f(short s) {
-	return (float) s / (float)(1<<11) * SCALE;
 }
