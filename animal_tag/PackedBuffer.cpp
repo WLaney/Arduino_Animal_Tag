@@ -7,6 +7,7 @@
 
 #include "PackedBuffer.h"
 #include "Arduino.h"
+#include "SD.h"
 
 /*
  * Pack the first set of reads in. This will overwrite any
@@ -129,10 +130,8 @@ byte PackedBuffer<packs>::capacity() {
  * Used mainly for testing.
  */
 template<byte packs>
-void PackedBuffer<packs>::print_all() {
-	for (byte i = 0; i < packs; i++) {
-		buffer[i].unpack_and_print();
-	}
+void PackedBuffer<packs>::write_all(File sd) {
+	sd.write((byte *) buffer, packs * sizeof(packed_data));
 }
 
 /*

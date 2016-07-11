@@ -15,13 +15,8 @@ constexpr int accel_buffer_size = 48;
 constexpr float scale = 8.0;
 
 static MMA8452Q accel;
-
-typedef struct {
-	short x, y, z;
-} accel_data;
-
-static accel_data buffer[accel_buffer_size];
-static byte buffer_i=0;
+// specialization defined in PackedBuffer.cpp
+PackedBuffer<24> buffer;
 
 void accel_setup() {
   DBGSTR("Accelerometer buffer: ");
@@ -33,21 +28,13 @@ void accel_read() {
   if (accel_full()) {
     DBGSTR("ERROR: ACCEL FULL");
   }
+  accel.read();
+  buffer.push(accel.x, accel.y, accel.z);
   DBGSTR("a.read\n");
-	accel.read();
-	accel_data &d = buffer[buffer_i];
-	d.x = accel.x;
-	d.y = accel.y;
-	d.z = accel.z;
-	buffer_i++;
 }
 
 bool accel_full() {
-	return buffer_i == accel_buffer_size;
-}
-
-byte accel_size() {
-	return accel_buffer_size;
+  return buffer.full();
 }
 
 inline float s2f(short s) {
@@ -56,19 +43,10 @@ inline float s2f(short s) {
 
 // write data as "{x}\t{y}\t{z}\n"
 void accel_write(File sd) {
-  for (byte i = 0; i < accel_size(); i++) {
-    float cx, cy, cz;
-    accel_data &d = buffer[i];
-    cx = s2f(d.x);
-    cy = s2f(d.y);
-    cz = s2f(d.z);
-    
-    sd.print(cx, 3); sd.write('\t');
-    sd.print(cy, 3); sd.write('\t');
-    sd.println(cz, 3);
-  }
+  DBGSTR("Accel write\n");
+  buffer.write_all(sd);
 }
 
 void accel_reset() {
-	buffer_i = 0;
+  buffer.reset();
 }

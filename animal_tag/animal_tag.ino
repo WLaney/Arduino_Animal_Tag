@@ -105,13 +105,14 @@ void flush_and_write()
   }
 
   DBGSTR("Writing to SD...\n");
+  long time = millis();
   sd_mode();
   File file = SD.open("data.txt", FILE_WRITE);
   if (file) {
     // Write accelerometer, then gyro, data
-    file.println("ACCEL");
+    file.println("\nACCEL");
     accel_write(file);
-    file.println("GYRO");
+    file.println("\nGYRO");
     gyro_write(file);
     // Long-term writes
     if (write_num == 0) {
@@ -127,6 +128,7 @@ void flush_and_write()
   } else {
     DBGSTR("sd could not be opened\n");
   }
+  DBG(millis() - time);
   DBGSTR(" ms to write\n");
   accel_reset();
   gyro_reset();

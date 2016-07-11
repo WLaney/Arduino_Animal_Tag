@@ -32,18 +32,9 @@ byte gyro_size() {
  * Currently, this leads to some data loss...
  */
 void gyro_write(File sd) {
+  DBGSTR("Gyro write\n");
   for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
-    for (byte j = 0; j < gyro_buffer_size; j++) {
-      gyro_data &d = buffer[j];
-      float cx, cy, cz;
-      cx = Gyro::s2f(d.x);
-      cy = Gyro::s2f(d.y);
-      cz = Gyro::s2f(d.z);
-    
-      sd.print(cx); sd.print('\t');
-      sd.print(cy); sd.print('\t');
-      sd.println(cz);
-    }
+    sd.write((byte *) buffer, gyro_buffer_size * sizeof(gyro_data));
     // I think we're currently doing a spurious read here; be cautious
     gyro_read_all();
   }

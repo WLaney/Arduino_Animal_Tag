@@ -12,6 +12,7 @@
 #ifndef PACKEDBUFFER_H_
 #define PACKEDBUFFER_H_
 #include "Arduino.h"
+#include "SD.h"
 
 //using byte = uint8_t;
 using read = uint16_t;
@@ -58,7 +59,7 @@ public:
 	bool push(read x, read y, read z);
 	bool full();
 	byte capacity();
-	void print_all();
+	void write_all(File sd);
 	void reset();
 };
 
