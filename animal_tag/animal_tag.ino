@@ -57,7 +57,7 @@ void setup()
     // (char[4]) Name
     sd.write(name, 4);
     // (byte) Orient
-    sd.write(orient);
+    sd.write((char *) orient, 1);
     // (float[3]) Gyroscope biases
     sd.write((char *) &gx, 4);
     sd.write((char *) &gy, 4);
@@ -78,7 +78,16 @@ void setup()
     sd.write((char *) &gs, 4);
     // (ts) time
     rtc_write(sd);
-    
+    // Debugging data
+    DBGLN(name);
+    DBGLN(orient);
+    DBGLN(gx);
+    DBGLN(gy);
+    DBGLN(gz);
+    DBGLN(aws);
+    DBGLN(gyr);
+    DBGLN(as);
+    DBGLN(gs);
     sd.write('\n');
     sd.close();
     DBGSTR("SD written\n");
