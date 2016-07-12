@@ -59,6 +59,7 @@ public:
 	bool push(read x, read y, read z);
 	bool const full();
 	byte const capacity();
+  size_t const write_size();
 	void write_all(File sd);
 	void reset();
 };

@@ -41,6 +41,10 @@ inline float s2f(short s) {
   return (float) s / (float)(1<<11) * scale;
 }
 
+size_t accel_write_size() {
+  return buffer.write_size();
+}
+
 // write data as "{x}\t{y}\t{z}\n"
 void accel_write(File sd) {
   DBGSTR("Accel write\n");

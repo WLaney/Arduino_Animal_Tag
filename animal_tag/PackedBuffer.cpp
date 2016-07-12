@@ -125,6 +125,11 @@ byte const PackedBuffer<packs>::capacity() {
 	return packs * 2;
 }
 
+template<byte packs>
+size_t const PackedBuffer<packs>::write_size() {
+  return packs * sizeof(packed_data);
+}
+
 /*
  * Print every element in the buffer.
  * Used mainly for testing.

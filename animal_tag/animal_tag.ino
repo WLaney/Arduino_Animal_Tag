@@ -22,7 +22,7 @@ void setup()
   gyro_setup();
   temp_setup();
   rtc_setup();
-
+  
   // Setup SD card
   sd_mode();
   pinMode(cs_sd, OUTPUT);
@@ -36,6 +36,8 @@ void setup()
    * HEADER DATA
    * NAME 0                        Device name and orientation
    * 4.0 3.0 2.0                   Gyroscope biases
+   * 220                           Accelerometer write size
+   * 280                           Gyroscope write size
    *          01/01/1000 01:01:01  Date and time
    */
   char name[5]; // 4-char name
