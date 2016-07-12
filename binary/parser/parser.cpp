@@ -15,14 +15,16 @@
  * Convert a raw accelerometer read into a float.
  */
 inline float accel_s2f(short s, float scale) {
-	return (float) s;
+	return (float) s / (float)(1<<11) * scale;
 }
 
 /*
  * Convert a raw gyroscope value into a float.
  */
 inline float gyro_s2f(short s, float scale) {
-	return (float) s;
+	// constant derived from Light_L3GD20.cpp
+	std::cerr << "TODO: Gyroscope scaling not yet correct" << std::endl;
+	return (float) s * 0.00875F;
 }
 
 /*
@@ -33,6 +35,7 @@ inline float gyro_s2f(short s, float scale) {
  */
 std::unique_ptr<header_data>
 parse_header(std::ifstream &in_file) {
+	std::cerr << "STUB: parse_header not implemented" << std::endl;
 	return NULL;
 }
 
@@ -101,5 +104,6 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 
 std::unique_ptr<long_term_data>
 parse_long_term(std::ifstream &in_file) {
+	std::cerr << "STUB: parse_header not implemented" << std::endl;
 	return NULL;
 }

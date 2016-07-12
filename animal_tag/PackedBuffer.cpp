@@ -73,7 +73,7 @@ inline void packed_data::unpack_and_print() {
  */
 template<byte packs>
 PackedBuffer<packs>::PackedBuffer() {
-	buffer = new packed_data[packs];
+//	buffer = new packed_data[packs];
 	buffer_i = 0;
 	is_read2 = false;
 }
@@ -83,7 +83,7 @@ PackedBuffer<packs>::PackedBuffer() {
  */
 template<byte packs>
 PackedBuffer<packs>::~PackedBuffer() {
-	delete[] buffer;
+//	delete[] buffer;
 }
 
 /*

@@ -10,6 +10,7 @@
 #include "pressure.hpp"
 
 constexpr byte cs_sd = 10;
+constexpr short long_term_write_max = 3;
 
 void setup()
 {
@@ -57,24 +58,33 @@ void setup()
   rtc_update();
   
   sd_mode();
-  File f = SD.open("data.txt", FILE_WRITE);
+  File sd = SD.open("data.txt", FILE_WRITE);
   // Wait for SD startup
   delay(100);
-  if (f) {
-    // Name, Orient
-    if (name[0] != 255) {
-      f.print(name);
-      f.print('\t');
-      f.println(orient);
-      f.print(gx); f.print('\t');
-      f.print(gy); f.print('\t');
-      f.println(gz);
-    }
-    // Time
-    f.print(F("\t\t\t\t\t\t"));
-    rtc_write(f);
-    f.write('\n');
-    f.close();
+  if (sd) {
+    // (char[4]) Name
+    sd.write(name, 4);
+    // (byte) Orient
+    sd.write(orient);
+    // (float[3]) Gyroscope biases
+    sd.write(gx);
+    sd.write(gy);
+    sd.write(gz);
+    // (unsigned short) Accelerometer buffer size
+    sd.write(accel_write_size());
+    // (unsigned short) Gyroscope buffer size
+    sd.write(gyro_write_size());
+    // (unsigned short) Long-term write period
+    sd.write(long_term_write_max);
+    // (float) Accel scale
+    sd.write(accel_scale());
+    // (float) Gyro scale
+    sd.write(gyro_scale());
+    // (ts) time
+    rtc_write(sd);
+    
+    sd.write('\n');
+    sd.close();
     DBGSTR("SD written\n");
   }
   
@@ -100,11 +110,9 @@ void loop() {
 // data as you do.
 void flush_and_write()
 {
-  static int write_num = 0;
-  const int write_max = 3;
-
+  static short write_num = 0;
   // Read long-term from sensors
-  if (++write_num == write_max) {
+  if (++write_num == long_term_write_max) {
     write_num = 0;
     rtc_mode();
     rtc_update();

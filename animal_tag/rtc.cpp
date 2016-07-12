@@ -23,31 +23,16 @@ void rtc_update() {
   DS3234_get(RTC_CS, tme);
 }
 
+/*
+ * Write raw ts to the SD card
+ */
 void rtc_write(File sd) {
   if (!tme) {
     DBGSTR("Time not set; couldn't write\n");
     return;
   }
   DBGLN("Wrote time");
-  // year-month-mday hour:min:sec
-  print_02d(sd, tme->year);
-  sd.print('-');
-  print_02d(sd, tme->mon);
-  sd.print('-');
-  print_02d(sd, tme->mday);
-  sd.print(' ');
-  print_02d(sd, tme->hour);
-  sd.print(':');
-  print_02d(sd, tme->min);
-  sd.print(':');
-  print_02d(sd, tme->sec);
+  sd.write((byte *) tme, sizeof(ts));
   delete tme;
   tme = NULL;
-}
-
-// Sleeker than ssprintf
-inline void print_02d(File sd, int d) {
-  if (d < 10)
-    sd.print('0');
-  sd.print(d);
 }

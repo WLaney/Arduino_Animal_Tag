@@ -6,6 +6,7 @@
 
 constexpr byte gyro_buffer_size = 16;
 constexpr byte gyro_fifo_size = 32;
+constexpr float gyro_scale_c = 250.0;
 
 typedef Gyro::l3gd20Data_t gyro_data;
 
@@ -41,7 +42,7 @@ byte gyro_size() {
 /*
  * Size, in bytes, of a single SD card write.
  */
-size_t gyro_write_size() {
+unsigned short gyro_write_size() {
   return gyro_buffer_size * sizeof(gyro_data);
 }
 
@@ -55,6 +56,10 @@ void gyro_write(File sd) {
     // I think we're currently doing a spurious read here; be cautious
     gyro_read_all();
   }
+}
+
+float gyro_scale() {
+  return gyro_scale_c;
 }
 
 /*

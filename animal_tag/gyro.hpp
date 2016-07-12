@@ -6,7 +6,8 @@
 void gyro_setup();
 void gyro_read_all();
 byte gyro_size();
-size_t gyro_write_size();
+unsigned short gyro_write_size();
+float gyro_scale();
 void gyro_write(File);
 void gyro_reset();
 

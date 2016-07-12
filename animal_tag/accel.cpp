@@ -41,8 +41,12 @@ inline float s2f(short s) {
   return (float) s / (float)(1<<11) * scale;
 }
 
-size_t accel_write_size() {
+unsigned short accel_write_size() {
   return buffer.write_size();
+}
+
+float accel_scale() {
+  return scale;
 }
 
 // write data as "{x}\t{y}\t{z}\n"

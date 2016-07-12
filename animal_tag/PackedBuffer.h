@@ -14,7 +14,6 @@
 #include "Arduino.h"
 #include "SD.h"
 
-//using byte = uint8_t;
 using read = uint16_t;
 
 /*
@@ -50,7 +49,8 @@ struct packed_data {
 template<byte packs>
 class PackedBuffer {
 private:
-	packed_data *buffer;
+//	packed_data *buffer;
+  packed_data buffer[packs];
 	byte buffer_i;
 	bool is_read2;
 public:
