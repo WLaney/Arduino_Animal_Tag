@@ -28,6 +28,14 @@ inline float gyro_s2f(short s, float scale) {
 }
 
 /*
+ * Read from a file and convert into a certain type
+ */
+template<typename T>
+inline void read_into(std::ifstream &f, T &v) {
+	 f.read(reinterpret_cast<char *>(&v), sizeof(T));
+}
+
+/*
  * Parse in_file's header and return the relevant data.
  * 
  * The section must immediately follow the file pointer and be
@@ -35,8 +43,19 @@ inline float gyro_s2f(short s, float scale) {
  */
 std::unique_ptr<header_data>
 parse_header(std::ifstream &in_file) {
-	std::cerr << "STUB: parse_header not implemented" << std::endl;
-	return NULL;
+	std::unique_ptr<header_data> data(new header_data);
+	read_into(in_file, data->name);
+	read_into(in_file, data->orient);
+	read_into(in_file, data->gyro_bias_x);
+	read_into(in_file, data->gyro_bias_y);
+	read_into(in_file, data->gyro_bias_z);
+	read_into(in_file, data->accel_buffer_size);
+	read_into(in_file, data->gyro_buffer_size);
+	read_into(in_file, data->long_term_period);
+	read_into(in_file, data->accel_scale);
+	read_into(in_file, data->gyro_scale);
+	read_into(in_file, data->time);
+	return data;
 }
 
 /*
@@ -54,7 +73,7 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
 	for (int i = 0; i < reads; i++) {
 		accel_data data1, data2;
 		raw_accel_data raw;
-		in_file.read(reinterpret_cast<char*>(&raw), sizeof(raw_accel_data));
+		read_into<raw_accel_data>(in_file, raw);
 		// First, unpack the raw data into shorts
 		short x1, y1, z1, x2, y2, z2;
 		x1 = (((int8_t) raw.msb_nibbles.x1_x2) >> 4) << 8 | raw.lsb_bytes.x1;
@@ -93,7 +112,7 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 	for (int i = 0; i < reads; i++) {
 		gyro_data data;
 		raw_gyro_data raw;
-		in_file.read(reinterpret_cast<char*>(&raw), sizeof(raw_gyro_data));
+		read_into<raw_gyro_data>(in_file, raw);
 		data.x = gyro_s2f(raw.x, scale);
 		data.y = gyro_s2f(raw.y, scale);
 		data.z = gyro_s2f(raw.z, scale);
@@ -104,6 +123,5 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 
 std::unique_ptr<long_term_data>
 parse_long_term(std::ifstream &in_file) {
-	std::cerr << "STUB: parse_header not implemented" << std::endl;
-	return NULL;
+	return nullptr;
 }

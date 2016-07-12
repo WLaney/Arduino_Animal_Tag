@@ -17,3 +17,6 @@ main.o: main.cpp
 	
 tests.o: tests.cpp
 	$(CXX) $(CFLAGS) -c tests.cpp
+
+clean:
+	rm *.o main tests

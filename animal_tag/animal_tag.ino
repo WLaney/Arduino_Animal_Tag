@@ -33,14 +33,6 @@ void setup()
       ;
   }
   
-  /*
-   * HEADER DATA
-   * NAME 0                        Device name and orientation
-   * 4.0 3.0 2.0                   Gyroscope biases
-   * 220                           Accelerometer write size
-   * 280                           Gyroscope write size
-   *          01/01/1000 01:01:01  Date and time
-   */
   char name[5]; // 4-char name
   byte orient;  // incorrect orientation? (swap gyroscope x and y)
   for (byte i=0; i<4; i++) {
@@ -67,19 +59,23 @@ void setup()
     // (byte) Orient
     sd.write(orient);
     // (float[3]) Gyroscope biases
-    sd.write(gx);
-    sd.write(gy);
-    sd.write(gz);
+    sd.write((char *) &gx, 4);
+    sd.write((char *) &gy, 4);
+    sd.write((char *) &gz, 4);
     // (unsigned short) Accelerometer buffer size
-    sd.write(accel_write_size());
+    unsigned short aws = accel_write_size();
+    sd.write((char *) &aws, 2);
     // (unsigned short) Gyroscope buffer size
-    sd.write(gyro_write_size());
+    unsigned short gyr = gyro_write_size();
+    sd.write((char *) &gyr, 2);
     // (unsigned short) Long-term write period
-    sd.write(long_term_write_max);
+    sd.write((char *) &long_term_write_max, 2);
     // (float) Accel scale
-    sd.write(accel_scale());
+    float as = accel_scale();
+    sd.write((char *) &as, 4);
     // (float) Gyro scale
-    sd.write(gyro_scale());
+    float gs = gyro_scale();
+    sd.write((char *) &gs, 4);
     // (ts) time
     rtc_write(sd);
     

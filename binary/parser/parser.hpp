@@ -54,7 +54,7 @@ struct header_data {
 	float accel_scale;
 	float gyro_scale;
 	uint16_t accel_buffer_size;
-	uint16_t accel_gyro_size;
+	uint16_t gyro_buffer_size;
 	uint16_t long_term_period;
 	bool orient;
 };
