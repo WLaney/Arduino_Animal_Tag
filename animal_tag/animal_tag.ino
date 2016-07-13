@@ -44,7 +44,7 @@ void setup()
       ;
   }
 
-  // Create header, write to SD card
+  // Get header information
   header_data header;
   // Name of device
   for (byte i=0; i<4; i++) {
@@ -66,17 +66,18 @@ void setup()
   // RTC Update (written separately)
   rtc_mode();
   rtc_update();
-  
+
+  // Write header (and time) to SD
   sd_mode();
   File sd = SD.open("DATA.TXT", FILE_WRITE);
-  // Wait for SD startup
-  delay(1000);
+  delay(100);
   if (sd) {
     DBGSTR("Header bytes written: ");
     DBGLN(sd.write((byte *) &header, sizeof(header_data)));
-    //rtc_write(sd);
-    DBGLN("Header written");
+    rtc_write(sd);
     sd.close();
+    
+    DBGLN("Header written");
   } else {
     DBGSTR("ERROR: Header not written!");
   }

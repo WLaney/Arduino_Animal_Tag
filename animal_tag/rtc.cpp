@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <SD.h>
 
-#define RTC_CS 9
+constexpr int rtc_cs = 9;
 
 inline void print_02d(File,int);
 
@@ -13,14 +13,14 @@ inline void print_02d(File,int);
 ts *tme = NULL;
 
 void rtc_setup() {
-  DS3234_init(RTC_CS, DS3234_INTCN);
+  DS3234_init(rtc_cs, DS3234_INTCN);
 }
 
 void rtc_update() {
   DBGLN("Read RTC");
   if (!tme)
     tme = new ts;
-  DS3234_get(RTC_CS, tme);
+  DS3234_get(rtc_cs, tme);
 }
 
 /*
