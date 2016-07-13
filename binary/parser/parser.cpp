@@ -35,6 +35,12 @@ inline void read_into(std::ifstream &f, T &v) {
 	 f.read(reinterpret_cast<char *>(&v), sizeof(T));
 }
 
+std::ostream& operator<<(std::ostream &s, const ts &t) {
+	s << (int) t.mon << '-' << (int) t.mday << '-' << (int) t.year << '\t'
+	  << (int) t.hour << ':' << (int) t.min << ':' << (int) t.sec;
+	return s;
+}
+
 /*
  * Parse in_file's header and return the relevant data.
  * 
@@ -44,13 +50,15 @@ inline void read_into(std::ifstream &f, T &v) {
 std::unique_ptr<header_data>
 parse_header(std::ifstream &in_file) {
 	std::unique_ptr<header_data> data(new header_data);
-	read_into(in_file, data->name);
+	// name is stored with no null char, so we insert it here
+	in_file.read(reinterpret_cast<char *>(&(data->name)), 4);
+	data->name[4] = '\0';
 	read_into(in_file, data->orient);
 	read_into(in_file, data->gyro_bias_x);
 	read_into(in_file, data->gyro_bias_y);
 	read_into(in_file, data->gyro_bias_z);
-	read_into(in_file, data->accel_buffer_size);
-	read_into(in_file, data->gyro_buffer_size);
+	read_into(in_file, data->accel_section_size);
+	read_into(in_file, data->gyro_section_size);
 	read_into(in_file, data->long_term_period);
 	read_into(in_file, data->accel_scale);
 	read_into(in_file, data->gyro_scale);

@@ -49,18 +49,17 @@ void test_header() {
 	const char *name = "data/header.dat";
     std::ifstream fs(name, std::ios::binary);
     std::unique_ptr<header_data> data = parse_header(fs);
-    data->name[4] = '\0';
     std::cout << "Name:        " << data->name << std::endl
 			  << "Gyro bias:   " << data->gyro_bias_x << '\t' 
 							     << data->gyro_bias_y << '\t'
 							     << data->gyro_bias_z << std::endl
-			  << "Time:        " << "[REPLACETHISNOWDAMMIT]" << std::endl
+			  << "Time:        " << data->time << std::endl
 			  << "Accel scale: " << data->accel_scale << std::endl
 			  << "Accel scale: " << data->gyro_scale << std::endl
-			  << "Accel buff:  " << data->accel_buffer_size << std::endl
-			  << "Gyro  buff:  " << data->gyro_buffer_size << std::endl
+			  << "Accel buff:  " << data->accel_section_size << std::endl
+			  << "Gyro  buff:  " << data->gyro_section_size << std::endl
 			  << "LT Period:   " << data->long_term_period << std::endl
-			  << "Orient:      " << data->orient << std::endl;
+			  << "Orient:      " << (int) data->orient << std::endl;
 }
 
 void test_long_term() {

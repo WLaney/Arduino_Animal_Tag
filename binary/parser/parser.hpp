@@ -32,31 +32,30 @@ struct ts {
 	byte hour;
 	byte mday;
 	byte mon;
-	int year;
+	int16_t year;
 	byte wday;
 	byte yday;
 	byte isdst;
 	byte year_s;
 };
+std::ostream& operator<<(std::ostream&, const ts&);
 
 /*
  * All the data collected from the header. Some of it's relevant to 
  * the header file; the rest is relevant to parsing the rest of the file.
  */
 struct header_data {
-	//Header file data
 	char name[5];
+	byte orient;
 	float gyro_bias_x;
 	float gyro_bias_y;
 	float gyro_bias_z;
-	// File-parsing data
-	ts time;
+	uint16_t accel_section_size;
+	uint16_t gyro_section_size;
+	uint16_t long_term_period;
 	float accel_scale;
 	float gyro_scale;
-	uint16_t accel_buffer_size;
-	uint16_t gyro_buffer_size;
-	uint16_t long_term_period;
-	bool orient;
+	ts time;
 };
 
 /*
