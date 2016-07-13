@@ -12,6 +12,17 @@
 constexpr byte cs_sd = 10;
 constexpr short long_term_write_max = 3;
 
+// Header data is packed into this when
+// written to the SD card
+struct header_data {
+  char name[4];            // Name of device [4 chars]
+  byte orient;             // Orientation
+  float gx, gy, gz;        // Gyroscope Bias
+  unsigned short aws, gws; // Accelerometer and Gyroscope write size
+  unsigned short period;
+  float as, gs;            // Accelerometer and gyroscope scale
+};
+
 void setup()
 {
   // Debug commands won't show up if they're
@@ -32,65 +43,42 @@ void setup()
     while (true)
       ;
   }
-  
-  char name[5]; // 4-char name
-  byte orient;  // incorrect orientation? (swap gyroscope x and y)
+
+  // Create header, write to SD card
+  header_data header;
+  // Name of device
   for (byte i=0; i<4; i++) {
-    name[i] = EEPROM.read(i);
+    header.name[i] = EEPROM.read(i);
   }
-  name[4] = '\0';
-  orient = EEPROM.read(4);
-  // Gyroscope bias
-  float gx, gy, gz;
-  EEPROM.get(5, gx);
-  EEPROM.get(9, gy);
-  EEPROM.get(13, gz);
-  // Time
+  // Orientation
+  header.orient = EEPROM.read(4);
+  EEPROM.get(5, header.gx);
+  EEPROM.get(9, header.gy);
+  EEPROM.get(13, header.gz);
+  // Accelerometer, Gyroscope Write Size
+  header.aws = accel_write_size();
+  header.gws = gyro_write_size();
+  // Write period (long_term_write_max)
+  header.period = long_term_write_max;
+  // Scaling
+  header.as = accel_scale();
+  header.gs = gyro_scale();
+  // RTC Update (written separately)
   rtc_mode();
   rtc_update();
   
   sd_mode();
-  File sd = SD.open("data.txt", FILE_WRITE);
+  File sd = SD.open("DATA.TXT", FILE_WRITE);
   // Wait for SD startup
-  delay(100);
+  delay(1000);
   if (sd) {
-    // (char[4]) Name
-    sd.write(name, 4);
-    // (byte) Orient
-    sd.write((char *) orient, 1);
-    // (float[3]) Gyroscope biases
-    sd.write((char *) &gx, 4);
-    sd.write((char *) &gy, 4);
-    sd.write((char *) &gz, 4);
-    // (unsigned short) Accelerometer buffer size
-    unsigned short aws = accel_write_size();
-    sd.write((char *) &aws, 2);
-    // (unsigned short) Gyroscope buffer size
-    unsigned short gyr = gyro_write_size();
-    sd.write((char *) &gyr, 2);
-    // (unsigned short) Long-term write period
-    sd.write((char *) &long_term_write_max, 2);
-    // (float) Accel scale
-    float as = accel_scale();
-    sd.write((char *) &as, 4);
-    // (float) Gyro scale
-    float gs = gyro_scale();
-    sd.write((char *) &gs, 4);
-    // (ts) time
+    DBGSTR("Header bytes written: ");
+    DBGLN(sd.write((byte *) &header, sizeof(header_data)));
     rtc_write(sd);
-    // Debugging data
-    DBGLN(name);
-    DBGLN(orient);
-    DBGLN(gx);
-    DBGLN(gy);
-    DBGLN(gz);
-    DBGLN(aws);
-    DBGLN(gyr);
-    DBGLN(as);
-    DBGLN(gs);
-    sd.write('\n');
+    DBGLN("Header written");
     sd.close();
-    DBGSTR("SD written\n");
+  } else {
+    DBGSTR("ERROR: Header not written!");
   }
   
   DBGSTR("setup done\n");
