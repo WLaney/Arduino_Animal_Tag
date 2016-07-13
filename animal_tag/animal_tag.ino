@@ -74,7 +74,7 @@ void setup()
   if (sd) {
     DBGSTR("Header bytes written: ");
     DBGLN(sd.write((byte *) &header, sizeof(header_data)));
-    rtc_write(sd);
+    //rtc_write(sd);
     DBGLN("Header written");
     sd.close();
   } else {

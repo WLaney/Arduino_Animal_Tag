@@ -43,7 +43,7 @@ byte gyro_size() {
  * Size, in bytes, of a single SD card write.
  */
 unsigned short gyro_write_size() {
-  return gyro_buffer_size * sizeof(gyro_data);
+  return (gyro_buffer_size + gyro_fifo_size) * sizeof(gyro_data);
 }
 
 /*
