@@ -1,17 +1,5 @@
 /*
- * convert_to_csv (in-file) (data-file) (header-file)
- * 
- * Convert the input data into a CSV file with the following format:
- * 
- * ax | ay | az | gx | gy | gz | date_time | temp | pressure
- * ---|----|----|----|----|----|-----------|------|----------
- *    |    |    |    |    |    | 1/1/1111  | 24   | 0
- *  0 |  0 |  0 |  0 |  0 |  0 |           |      |
- * ...
- * 
- * It also includes a header file containing name and a couple of
- * other things, though it can still be impored with MATLAB's
- * readtable() format.
+ * Contains utilities for parsing each section.
  */
 #ifndef __CONVERT_TO_CSV_HPP__
 #define __CONVERT_TO_CSV_HPP__
@@ -25,6 +13,8 @@ typedef uint8_t byte;
 /*
  * The order of this struct matters, since we're importing it wholesale.
  * Don't change it!
+ *
+ * Data representing time. Culled directly from ds3234.h
  */
 struct ts {
 	byte sec;
@@ -32,6 +22,7 @@ struct ts {
 	byte hour;
 	byte mday;
 	byte mon;
+	// single byte of padding
 	int16_t year;
 	byte wday;
 	byte yday;

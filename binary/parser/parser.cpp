@@ -23,7 +23,7 @@ inline float accel_s2f(short s, float scale) {
  */
 inline float gyro_s2f(short s, float scale) {
 	// constant derived from Light_L3GD20.cpp
-	std::cerr << "TODO: Gyroscope scaling not yet correct" << std::endl;
+	// [TODO Fix gyroscope scaling]
 	return (float) s * 0.00875F;
 }
 
@@ -35,11 +35,31 @@ inline void read_into(std::ifstream &f, T &v) {
 	 f.read(reinterpret_cast<char *>(&v), sizeof(T));
 }
 
+/*
+ * Printing a time struct as Y-M-D h:m:s
+ */
 std::ostream& operator<<(std::ostream &s, const ts &t) {
-	s << (int) t.mon << '-' << (int) t.mday << '-' << (int) t.year << '\t'
+	s << (int) t.year << '-' << (int) t.mon << '-' << (int) t.mday << '\t'
 	  << (int) t.hour << ':' << (int) t.min << ':' << (int) t.sec;
 	return s;
 }
+
+/*
+ * Due to word alignment, the Arduino and Windows time structs aren't
+ * quite identical. As a result, we have to do this...
+ */
+ void read_time(std::ifstream &file, ts &time) {
+	 read_into(file, time.sec);
+	 read_into(file, time.min);
+	 read_into(file, time.hour);
+	 read_into(file, time.mday);
+	 read_into(file, time.mon);
+	 read_into(file, time.year);
+	 read_into(file, time.wday);
+	 read_into(file, time.yday);
+	 read_into(file, time.isdst);
+	 read_into(file, time.year_s);
+ }
 
 /*
  * Parse in_file's header and return the relevant data.
@@ -62,7 +82,7 @@ parse_header(std::ifstream &in_file) {
 	read_into(in_file, data->long_term_period);
 	read_into(in_file, data->accel_scale);
 	read_into(in_file, data->gyro_scale);
-	read_into(in_file, data->time);
+	read_time(in_file, data->time);
 	return data;
 }
 
@@ -138,7 +158,7 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 std::unique_ptr<long_term_data>
 parse_long_term(std::ifstream &in_file) {
 	std::unique_ptr<long_term_data> data(new long_term_data);
-	read_into(in_file, data->time);
+	read_time(in_file, data->time);
 	read_into(in_file, data->celsius);
 	return data;
 }

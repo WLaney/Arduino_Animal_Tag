@@ -120,8 +120,8 @@ void flush_and_write()
   sd_mode();
   File file = SD.open(file_name, FILE_WRITE);
   if (file) {
-    // Write accelerometer, then gyro, data
-    file.print("ACCEL");
+    // Accelerometer/gyro writes
+    file.print("ACCL");
     accel_write(file);
     file.print("GYRO");
     gyro_write(file);
