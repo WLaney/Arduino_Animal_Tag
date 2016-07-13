@@ -120,7 +120,7 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 	for (int i = 0; i < reads; i++) {
 		gyro_data data;
 		raw_gyro_data raw;
-		read_into<raw_gyro_data>(in_file, raw);
+		read_into(in_file, raw);
 		data.x = gyro_s2f(raw.x, scale);
 		data.y = gyro_s2f(raw.y, scale);
 		data.z = gyro_s2f(raw.z, scale);
@@ -129,7 +129,16 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 	return out;
 }
 
+/*
+ * Parse and return long term data.
+ * 
+ * The data must immediately follow the file pointer and be
+ * correctly formatted.
+ */
 std::unique_ptr<long_term_data>
 parse_long_term(std::ifstream &in_file) {
-	return nullptr;
+	std::unique_ptr<long_term_data> data(new long_term_data);
+	read_into(in_file, data->time);
+	read_into(in_file, data->celsius);
+	return data;
 }

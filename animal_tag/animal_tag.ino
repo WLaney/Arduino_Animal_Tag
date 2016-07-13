@@ -11,10 +11,12 @@
 
 constexpr byte cs_sd = 10;
 constexpr short long_term_write_max = 3;
+constexpr char *file_name = "DATA.SRK";
 
 // Header data is packed into this when
 // written to the SD card
-struct header_data {
+struct header_data
+{
   char name[4];            // Name of device [4 chars]
   byte orient;             // Orientation
   float gx, gy, gz;        // Gyroscope Bias
@@ -69,7 +71,7 @@ void setup()
 
   // Write header (and time) to SD
   sd_mode();
-  File sd = SD.open("DATA.TXT", FILE_WRITE);
+  File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
     DBGSTR("Header bytes written: ");
@@ -116,7 +118,7 @@ void flush_and_write()
   DBGSTR("Writing to SD...\n");
   long time = millis();
   sd_mode();
-  File file = SD.open("data.txt", FILE_WRITE);
+  File file = SD.open(file_name, FILE_WRITE);
   if (file) {
     // Write accelerometer, then gyro, data
     file.print("ACCEL");
@@ -125,12 +127,9 @@ void flush_and_write()
     gyro_write(file);
     // Long-term writes
     if (write_num == 0) {
-      file.println("LONG");
-      file.print(F("\t\t\t\t\t\t"));
+      file.print("LONG");
       rtc_write(file);
-      file.print('\t');
       temp_write(file);
-      file.print("\n");
     }
     file.close();
     DBGSTR("sd data written\n");

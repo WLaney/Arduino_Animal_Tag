@@ -21,5 +21,5 @@ void temp_update() {
 
 void temp_write(File sd) {
 	DBGSTR("Wrote temp\n");
-	sd.print(celsius);
+	sd.write((byte *) &celsius,4);
 }

@@ -63,7 +63,11 @@ void test_header() {
 }
 
 void test_long_term() {
-    std::cout << "Haven't implemented test_long_term yet" << std::endl;
+    const char *name = "data/long.dat";
+    std::ifstream fs(name, std::ios::binary);
+    std::unique_ptr<long_term_data> data = parse_long_term(fs);
+    std::cout << "Time: " << data->time << std::endl
+			  << "Temp: " << data->celsius << std::endl;
 }
 
 int main(void) {
