@@ -23,6 +23,8 @@
  */
 #include "parser.hpp"
 #include <iostream>
+#include <algorithm>
+#include <assert.h>
 
 constexpr char accel_magic[4] = {'A','C','C','L'};
 constexpr char  gyro_magic[4] = {'G','Y','R','O'};
@@ -39,11 +41,19 @@ void write_header(std::ofstream &file, header_data &header) {
 void write_short_term(std::ofstream &file,
 					  std::vector<accel_data> accel,
 					  std::vector<gyro_data> gyro) {
-	
+	assert(accel.size() == gyro.size());
+	auto ai = accel.begin();
+	auto gi = gyro.begin();
+	while (ai != accel.end()) {
+		file << ai->x << ',' << ai->y << ',' << ai->z << ','
+		     << gi->x << ',' << gi->y << ',' << gi->z
+			 << ",,," << std::endl;
+		ai++, gi++;
+	}
 }
 
 void write_long_term(std::ofstream &file, long_term_data &data) {
-	
+	file << ",,,,,," << data.time << ',' << data.celsius << ",0" << std::endl;
 }
 
 /*
@@ -76,23 +86,27 @@ int main(int argc, char *argv[]) {
 	bool orient = header->orient;
 	size_t accel_size = header->accel_section_size;
 	size_t gyro_size = header->gyro_section_size;
+	int long_period = header->long_term_period;
 	float accel_scale = header->accel_scale;
 	float gyro_scale = header->gyro_scale;
 	write_header(header_file, *header);
 	
 	// Start going through sections
+	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
 	while (!in_file.eof()) {
 		char magic[5];
 		magic[4] = '\0';
-		// Accel
-		in_file.read(magic,4);
-		std::cout << "Just read: " << magic << std::endl;
-		auto accel = parse_accel(in_file, accel_scale, accel_size);
-		// Gyro
-		in_file.read(magic,4);
-		std::cout << "Just read: " << magic << std::endl;
-		auto gyro = parse_gyro(in_file, gyro_scale, gyro_size);
-		write_short_term(data_file, accel, gyro);
+		for (int i = 0; i < long_period; i++) {
+			// Accel
+			in_file.read(magic,4);
+			std::cout << "Just read: " << magic << std::endl;
+			auto accel = parse_accel(in_file, accel_scale, accel_size);
+			// Gyro
+			in_file.read(magic,4);
+			std::cout << "Just read: " << magic << std::endl;
+			auto gyro = parse_gyro(in_file, gyro_scale, gyro_size, orient);
+			write_short_term(data_file, accel, gyro);
+		}
 		// Long-term
 		in_file.read(magic,4);
 		std::cout << "Just read: " << magic << std::endl;

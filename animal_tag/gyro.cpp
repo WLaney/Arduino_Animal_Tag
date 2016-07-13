@@ -52,7 +52,7 @@ unsigned short gyro_write_size() {
 void gyro_write(File sd) {
   DBGSTR("Gyro write\n");
   for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
-    sd.write((byte *) buffer, gyro_write_size());
+    sd.write((byte *) buffer, gyro_buffer_size * sizeof(gyro_data));
     // I think we're currently doing a spurious read here; be cautious
     gyro_read_all();
   }

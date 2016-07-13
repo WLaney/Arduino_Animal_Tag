@@ -97,7 +97,7 @@ struct long_term_data {
 
 std::unique_ptr<header_data> parse_header(std::ifstream &in_file);
 std::vector<accel_data> parse_accel(std::ifstream &in_file, float scale, uint16_t size);
-std::vector<gyro_data> parse_gyro(std::ifstream &in_file, float scale, uint16_t size);
+std::vector<gyro_data> parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient);
 std::unique_ptr<long_term_data> parse_long_term(std::ifstream &in_file);
 
 #endif /*__CONVERT_TO_CSV_HPP__*/

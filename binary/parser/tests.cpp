@@ -22,7 +22,7 @@ inline size_t get_filesize(const char *fname) {
 void test_gyro() {
     const char *name = "data/gyro.dat";
     std::ifstream fs(name, std::ios::binary);
-    std::vector<gyro_data> data = parse_gyro(fs, 250.0, get_filesize(name));
+    std::vector<gyro_data> data = parse_gyro(fs, 250.0, get_filesize(name), true);
     if (data.size() > 0) {
         for (auto &read : data) {
           std::cout << read.x << '\t' << read.y << '\t' << read.z << std::endl;

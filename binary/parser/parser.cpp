@@ -132,7 +132,7 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
  * correctly formatted.
  */
 std::vector<gyro_data>
-parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
+parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient) {
 	// TODO [check against size]
 	int reads = size / sizeof(raw_gyro_data);
 	std::vector<gyro_data> out;
@@ -143,6 +143,9 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size) {
 		read_into(in_file, raw);
 		data.x = gyro_s2f(raw.x, scale);
 		data.y = gyro_s2f(raw.y, scale);
+		if (orient) {
+			std::swap(data.x, data.y);
+		}
 		data.z = gyro_s2f(raw.z, scale);
 		out.push_back(data);
 	}
