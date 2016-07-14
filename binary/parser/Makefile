@@ -4,7 +4,7 @@ CFLAGS = -std=c++11 -Wall -pedantic
 all:	main tests
 
 main: parser.o main.o
-	$(CXX) parser.o main.o -o main
+	$(CXX) parser.o main.o -o shark-parser
 	
 tests: parser.o tests.o
 	$(CXX) parser.o tests.o -o tests
@@ -19,4 +19,4 @@ tests.o: tests.cpp
 	$(CXX) $(CFLAGS) -c tests.cpp
 
 clean:
-	rm *.o main tests
+	rm *.o shark-parser tests

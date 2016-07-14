@@ -1,23 +1,7 @@
 /*
- * convert_to_csv (in-file) (data-file) (header-file)
+ * shark-parser (in-file) (data-file) (header-file)
  * 
- * Convert the input data into a CSV file with the following format,
- * though without any spacing for alignment:
- * 
- * ax, ay, az, gx, gy, gz,         date_time, temp, pressure
- *   ,   ,   ,   ,   ,   , 1/1/1111 22:22:22, 24  , 0
- *  0,  0,  0,  0,  0,  0,                  ,     ,
- * ...
- * 
- * The first line of the file will only contain date and time.
- * The file then alternates between providing accelerometer/gyroscope
- * data, leaving the other lines blank, and providing the long-term
- * data, leaving the accelerometer and gyroscope blank.
- * 
- * It also has a separate header file, technically in a CSV-esque
- * format, that provides data from the tag:
- * name, xbias, ybias, zbias
- *     ,      ,      ,
+ * Read readme.txt for more info.
  */
 #include "parser.hpp"
 #include <iostream>
@@ -44,12 +28,14 @@ void check_magic_word(std::ifstream &in_file, const char *expected) {
 	}
 }
 
-void write_header(std::ofstream &file, header_data &header) {
-	file << "name,xbias,ybias,zbias" << std::endl;
-	file << header.name << ','
-		 << header.gyro_bias_x << ','
-		 << header.gyro_bias_y << ','
-		 << header.gyro_bias_z << std::endl;
+void write_header(std::ofstream &hfile, std::ofstream &dfile, header_data &header) {
+	hfile << "name,xbias,ybias,zbias" << std::endl;
+	hfile << header.name << ','
+		  << header.gyro_bias_x << ','
+		  << header.gyro_bias_y << ','
+		  << header.gyro_bias_z << std::endl;
+	
+	dfile << ",,,,,," << header.time << ",," << std::endl;
 }
 
 void write_short_term(std::ofstream &file,
@@ -73,7 +59,8 @@ void write_long_term(std::ofstream &file, long_term_data &data) {
 int main(int argc, char *argv[]) {
 	using namespace std;
 	if (argc < 4) {
-		cout << "Usage: (infile) (outfile) (header-file)" << endl;
+		cout << "Usage: (infile) (outfile) (header-file)" << endl
+		     << "See readme.txt for more information." << endl;
 		return EXIT_FAILURE;
 	}
 	ifstream in_file(argv[1], ios::binary);
@@ -88,7 +75,7 @@ int main(int argc, char *argv[]) {
 	int long_term_period = header->long_term_period;
 	float accel_scale = header->accel_scale;
 	float gyro_scale = header->gyro_scale;
-	write_header(header_file, *header);
+	write_header(header_file, data_file, *header);
 	
 	// Start going through sections
 	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << endl;
