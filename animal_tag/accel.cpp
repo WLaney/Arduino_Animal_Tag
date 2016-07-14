@@ -11,6 +11,7 @@
 #include <SD.h>
 #include <SFE_MMA8452Q.h>
 
+// Number of accelerometer "packs" of two reads.
 constexpr int accel_buffer_packs = 24;
 constexpr float scale = 8.0;
 
