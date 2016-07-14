@@ -57,18 +57,19 @@ void write_long_term(std::ofstream &file, long_term_data &data) {
 }
 
 int main(int argc, char *argv[]) {
-	using namespace std;
 	if (argc < 4) {
-		cout << "Usage: (infile) (outfile) (header-file)" << endl
-		     << "See readme.txt for more information." << endl;
+		std::cout << "Usage: (infile) (data-csv) (header-csv)" << std::endl
+		          << "See readme.txt for more information." << std::endl;
 		return EXIT_FAILURE;
 	}
-	ifstream in_file(argv[1], ios::binary);
-	ofstream data_file(argv[2]);
-	ofstream header_file(argv[3]);
+	std::ifstream in_file(argv[1], std::ios::binary);
+	std::ofstream data_file(argv[2]);
+	std::ofstream header_file(argv[3]);
 	
+	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
+
 	// Parse header; get relevant data
-	unique_ptr<header_data> header = parse_header(in_file);
+	std::unique_ptr<header_data> header = parse_header(in_file);
 	bool orient = header->orient;
 	size_t accel_size = header->accel_section_size;
 	size_t gyro_size = header->gyro_section_size;
@@ -78,7 +79,6 @@ int main(int argc, char *argv[]) {
 	write_header(header_file, data_file, *header);
 	
 	// Start going through sections
-	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << endl;
 	int long_term_index = 0;
 	while (!in_file.eof()) {
 		if (long_term_index++ < long_term_period) {
