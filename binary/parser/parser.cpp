@@ -22,9 +22,18 @@ inline float accel_s2f(short s, float scale) {
  * Convert a raw gyroscope value into a float.
  */
 inline float gyro_s2f(short s, float scale) {
-	// constant derived from Light_L3GD20.cpp
-	// [TODO Fix gyroscope scaling]
-	return (float) s * 0.00875F;
+	// constants derived from Light_L3GD20.hpp
+	switch (scale) {
+	case 250:
+		return s * 0.00875F;
+	case 500:
+		return s * 0.0175F;
+	case 2000:
+		return s * 0.070F;
+	default:
+		std::cout << "ERROR: Invalid gyroscope scale" << scale << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 /*
@@ -94,7 +103,6 @@ parse_header(std::ifstream &in_file) {
  */
 std::vector<accel_data>
 parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
-	// TODO [check against size]
 	int reads = size / sizeof(raw_accel_data);
 	std::vector<accel_data> out;
 	for (int i = 0; i < reads; i++) {
@@ -132,7 +140,6 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
  */
 std::vector<gyro_data>
 parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient) {
-	// TODO [check against size]
 	int reads = size / sizeof(raw_gyro_data);
 	std::vector<gyro_data> out;
 	for (int i = 0; i < reads; i++) {
