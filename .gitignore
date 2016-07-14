@@ -1,0 +1,8 @@
+# Intermediate files for C/C++ code
+*.o
+# Parsed CSV files
+*.csv
+
+# Executables; compile these from source yourself
+./binary/parser/main
+./binary/parser/tests

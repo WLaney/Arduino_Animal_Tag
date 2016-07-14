@@ -4,10 +4,11 @@
 //#include "SparkFun_MS5803_I2C.h"
 //#include "debug.h"
 //
-//// Not sure of the difference between ADDRESS_LOW and
-//// ADDRESS_HIGH; look this up later
-//MS5803 sensor(ADDRESS_HIGH);
+//// ADDRESS_LOW refers to the i2c address being
+//// "pulled low"; ask William for more details
+//MS5803 sensor(ADDRESS_LOW);
 //
+//// Pressure is in units of 1 millibar
 //float pressure;
 //
 //void pressure_setup() {
@@ -18,9 +19,6 @@
 //
 //void pressure_update() {
 //  DBGLN("Update pressure");
-//  // Pressure is in units of 1 millibar.
-//  // Could we store this in a more compact data structure?
-//  // (Maximum water pressure of the Chesapeake Bay)
 //  pressure = sensor.getPressure(ADC_256);
 //}
 //
