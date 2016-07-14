@@ -97,7 +97,6 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
 	// TODO [check against size]
 	int reads = size / sizeof(raw_accel_data);
 	std::vector<accel_data> out;
-	out.reserve(reads * 2);
 	for (int i = 0; i < reads; i++) {
 		accel_data data1, data2;
 		raw_accel_data raw;
@@ -136,7 +135,6 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient) {
 	// TODO [check against size]
 	int reads = size / sizeof(raw_gyro_data);
 	std::vector<gyro_data> out;
-	out.reserve(reads);
 	for (int i = 0; i < reads; i++) {
 		gyro_data data;
 		raw_gyro_data raw;

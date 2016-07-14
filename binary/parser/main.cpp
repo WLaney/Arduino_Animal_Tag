@@ -1,12 +1,12 @@
 /*
  * convert_to_csv (in-file) (data-file) (header-file)
  * 
- * Convert the input data into a CSV file with the following format:
+ * Convert the input data into a CSV file with the following format,
+ * though without any spacing for alignment:
  * 
- * ax | ay | az | gx | gy | gz | date_time | temp | pressure
- * ---|----|----|----|----|----|-----------|------|----------
- *    |    |    |    |    |    | 1/1/1111  | 24   | 0
- *  0 |  0 |  0 |  0 |  0 |  0 |           |      |
+ * ax, ay, az, gx, gy, gz,         date_time, temp, pressure
+ *   ,   ,   ,   ,   ,   , 1/1/1111 22:22:22, 24  , 0
+ *  0,  0,  0,  0,  0,  0,                  ,     ,
  * ...
  * 
  * The first line of the file will only contain date and time.
@@ -16,19 +16,33 @@
  * 
  * It also has a separate header file, technically in a CSV-esque
  * format, that provides data from the tag:
- * name | xbias | ybias | zbias
- * -----|-------|-------|-------
- *      |       |       |
- * 
+ * name, xbias, ybias, zbias
+ *     ,      ,      ,
  */
 #include "parser.hpp"
 #include <iostream>
-#include <algorithm>
+#include <vector>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
-constexpr char accel_magic[4] = {'A','C','C','L'};
-constexpr char  gyro_magic[4] = {'G','Y','R','O'};
-constexpr char  long_magic[4] = {'L','O','N','G'};
+constexpr char *accel_magic = "ACCL";
+constexpr char *gyro_magic = "GYRO";
+constexpr char *long_term_magic = "LONG";
+
+/*
+ * Grab the next four bytes and see if they match a magic word.
+ * If not, print an error and exit. (TODO Use exceptions!)
+ */
+void check_magic_word(std::ifstream &in_file, const char *expected) {
+	char actual[5];
+	in_file.read(actual, 4);
+	actual[4] = '\0';
+	if (strncmp(expected, actual, 4) != 0) {
+		std::cerr << "ERROR: expected header " << expected << ", got " << actual << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
 
 void write_header(std::ofstream &file, header_data &header) {
 	file << "name,xbias,ybias,zbias" << std::endl;
@@ -56,21 +70,6 @@ void write_long_term(std::ofstream &file, long_term_data &data) {
 	file << ",,,,,," << data.time << ',' << data.celsius << ",0" << std::endl;
 }
 
-/*
- * Read the next four bytes and see if they match the
- * expected "magic word/number"
- */
-bool magic_equals(char expected[4], std::ifstream &file) {
-	char real[4];
-	file.read(real, 4);
-	for (int i = 0; i < 4; i++) {
-		if (expected[i] != real[i]) {
-			return false;
-		}
-	}
-	return true;
-}
-
 int main(int argc, char *argv[]) {
 	using namespace std;
 	if (argc < 4) {
@@ -86,32 +85,26 @@ int main(int argc, char *argv[]) {
 	bool orient = header->orient;
 	size_t accel_size = header->accel_section_size;
 	size_t gyro_size = header->gyro_section_size;
-	int long_period = header->long_term_period;
+	int long_term_period = header->long_term_period;
 	float accel_scale = header->accel_scale;
 	float gyro_scale = header->gyro_scale;
 	write_header(header_file, *header);
 	
 	// Start going through sections
-	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
+	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << endl;
+	int long_term_index = 0;
 	while (!in_file.eof()) {
-		char magic[5];
-		magic[4] = '\0';
-		for (int i = 0; i < long_period; i++) {
-			// Accel
-			in_file.read(magic,4);
-			std::cout << "Just read: " << magic << std::endl;
-			auto accel = parse_accel(in_file, accel_scale, accel_size);
-			// Gyro
-			in_file.read(magic,4);
-			std::cout << "Just read: " << magic << std::endl;
-			auto gyro = parse_gyro(in_file, gyro_scale, gyro_size, orient);
-			write_short_term(data_file, accel, gyro);
+		if (long_term_index++ < long_term_period) {
+			check_magic_word(in_file, accel_magic);
+			auto accel_data = parse_accel(in_file, accel_scale, accel_size);
+			check_magic_word(in_file, gyro_magic);
+			auto gyro_data = parse_gyro(in_file, gyro_scale, gyro_size, orient);
+			write_short_term(data_file, accel_data, gyro_data);
+		} else {
+			check_magic_word(in_file, long_term_magic);
+			write_long_term(data_file, *parse_long_term(in_file));
+			long_term_index = 0;
 		}
-		// Long-term
-		in_file.read(magic,4);
-		std::cout << "Just read: " << magic << std::endl;
-		auto long_term = parse_long_term(in_file);
-		write_long_term(data_file, *long_term);
 	}
 	
 	return EXIT_SUCCESS;
