@@ -62,26 +62,56 @@ void write_long_term(std::ofstream &file, long_term_data &data) {
 	file << ",,,,,," << data.time << ',' << data.celsius << ",0" << std::endl;
 }
 
+/*
+ * Print a short readme.
+ */
+void usage(char *fname) {
+	std::cout << fname << " (infile) [data-csv] [header-csv]"
+			  << std::endl << std::endl
+			  << "infile is the raw data to parse. If data-csv and header-csv " 
+			  << "are not specified, then their names will be inferred from infile. "
+			  << "data-csv contains the raw data, and header-csv contains header data."
+			  << std::endl;
+}
+
 int main(int argc, char *argv[]) {
-	if (argc < 4) {
-		std::cout << "Usage: (infile) (data-csv) (header-csv)" << std::endl
-		          << "See readme.txt for more information." << std::endl;
-		return EXIT_FAILURE;
+	std::string in_fname, data_fname, header_fname;
+	if (argc == 2) {
+		in_fname = std::string(argv[1]);
+		std::string noext;
+		size_t pos;
+		// Remove file extension
+		noext = in_fname;
+		pos = in_fname.rfind('.');
+		noext.resize(pos);
+		// Add names
+		data_fname = noext + "-data.csv";
+		header_fname = noext + "-header.csv";
+	} else if (argc == 4) {
+		// data-csv and header-csv are specified
+		in_fname = std::string(argv[1]);
+		data_fname = std::string(argv[2]);
+		header_fname = std::string(argv[3]);
+	} else {
+		// incorrect format
+		usage(argv[0]);
+		exit(EXIT_FAILURE);
 	}
-	std::ifstream in_file(argv[1], std::ios::binary);
+	// Start trying to open files
+	std::ifstream in_file(in_fname, std::ios::binary);
 	if (!in_file.is_open()) {
-		std::cerr << "ERROR: Could not open " << argv[1] << std::endl;
-		return EXIT_FAILURE;
+		std::cerr << "ERROR: Could not open " << in_fname << std::endl;
+		exit(EXIT_FAILURE);
 	}
-	std::ofstream data_file(argv[2]);
+	std::ofstream data_file(data_fname);
 	if (!data_file.is_open()) {
-		std::cerr << "ERROR: Could not open " << argv[2] << std::endl;
-		return EXIT_FAILURE;
+		std::cerr << "ERROR: Could not open " << data_fname << std::endl;
+		exit(EXIT_FAILURE);
 	}
-	std::ofstream header_file(argv[3]);
+	std::ofstream header_file(header_fname);
 	if (!header_file.is_open()) {
-		std::cerr << "ERROR: Could not open " << argv[3] << std::endl;
-		return EXIT_FAILURE;
+		std::cerr << "ERROR: Could not open " << header_fname << std::endl;
+		exit(EXIT_FAILURE);
 	}
 	
 	// Write column names
