@@ -18,12 +18,13 @@ inline float accel_s2f(short s, float scale) {
 	return (float) s / (float)(1<<11) * scale;
 }
 
+
 /*
  * Convert a raw gyroscope value into a float.
  */
 inline float gyro_s2f(short s, float scale) {
 	// constants derived from Light_L3GD20.hpp
-	switch (scale) {
+	switch ((int) scale) {
 	case 250:
 		return s * 0.00875F;
 	case 500:

@@ -9,6 +9,8 @@
 #include <memory>
 #include <stdlib.h>
 
+#define DATA_PATH(fnamestr) ("data/test/" fnamestr)
+
 /*
  * Quickly get the size of a file.
  * This admittedly doesn't use stat, and can be innacurate
@@ -20,7 +22,7 @@ inline size_t get_filesize(const char *fname) {
 }
 
 void test_gyro() {
-    const char *name = "data/gyro.dat";
+    const char *name = DATA_PATH("gyro.dat");
     std::ifstream fs(name, std::ios::binary);
     auto data = parse_gyro(fs, 250.0, get_filesize(name), true);
     if (data.size() > 0) {
@@ -33,7 +35,7 @@ void test_gyro() {
 }
 
 void test_accel() {
-    const char *name = "data/accel.dat";
+    const char *name = DATA_PATH("accel.dat");
     std::ifstream fs(name, std::ios::binary);
     auto data = parse_accel(fs, 8.0, get_filesize(name));
     if (data.size() > 0) {
@@ -46,7 +48,7 @@ void test_accel() {
 }
 
 void test_header() {
-	const char *name = "data/header.dat";
+	const char *name = DATA_PATH("header.dat");
     std::ifstream fs(name, std::ios::binary);
     std::unique_ptr<header_data> data = parse_header(fs);
     std::cout << "Name:        " << data->name << std::endl
@@ -63,7 +65,7 @@ void test_header() {
 }
 
 void test_long_term() {
-    const char *name = "data/long.dat";
+    const char *name = DATA_PATH("long.dat");
     std::ifstream fs(name, std::ios::binary);
     std::unique_ptr<long_term_data> data = parse_long_term(fs);
     std::cout << "Time: " << data->time << std::endl
