@@ -54,7 +54,7 @@ namespace Gyro {
      0  XEN       X-axis enable (0 = disabled, 1 = enabled)           1 */
 
     /* Switch to normal mode and enable all three channels */
-    write8(L3GD20_REGISTER_CTRL_REG1, 0x0F);
+    write8(L3GD20_REGISTER_CTRL_REG1, 0x8F);
     /* ------------------------------------------------------------------ */
 
     /* Set CTRL_REG2 (0x21)

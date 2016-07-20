@@ -23,7 +23,7 @@ void accel_setup() {
   DBGSTR("Accelerometer buffer: ");
   DBG(accel_buffer_packs);
   DBGSTR(" (x2)\n");
-	accel.init(SCALE_8G, ODR_12);
+	accel.init(SCALE_8G, ODR_50);
 }
 
 void accel_read() {

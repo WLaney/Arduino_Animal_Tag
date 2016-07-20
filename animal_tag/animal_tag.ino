@@ -12,6 +12,7 @@
 constexpr byte cs_sd = 10;
 constexpr short long_term_write_max = 3;
 constexpr char *file_name = "DATA.SRK";
+constexpr int tag_delay = 30; // Delay between polling, in milliseconds
 
 // Header data is packed into this when
 // written to the SD card
@@ -45,7 +46,7 @@ void setup()
     while (true)
       ;
   }
-
+  
   // Get header information
   header_data header;
   // Name of device
@@ -92,12 +93,12 @@ void loop() {
   // are kept in the hardware buffer
   for (byte i=0; i<gyro_size(); i++) {
     accel_read();
-    n_delay(80);
+    n_delay(tag_delay);
   }
   gyro_read_all();
   while (!accel_full()) {
     accel_read();
-    n_delay(80);
+    n_delay(tag_delay);
   }
   flush_and_write();
 }
