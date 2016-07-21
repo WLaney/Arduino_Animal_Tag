@@ -76,7 +76,10 @@ void usage(char *fname) {
 
 int main(int argc, char *argv[]) {
 	std::string in_fname, data_fname, header_fname;
+
+	// Argument parsing
 	if (argc == 2) {
+		// Infer output filenames
 		in_fname = std::string(argv[1]);
 		std::string noext;
 		size_t pos;
@@ -97,6 +100,9 @@ int main(int argc, char *argv[]) {
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
+	// Verbosity
+	std::clog << "Creating " << data_fname << " and " << header_fname
+	          << " from " << in_fname << std::endl;
 	// Start trying to open files
 	std::ifstream in_file(in_fname, std::ios::binary);
 	if (!in_file.is_open()) {
@@ -155,5 +161,6 @@ int main(int argc, char *argv[]) {
 		in_file.unget();
 	}
 	
+	std::clog << "Successfully wrote to files." << std::endl;
 	return EXIT_SUCCESS;
 }

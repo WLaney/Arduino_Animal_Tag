@@ -1,23 +1,23 @@
 CXX = g++
 CFLAGS = -std=c++11 -Wall -pedantic
+SRC=src
 
-# Excluding tests for the sake of simplicity
-all:	main
+all:	main tests
 
 main: parser.o main.o
-	$(CXX) parser.o main.o -o shark-parser
+	$(CXX) $(SRC)/parser.o $(SRC)/main.o -o shark-parser
 	
 tests: parser.o tests.o
-	$(CXX) parser.o tests.o -o tests
+	$(CXX) $(SRC)/parser.o $(SRC)/tests.o -o tests
 	
-parser.o: parser.cpp parser.hpp
-	$(CXX) $(CFLAGS) -c parser.cpp
+parser.o: $(SRC)/parser.cpp $(SRC)/parser.hpp
+	$(CXX) $(CFLAGS) -c $(SRC)/parser.cpp -o $(SRC)/parser.o
 	
-main.o: main.cpp
-	$(CXX) $(CFLAGS) -c main.cpp
+main.o: $(SRC)/main.cpp
+	$(CXX) $(CFLAGS) -c $(SRC)/main.cpp -o $(SRC)/main.o
 	
-tests.o: tests.cpp
-	$(CXX) $(CFLAGS) -c tests.cpp
+tests.o: $(SRC)/tests.cpp
+	$(CXX) $(CFLAGS) -c $(SRC)/tests.cpp -o $(SRC)/tests.o
 
 clean:
-	rm *.o shark-parser tests
+	rm $(SRC)/*.o shark-parser tests
