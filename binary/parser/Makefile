@@ -1,7 +1,8 @@
 CXX = g++
 CFLAGS = -std=c++11 -Wall -pedantic
 
-all:	main tests
+# Excluding tests for the sake of simplicity
+all:	main
 
 main: parser.o main.o
 	$(CXX) parser.o main.o -o shark-parser

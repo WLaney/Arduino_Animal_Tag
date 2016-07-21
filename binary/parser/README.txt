@@ -1,4 +1,23 @@
- shark-parser (in-file) (data-file) (header-file)
+.============.
+| How to Use |
+.============.
+This is for Mac/Linux/UNIX users. If you're running Windows, you can
+get it to work, but you need to download a C++ compiler (preferably
+MinGW) and potentially alter the makefile.
+
+ * Open a terminal in this directory
+ * Run make
+ * Use ./shark-parser (raw data filename)
+
+If everything worked out right, you should get no complaints and have
+two new CSVs: a header file with the name of the tag and a few other
+things, and a data file with the actual tag data. From there, start
+running it through the MATLAB scripts.
+
+.================.
+| Quasi-man Page |
+.================.
+shark-parser (in-file) (data-file) (header-file)
  
 Convert a raw .srk file into two CSV files. data-file contains
 the actual tag data, and follows this format:

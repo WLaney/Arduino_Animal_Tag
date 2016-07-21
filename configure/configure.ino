@@ -35,7 +35,7 @@ void setup() {
 
   // Gyroscope calibration
   if (question("Would you like to calibrate the gyroscope? (y/n)\n")) {
-    PRINTSTR("DON'T CLOSE THE SERIAL MONITOR! THE SKETCH WILL RESTART!\n");
+    PRINTSTR("Keep the serial monitor open! Otherwise, the sketch will restart!");
     PRINTSTR("Lay the device on a flat surface. The test will begin in 5 seconds.\n");
     delay(5000);
     PRINTSTR("Alright. Go do something else for minute or two.\n");
@@ -61,7 +61,7 @@ void setup() {
     PRINTSTR("Y: ") ; Serial.print(gy) ; Serial.write('\n');
     PRINTSTR("Z: ") ; Serial.print(gz) ; Serial.write('\n');
   } else {
-    PRINTSTR("Assuming bias of (12,-12,12)...");
+    PRINTSTR("Assuming bias of (0,0,0)...");
     gx = 0.0;
     gy = 0.0;
     gz = 0.0;
@@ -81,7 +81,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
 }
 
 // Ask a (y/n) question and return the response
