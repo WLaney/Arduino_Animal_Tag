@@ -46,7 +46,7 @@ value. Therefore, further import code must be written (we've written
 some in MATLAB) to estimate the timing of each accelerometer and
 gyroscope read.
 
-Accelerometer data is in g's. Gyroscope data is in dps; date and time
+Accelerometer data is in g's. Gyroscope data is in degrees per second (dps); date and time
 data follows a Y-M-D h:m:s format, and will lack leading zeroes.
 temperature data is in degrees celsius, and pressure is in millibars.
 
