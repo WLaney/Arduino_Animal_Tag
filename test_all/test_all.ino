@@ -118,8 +118,15 @@ void test_accelerometer() {
 
 void test_gyroscope() {
   DBGSTR("Gyroscope");
-  run_until_input([] () {
-    
+  run_until_input([&] () {
+    Gyro::l3gd20Data_t data[Gyro::buffer_size];
+    fifo_burst_read(data, Gyro::buffer_size);
+    for (auto d : data) {
+      Serial.print(d.x) ; Serial.write('\t');
+      Serial.print(d.y) ; Serial.write('\t');
+      Serial.println(d.z);
+    }
+    delay(2500);
   });
 }
 
@@ -133,6 +140,11 @@ void test_temperature() {
 
 void test_rtc() {
   DBGSTR("RTC");
+  run_until_input([]() {
+    ts t;
+    DS3234_read(cs_rtc, &t);
+    
+  });
 }
 
 void test_pressure() {
