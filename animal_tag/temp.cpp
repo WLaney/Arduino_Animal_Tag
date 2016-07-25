@@ -8,7 +8,9 @@
 
 float celsius;
 
-void temp_setup() {}
+void temp_setup() {
+    Wire.begin();
+}
 
 void temp_update() {
     DBGSTR("Read temp\n");
