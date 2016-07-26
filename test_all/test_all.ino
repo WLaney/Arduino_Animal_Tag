@@ -12,7 +12,7 @@
 #define DBGSTR(s) Serial.println(F(s))
 
 constexpr int cs_sd = 10;
-constexpr int rtc_sd = 9;
+constexpr int cs_rtc = 9;
 
 MMA8452Q accel;
 
@@ -141,8 +141,6 @@ void test_temperature() {
 void test_rtc() {
   DBGSTR("RTC");
   run_until_input([]() {
-    ts t;
-    DS3234_read(cs_rtc, &t);
     
   });
 }
