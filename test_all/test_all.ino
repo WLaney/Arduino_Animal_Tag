@@ -1,6 +1,6 @@
 /*
- * A test suite for our sensors. Used for testing new devices.
- */
+   A test suite for our sensors. Used for testing new devices.
+*/
 #include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
