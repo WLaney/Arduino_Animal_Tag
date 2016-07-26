@@ -1,6 +1,6 @@
 /*
- * A test suite for our sensors. Used for testing new devices.
- */
+   A test suite for our sensors. Used for testing new devices.
+*/
 #include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
@@ -14,12 +14,13 @@
 constexpr int cs_sd = 10;
 constexpr int cs_rtc = 9;
 
+constexpr int temp102_address = 0x48;
+
 MMA8452Q accel;
 
 /*
- * Get the current temperature, in Celsius.
- */
-constexpr size_t temp102_address = 0x48;
+   Get the current temperature from TMP102, in Celsius.
+*/
 float get_temp() {
   Wire.requestFrom(temp102_address, 2);
   byte MSB = Wire.read();
@@ -29,32 +30,43 @@ float get_temp() {
 }
 
 /*
- * Setup
+ * Switch SPI so that it can work with either the SD card
+ * or real-time clock.
  */
+inline void sd_mode() { SPI.setDataMode(SPI_MODE0); }
+inline void rtc_mode() { SPI.setDataMode(SPI_MODE1); }
+
 void setup() {
   // General setup
   Serial.begin(9600);
   DBGSTR("Starting Accelerometer...");
   accel.init(SCALE_8G, ODR_12);
-  
+
   DBGSTR("Starting Gyroscope...");
   Gyro::begin();
-  
+
   DBGSTR("Starting Wire (Temperature)...");
   Wire.begin();
-  
+
+  DBGSTR("Starting SPI...");
+  SPI.begin();
+
   DBGSTR("Starting RTC");
+  rtc_mode();
   DS3234_init(cs_sd, DS3234_INTCN);
-  
+
   DBGSTR("Starting SD...");
+  sd_mode();
   if (!SD.begin(cs_sd)) {
     DBGSTR("SD card could not initialize\n");
   }
 
   DBGSTR("Pressure isn't implemented. Skipping...");
+
+  // Some test code
 }
 
-void loop() { 
+void loop() {
   // Choose a test(s) to run
   String response;
   DBGSTR("Choose a test to run: \n"
@@ -70,7 +82,7 @@ void loop() {
   response = Serial.readString();
   char letter = tolower(response.charAt(0));
 
-  switch(letter) {
+  switch (letter) {
     case 'a':
       DBGSTR("All Tests");
       test_accelerometer();
@@ -139,27 +151,36 @@ void test_temperature() {
 }
 
 void test_rtc() {
-  DBGSTR("RTC");
+  DBGSTR("RTC (not correctly implemented!)");
+  rtc_mode();
   run_until_input([]() {
-    
+    ts t;
+    DS3234_get(cs_rtc, &t);
+    Serial.print(t.year); Serial.write('-');
+    Serial.print(t.mon);  Serial.write('-');
+    Serial.print(t.mday); Serial.write('\t');
+    Serial.print(t.hour); Serial.write(':');
+    Serial.print(t.min);  Serial.write(':');
+    Serial.println(t.sec);
+    delay(1000);
   });
 }
 
 void test_pressure() {
-  DBGSTR("Pressure");
+  DBGSTR("Pressure (not yet implemented!)");
 }
 
 void test_sd() {
-  DBGSTR("SD");
+  DBGSTR("SD (not yet implemented!)");
 }
 
 /*
- * Run a function continually until Serial input.
- * The function only checks for input in between function calls, so
- * you can't cancel operation in the middle of a function.
- * 
- * f takes no arguments, and any arguments it does return are ignored.
- */
+   Run a function continually until Serial input.
+   The function only checks for input in between function calls, so
+   you can't cancel operation in the middle of a function.
+
+   f takes no arguments, and any arguments it does return are ignored.
+*/
 template<typename Func> void run_until_input(Func f) {
   DBGSTR("Press any key to continue.");
   while (!Serial.available()) {
