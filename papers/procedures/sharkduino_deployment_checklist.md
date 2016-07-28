@@ -26,7 +26,7 @@ Sharkduino Deployment Checklist
 
 [ ] Tape battery to tag 
 
-###DO NOT PLUG IN BATTERY###
+**DO NOT PLUG IN BATTERY**
 
 [ ] Tape uSD card in place
 
