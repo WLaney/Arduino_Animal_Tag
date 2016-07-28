@@ -16,9 +16,11 @@ Sharkduino Deployment Checklist
 
 [ ] Record messurment frequency on data sheet
 
+[ ] Unplug tag from computer
+
 [ ] Check uSD to insure it is blank
 
-[ ] Recored SD info on datasheet
+[ ] Recored uSD info on datasheet
 
 [ ] Insert uSD into tag
 
