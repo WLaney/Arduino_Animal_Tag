@@ -36,7 +36,7 @@ Distributed as-is; no warranty is given.
 //  ADDRESS_HIGH = 0x76
 //  ADDRESS_LOW  = 0x77
 
-MS5803 sensor(ADDRESS_HIGH);
+MS5803 sensor(ADDRESS_LOW);
 
 //Create variables to store results
 float temperature_c, temperature_f;
