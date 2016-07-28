@@ -25,4 +25,5 @@ void loop() {
   float temp_prs = pressure.getTemperature(CELSIUS, ADC_4096);
   Serial.print("TEMP102:  "); Serial.println(temp_102);
   Serial.print("Pressure: "); Serial.println(temp_prs);
+  delay(500);
 }

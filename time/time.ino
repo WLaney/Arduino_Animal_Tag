@@ -17,10 +17,10 @@ void setup() {
     t.year = prompt("Year:");
     t.mon  = prompt("Month:");
     t.mday = prompt("Day of the month:");
-    t.wday = prompt("Day of the week: ");
-    t.hour = prompt("Hour: ");
-    t.min  = prompt("Minute: ");
-    t.sec  = prompt("Second: ");
+    t.wday = prompt("Day of the week (0=Sun,6=Sat):");
+    t.hour = prompt("Hour:");
+    t.min  = prompt("Minute:");
+    t.sec  = prompt("Second:");
     DS3234_set(pin, t);
   } else {
     Serial.println(F("'Kay..."));
@@ -31,9 +31,9 @@ void loop() {
   // Read data from the clock
   ts t;
   DS3234_get(pin, &t);
-  Serial.print(t.mon);   Serial.print('-');
-  Serial.print(t.mday);  Serial.print('-');
-  Serial.print(t.year);
+  Serial.print(t.year);   Serial.print('-');
+  Serial.print(t.mon);  Serial.print('-');
+  Serial.print(t.mday);
   Serial.print(' ');
   Serial.print(t.hour); Serial.print(':');
   Serial.print(t.min);  Serial.print(':');
