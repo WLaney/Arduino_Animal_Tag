@@ -1,0 +1,5 @@
+run Make
+run ./shark-parser DATA.SRK
+a data csv and header files will be created
+
+Please not that shark-parset takes an input .SRK file and a name for the output data file, if no name is provided it defaulrs to data and header. For more information please see the readme.
