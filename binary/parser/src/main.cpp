@@ -6,6 +6,7 @@
 #include "parser.hpp"
 #include <iostream>
 #include <vector>
+#include <memory>
 #include <stdlib.h>
 #include <string.h>
 
