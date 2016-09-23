@@ -76,6 +76,19 @@ enum MMA8452Q_Register {
 ////////////////////////////////
 enum MMA8452Q_Scale {SCALE_2G = 2, SCALE_4G = 4, SCALE_8G = 8}; // Possible full-scale settings
 enum MMA8452Q_ODR {ODR_800, ODR_400, ODR_200, ODR_100, ODR_50, ODR_12, ODR_6, ODR_1}; // possible data rates
+// Enum of possible interrupt sources: auto-wake, transient detection, landscape/portrait, pulse, motion/freefal,
+// and data ready.
+enum MMA8452Q_Interrupt { 
+	// Bit-values used by CTRL_REG4 and CTRL_REG5
+	SLEEP       = 0b10000000,
+    TRANSIENT   = 0b00100000,
+    ORIENTATION = 0b00010000,
+    PULSE       = 0b00001000,
+    MOTION      = 0b00000100,
+    DREADY      = 0b00000001
+};
+// Pins that the interrupts can map to.
+enum MMA8452Q_IntPin {INT1, INT2};
 // Possible portrait/landscape settings
 #define PORTRAIT_U 0
 #define PORTRAIT_D 1
@@ -96,7 +109,7 @@ public:
 	byte available();
 	byte readTap();
 	byte readPL();
-	
+
     int x, y, z;
 	float cx, cy, cz;
 private:
@@ -109,6 +122,7 @@ private:
 	void setupTap(byte xThs, byte yThs, byte zThs);
 	void setScale(MMA8452Q_Scale fsr);
 	void setODR(MMA8452Q_ODR odr);
+
 	void writeRegister(MMA8452Q_Register reg, byte data);
     void writeRegisters(MMA8452Q_Register reg, byte *buffer, byte len);
 	byte readRegister(MMA8452Q_Register reg);

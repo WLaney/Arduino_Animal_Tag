@@ -1,0 +1,18 @@
+Change interface:
+ - To avoid cycling standby/active more than once, 
+   the user should have to specify the interrupt pins on startup.
+   However, they have to both specify which interrupts to enable and which pins to use.
+   My current plan for this is something like:
+   
+     init(rate, scale, interrupt_1s, interrupt_2s)
+
+   With the interrupts each being bitmasks. It's not elegant, and poses some problems,
+   but it's the only reasonable way to do it without some unorthodox code or flipping
+   the tag between standby and active multiple times.
+ - Add a new private method, setupInterrupts(), to be called by the startup code.
+ - Add a new enum for interrupts and pins (done).
+
+New sketch:
+ - Setup accelerometers to use dready interrupt with pin 1.
+ - Setup Arduino to receive interrupt on pin 3.
+ - Use interrupt-based system to this end.

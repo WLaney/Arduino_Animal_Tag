@@ -264,5 +264,5 @@ void MMA8452Q::readRegisters(MMA8452Q_Register reg, byte *buffer, byte len)
 	while(Wire.available() < len); //Hang out until we get the # of bytes we expect
 
 	for(int x = 0 ; x < len ; x++)
-		buffer[x] = Wire.read();    
+		buffer[x] = Wire.read();	
 }
