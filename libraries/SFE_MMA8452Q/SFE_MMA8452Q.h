@@ -88,7 +88,7 @@ enum MMA8452Q_Interrupt {
     DREADY      = 0b00000001
 };
 // Pins that the interrupts can map to.
-enum MMA8452Q_IntPin {INT1, INT2};
+enum MMA8452Q_IntPin {INTP1, INTP2};
 // Possible portrait/landscape settings
 #define PORTRAIT_U 0
 #define PORTRAIT_D 1
