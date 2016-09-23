@@ -84,7 +84,7 @@ void loop() {
          "  c) Gyroscope\n"
          "  d) Temperature\n"
          "  e) Real-Time Clock\n"
-         "  f) SD Card (not tested)\n"
+         "  f) SD Card\n"
          "  g) Pressure (not tested)\n");
   while (!Serial.available())
     ;
