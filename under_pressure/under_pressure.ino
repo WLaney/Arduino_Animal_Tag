@@ -18,6 +18,7 @@ MS5803 pressure(ADDRESS_LOW);
 void setup() {
   Wire.begin();
   pressure.begin();
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -25,5 +26,5 @@ void loop() {
   float temp_prs = pressure.getTemperature(CELSIUS, ADC_4096);
   Serial.print("TEMP102:  "); Serial.println(temp_102);
   Serial.print("Pressure: "); Serial.println(temp_prs);
-  delay(500);
+  delay(1000);
 }
