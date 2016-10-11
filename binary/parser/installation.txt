@@ -1,4 +1,4 @@
-run Make
+run make
 run ./shark-parser DATA.SRK
 a data csv and header files will be created
 
