@@ -6,7 +6,7 @@ bool FXAS_Gyro::begin() {
   // Check if tag is responding
   byte who = read8(WHO_AM_I);
   if (who != who_am_i_value) {
-    Serial.println(who);
+    Serial.println(who, HEX);
     return false;
   }
   return true;
