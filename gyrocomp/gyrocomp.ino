@@ -4,19 +4,24 @@
  * (25Hz, 250DPS).
  */
 #include "Adafruit_L3GD20.h"
+#include "fxas.h"
+
+#define ERROR(s) {Serial.println(F(s)); while (true);}
 
 Adafruit_L3GD20 l3gd20 = Adafruit_L3GD20();
+FXAS_Gyro fxas = FXAS_Gyro();
 
 void setup() {
   Serial.begin(9600);
-  // I don't know if the output data rate is set correctly
-  // here, and since this is a separate branch I will probably
-  // just edit the original library to suit my needs
+  // Data output rate and low-power mode set in source file
   if (!l3gd20.begin(Adafruit_L3GD20::L3DS20_RANGE_250DPS, 0x6B)) {
-    Serial.println(F("Could not start L3GD20."));
-    while (true) ;
+    ERROR("Could not start l3gd20.")
   }
-  Serial.println(F("Ready to fly!"));
+  // Same thing here
+  if (!fxas.begin()) {
+    ERROR("Could not start FXAS.");
+  }
+  Serial.println(F("Good to go!"));
   Serial.println(F("L3GD20       | FXAS"));
   Serial.println(F("-------------|----------"));
 }
