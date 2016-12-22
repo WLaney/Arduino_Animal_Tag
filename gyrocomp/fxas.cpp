@@ -4,6 +4,7 @@
 
 bool FXAS_Gyro::begin() {
   // Check if tag is responding
+  Wire.begin();
   byte who = read8(WHO_AM_I);
   if (who != who_am_i_value) {
     Serial.println(who, HEX);

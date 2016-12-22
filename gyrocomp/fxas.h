@@ -23,10 +23,10 @@ public:
 
 private:
 
-  // Can either be 0x20 or 0x21, depending
-  // on how William builds it
+  // Can either be 0x20 or 0x21,
+  // but is built as 0x21
   const static byte address = 0x21;
-  const static byte who_am_i_value = 0x7D;
+  const static byte who_am_i_value = 0xD7;
   
   byte read8(registers reg);
   void write8(byte reg, byte value);
