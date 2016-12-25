@@ -1,4 +1,0 @@
-- who_am_i should return correct value
-- single reads
-- range/ODR configuration
-- burst-reading
