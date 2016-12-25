@@ -1,4 +1,4 @@
-#include "Gyro_FXAS.hpp"
+#include "Gyro_FXAS.h"
 #include "stddef.h"
 
 namespace FXAS {
