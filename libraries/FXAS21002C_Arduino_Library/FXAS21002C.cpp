@@ -109,6 +109,13 @@ void FXAS21002C::init()
 	active();  // Set to active to start reading
 }
 
+void FXAS21002C::initSelfTest() {
+    reset();
+    standby();
+    writeReg(FXAS21002C_H_CTRL_REG1, 0x20);
+    active();
+}
+
 // Read the gyroscope data
 void FXAS21002C::readGyroData()
 {
@@ -162,16 +169,16 @@ void FXAS21002C::calibrate(float * gBias)
   uint8_t rawData[6];  // x/y/z FIFO accel data stored here
   for(ii = 0; ii < fcount; ii++)   // construct count sums for each axis
   {
-  readRegs(FXAS21002C_H_OUT_X_MSB, 6, &rawData[0]);  // Read the FIFO data registers into data array
-  temp[0] = ((int16_t) (rawData[0] << 8 | rawData[1])) >> 2;
-  temp[1] = ((int16_t) (rawData[2] << 8 | rawData[3])) >> 2;
-  temp[2] = ((int16_t) (rawData[4] << 8 | rawData[5])) >> 2;
-  
-  gyro_bias[0] += (int32_t) temp[0];
-  gyro_bias[1] += (int32_t) temp[1];
-  gyro_bias[2] += (int32_t) temp[2];
-  
-  delay(25); // wait for next data sample at 50 Hz rate
+      readRegs(FXAS21002C_H_OUT_X_MSB, 6, &rawData[0]);  // Read the FIFO data registers into data array
+      temp[0] = ((int16_t) (rawData[0] << 8 | rawData[1])) >> 2;
+      temp[1] = ((int16_t) (rawData[2] << 8 | rawData[3])) >> 2;
+      temp[2] = ((int16_t) (rawData[4] << 8 | rawData[5])) >> 2;
+      
+      gyro_bias[0] += (int32_t) temp[0];
+      gyro_bias[1] += (int32_t) temp[1];
+      gyro_bias[2] += (int32_t) temp[2];
+      
+      delay(25); // wait for next data sample at 50 Hz rate
   }
  
   gyro_bias[0] /= (int32_t) fcount; // get average values
@@ -187,10 +194,11 @@ void FXAS21002C::calibrate(float * gBias)
 
 void FXAS21002C::reset() 
 {
-	writeReg(FXAS21002C_H_CTRL_REG1, 0x20); // set reset bit to 1 to assert software reset to zero at end of boot process
+    // set reset bit to 1 to assert software reset to zero at end of boot process
+	writeReg(FXAS21002C_H_CTRL_REG1, 0x40); 
 	delay(100);
-while(!(readReg(FXAS21002C_H_INT_SRC_FLAG) & 0x08))  { // wait for boot end flag to be set
+    while(!(readReg(FXAS21002C_H_INT_SRC_FLAG) & 0x08)) {
+    }
 }
 
-}
 // Private Methods //////////////////////////////////////////////////////////////

@@ -86,6 +86,7 @@ class FXAS21002C
 	// FXAS21002C functions
 	// Initialization & Termination
 	void init(void);
+    void initSelfTest(void);
 	void standby(void);
 	void active(void);
 	void ready(void);
