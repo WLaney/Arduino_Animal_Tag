@@ -30,9 +30,9 @@
 #define FXAS21002C_H_INT_SRC_FLAG     0x0B
 #define FXAS21002C_H_WHO_AM_I         0x0C
 #define FXAS21002C_H_CTRL_REG0        0x0D  
-#define FXAS21002C_H_RT_CFG       	  0x0E
-#define FXAS21002C_H_RT_SRC       	  0x0F 
-#define FXAS21002C_H_RT_THS       	  0x10
+#define FXAS21002C_H_RT_CFG           0x0E
+#define FXAS21002C_H_RT_SRC           0x0F 
+#define FXAS21002C_H_RT_THS           0x10
 #define FXAS21002C_H_RT_COUNT         0x11
 #define FXAS21002C_H_TEMP             0x12
 #define FXAS21002C_H_CTRL_REG1        0x13
@@ -45,9 +45,8 @@ enum GyroODR {
 	GODR_200HZ,
 	GODR_100HZ,
 	GODR_50HZ,
-	GODR_12_5HZ, // 12.5 Hz, etc.
-	GODR_6_25HZ,
-	GODR_1_56HZ
+	GODR_25HZ,
+	GODR_12_5HZ // 12.5 Hz, etc.
 };
 // Set initial input parameters
 enum gyroFSR {
@@ -62,9 +61,9 @@ class FXAS21002C
 	public:
 	typedef struct 
 	{
-	    int16_t	x;
-	    int16_t	y;
-	    int16_t	z;
+		int16_t	x;
+		int16_t	y;
+		int16_t	z;
 	} SRAWDATA;
 
 	// Sensor data
@@ -86,7 +85,7 @@ class FXAS21002C
 	// FXAS21002C functions
 	// Initialization & Termination
 	void init(void);
-    void initSelfTest(void);
+	void initSelfTest(void);
 	void standby(void);
 	void active(void);
 	void ready(void);

@@ -26,6 +26,8 @@ bug.
 **Explanations:**
  * It takes a certain amount of time for the chip to go from active to standby, so the FSR/ODR setting instructions
    are effectively skipped. *To check:* Put a delay in between standby() and writeReg()
+   * Put a 1-second delay in, did nothing
+ * The header has incorrect range/ODR values.
  * There are issues in readReg(), writeReg(), standby(), and active() that cause multiple issues.
    *To check:* Read the datasheet to check the code against the standard.
  * The FSR and ODR are reset whenever we go into standby, which would invalidate our test.

@@ -87,9 +87,8 @@ void FXAS21002C::init()
 
 	// Set up the full scale range to 250, 500, 1000, or 2000 deg/s.
 	writeReg(FXAS21002C_H_CTRL_REG0, gyroFSR); 
-	 // Setup the 3 data rate bits, 4:2
-	if (gyroODR < 8) 
-		writeReg(FXAS21002C_H_CTRL_REG1, gyroODR << 2);      
+    // Setup the 3 data rate bits, 4:2
+    writeReg(FXAS21002C_H_CTRL_REG1, gyroODR << 2);      
 
 	// Disable FIFO, route FIFO and rate threshold interrupts to INT2, enable data ready interrupt, route to INT1
   	// Active HIGH, push-pull output driver on interrupts
