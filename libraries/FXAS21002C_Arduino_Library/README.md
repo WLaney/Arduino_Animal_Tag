@@ -20,7 +20,9 @@ To be continued...
 # Issues
 
 ## FSR/ODR Not Properly Set On Initialization
-**How I Know:** Wrote a test script in `Examples/test-thorough` to check FSR/ODR after initialization.
+**How I Know:** Wrote a test script in `Examples/test-thorough` to check FSR/ODR after initialization
+directly. Also wrote a FIFO burst-read in another branch that filled up far too quickly, suggesting this
+bug.
 **Explanations:**
  * It takes a certain amount of time for the chip to go from active to standby, so the FSR/ODR setting instructions
    are effectively skipped. *To check:* Put a delay in between standby() and writeReg()
@@ -28,6 +30,11 @@ To be continued...
    *To check:* Read the datasheet to check the code against the standard.
  * The FSR and ODR are reset whenever we go into standby, which would invalidate our test.
    *To check:* Set the FSR to 250DPS and swing it around, trying to hit the ceiling.
+    * Reading the registers returned 0 for both, but the FSR did seem to be set far lower than 2000DPS,
+      as it could easily be maximized. This might mean that I can't read the registers or am reading them
+      incorrectly.
+    * When I changed the FSR in the code, it gave the same results as before. I also noticed that the output
+      only used 14 bits, not the full 16 as advertised (it stopped at 8191/-8192).
 
 ## Reset doesn't work
 **How I Know:** initSelfTest() uses the built-in reset(), which causes the device to hang.

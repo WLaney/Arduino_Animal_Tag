@@ -13,7 +13,7 @@ void setup() {
   // See if the ODR and Rate are their expected values
   sensor.standby();
   byte odr = (sensor.readReg(FXAS21002C_H_CTRL_REG1) & 0x1C) >> 2; //bits 4:2
-  byte range = sensor.readReg(FXAS21002C_H_CTRL_REG0) & 0x01; //bit 0
+  byte range = sensor.readReg(FXAS21002C_H_CTRL_REG0) & 0x03; //bits 1:0
   Serial.print("ODR: ");
   switch (odr) {
     case 0: Serial.print("800");  break;
