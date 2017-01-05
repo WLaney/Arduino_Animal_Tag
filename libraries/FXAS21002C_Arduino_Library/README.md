@@ -24,10 +24,6 @@ To be continued...
 directly. Also wrote a FIFO burst-read in another branch that filled up far too quickly, suggesting this
 bug.
 **Explanations:**
- * It takes a certain amount of time for the chip to go from active to standby, so the FSR/ODR setting instructions
-   are effectively skipped. *To check:* Put a delay in between standby() and writeReg()
-   * Put a 1-second delay in, did nothing
- * The header has incorrect range/ODR values.
  * There are issues in readReg(), writeReg(), standby(), and active() that cause multiple issues.
    *To check:* Read the datasheet to check the code against the standard.
  * The FSR and ODR are reset whenever we go into standby, which would invalidate our test.
@@ -37,14 +33,19 @@ bug.
       incorrectly.
     * When I changed the FSR in the code, it gave the same results as before. I also noticed that the output
       only used 14 bits, not the full 16 as advertised (it stopped at 8191/-8192).
+ * It takes a certain amount of time for the chip to go from active to standby, so the FSR/ODR setting instructions
+   are effectively skipped. *To check:* Put a delay in between standby() and writeReg()
+   * Put a 1-second delay in, did nothing
+ * The header has incorrect range/ODR values.
+   * Fixed
 
 ## Reset doesn't work
 **How I Know:** initSelfTest() uses the built-in reset(), which causes the device to hang.
 **Explanations:**
  * The while loop is hanging because the on-boot bit isn't going to one. *To check:* put Serial message in while
    loop.
- * The while loop is polling for the on-boot bit so frequently that it breaks the chip. *To check:* put delay in between
-   polls.
+ * The while loop is polling for the on-boot bit so frequently that it breaks the chip.
+   *To check:* put delay in between polls.
  * readReg()'s extra endTransmission() is causing the while loop to corrupt the chip somehow.
    *To check:* remove the endTransmission()
  * writeReg() or something

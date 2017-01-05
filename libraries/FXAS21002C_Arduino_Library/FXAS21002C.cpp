@@ -31,7 +31,8 @@ byte FXAS21002C::readReg(byte reg)
 	Wire.endTransmission();
 	Wire.requestFrom(address, (uint8_t)1);
 	value = Wire.read();
-	Wire.endTransmission();
+    //This should be unnecessary
+	//Wire.endTransmission();
 
 	return value;
 }
