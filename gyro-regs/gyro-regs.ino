@@ -13,6 +13,7 @@ constexpr byte addr = 0x20;
 // Main code
 void setup() {
 	Serial.begin(9600);
+	Serial.setTimeout(100);
 	Wire.begin();
 	// Halt unless device found
 	Wire.beginTransmission(addr);
@@ -58,6 +59,9 @@ void loop() {
 	}
 }
 
+/*
+ * Return the value of a single register (verbosely)
+ */
 byte readReg(byte reg) {
 	byte tres, data = 0xFF;
 	
@@ -93,9 +97,18 @@ byte readReg(byte reg) {
 	}
 }
 
+/*
+ * Write to a single register
+ */
 void writeReg(byte reg, byte val) {
 	Serial.print(F("write ")); Serial.print((short) reg, HEX);
 	Serial.print(" ");  Serial.println((short) val, HEX);
+	// Send address and data in one write
+	Wire.beginTransmission(addr);
+	Wire.write(reg);
+	Wire.write(val);
+	Wire.endTransmission();
+	Serial.println(F("Done."));
 }
 
 void printHelp() {
