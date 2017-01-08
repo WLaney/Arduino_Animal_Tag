@@ -5,6 +5,8 @@
 
 namespace FXAS {
 	
+	Range currentRange;
+	
 	// Register addresses
     enum class Register {
 		STATUS = 0x00,
@@ -42,6 +44,7 @@ namespace FXAS {
      * This returns whether or not the gyro could be successfully reached.
      */
 	bool begin(ODR odr, Range range, bool burst) {
+		currentRange = range;
 		// TODO add FIFO
 		// Once we get into FIFO, we should look into resetting the device
 		Wire.begin();
@@ -69,7 +72,21 @@ namespace FXAS {
      * This option is only available in active mode.
      */
 	void read(sample& s) {
-
+		byte *b = (byte *) &s;
+		// Get address
+		Wire.beginTransmission(i2c_addr);
+		Wire.write((byte) Register::OUT_X_MSB);
+		Wire.endTransmission(false);
+		// Read all 6 bytes at once
+		Wire.requestFrom(i2c_addr, (byte) 6);
+		while (Wire.available() < 6)
+			;
+		// The Arduino and Gyro store data with different endianness,
+		// so we need to flip the bits
+		b[1] = Wire.read(); b[0] = Wire.read(); // X
+		b[3] = Wire.read(); b[2] = Wire.read(); // Y
+		b[5] = Wire.read(); b[4] = Wire.read(); // Z
+		Wire.endTransmission(true);
     }
 
     /*
@@ -79,15 +96,21 @@ namespace FXAS {
      * The size of the FIFO buffer is defined in the documentation.
      * [TODO] Figure that out
      */
-	void read_burst(sample* s, size_t n) {
+	void readBurst(sample* s, size_t n) {
 
     }
 
     /*
-     *
+     * Convert sample to a floating-point number based on the range
      */
     float s2f(short s) {
-
+		float fs = ((float) s) / 32768.0;
+		switch (currentRange) {
+			case Range::DPS_2000: return fs * 2000.0;
+			case Range::DPS_1000: return fs * 1000.0;
+			case Range::DPS_500:  return fs *  500.0;
+			case Range::DPS_250:  return fs *  250.0;
+		}
     }
 
 	// Private function definitions
@@ -99,8 +122,7 @@ namespace FXAS {
 		Wire.write((byte) reg);
 		Wire.endTransmission(false);
 		// Read data
-		Serial.println(F("Read data"));
-		Wire.requestFrom(i2c_addr, 1);
+		Wire.requestFrom(i2c_addr, (byte) 1);
 		while (Wire.available() < 1)
 			;
 		data = Wire.read();
@@ -114,6 +136,6 @@ namespace FXAS {
 		Wire.write((byte) reg);
 		Wire.write(val);
 		Wire.endTransmission();
-}
+	}
 
 }

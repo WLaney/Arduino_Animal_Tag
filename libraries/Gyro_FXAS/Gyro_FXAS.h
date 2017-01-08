@@ -14,9 +14,12 @@
  * to dps is dependent on the range of the gyroscope. Use s2f to convert
  * shorts to floats.
  */
+#ifndef __GYRO_FXAS_H__
+#define __GYRO_FXAS_H__
+
 #include <stddef.h>
 #include "Arduino.h"
- 
+
 namespace FXAS {
 	
 	/*
@@ -52,9 +55,11 @@ namespace FXAS {
 	
 	bool begin(ODR odr, Range range, bool burst);
     void read(sample&);
-    void read_burst(sample*, size_t);
+    //void readBurst(sample*, size_t);
 
     //Convert sample short to float in dps
     //Used for debug; we store the data as shorts
     float s2f(short s);
 }
+
+#endif //__GYRO_FXAS_H__
