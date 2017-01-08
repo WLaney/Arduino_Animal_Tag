@@ -7,7 +7,7 @@
 
 void setup() {
 	Serial.begin(9600);
-	if (FXAS::begin()) {
+	if (FXAS::begin(FXAS::ODR::HZ_12_5, FXAS::Range::DPS_250, false)) {
 		PRINTLNS("Gyro connected successfully!");
 	} else {
 		PRINTLNS("Gyro could not connect.");

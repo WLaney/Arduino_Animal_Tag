@@ -95,6 +95,8 @@ byte readReg(byte reg) {
 		Serial.print(" (binary "); Serial.print((short) data, BIN);
 		Serial.println(")");
 	}
+	
+	return data;
 }
 
 /*

@@ -1,53 +1,63 @@
 #include "Gyro_FXAS.h"
-#include "stddef.h"
+#include "Arduino.h"
+#include "Wire.h"
+#include <stddef.h>
 
 namespace FXAS {
+	
+	// Register addresses
+    enum class Register {
+		STATUS = 0x00,
+		OUT_X_MSB,
+		OUT_X_LSB,
+		OUT_Y_MSB,
+		OUT_Y_LSB,
+		OUT_Z_MSB,
+		OUT_Z_LSB,
+		DR_STATUS,
+		F_STATUS,
+		F_SETUP,
+		F_EVENT,
+		INT_SRC_FLAG,
+		WHO_AM_I,
+		CTRL_REG0,
+		RT_CFG,
+		RT_SRC,
+		RT_THS,
+		RT_COUNT,
+		TEMP,
+		CTRL_REG1,
+		CTRL_REG2,
+		CTRL_REG3
+	};
+	
+	byte readReg(Register);
+	void writeReg(Register, byte);
+	
+	// Value factory-coded into WHO_AM_I register
+	constexpr byte whoAmIValue = 0xD7;
 	
     /*
      * Start the gyroscope in standby mode.
      * This returns whether or not the gyro could be successfully reached.
      */
-	bool begin() {
-		// [TODO] Implement
-        return false;
-    }
+	bool begin(ODR odr, Range range, bool burst) {
+		// TODO add FIFO
+		// Once we get into FIFO, we should look into resetting the device
+		Wire.begin();
+		// Go into standby mode
+		writeReg(Register::CTRL_REG1, 0x00);
+		// Check WHO_AM_I byte
+		byte wai = readReg(Register::WHO_AM_I);
+        if (wai != whoAmIValue)
+			return false;
 
-    /*
-     * Put the gyro in standby mode.
-     * The gyro cannot read data, but its options can be changed.
-     */
-	void standbyMode() {
-
-    }
-
-    /*
-     * Put the gyro in active mode.
-     * Its options cannot be changed, but it can read data.
-     */
-	void activeMode() {
-
-    }
-
-    /*
-     * Set the output data rate and range of the gyroscope.
-     * The two values are contained in the same register, so you
-     * have to set them at the same time.
-     *
-     * This option is only available during standby mode.
-     */
-    void setODRAndRange(ODR,RANGE) {
-
-    }
-
-    /*
-     * Turn burst-reading on or off.
-     * The gyroscope has an internal FIFO buffer that it can store
-     * data in.
-     *
-     * This option is only available during standby mode.
-     */
-	void setBurst(bool) {
-
+		// Range is set by last two bits of CTRL_REG0
+		writeReg(Register::CTRL_REG0, (byte) range);
+		// ODR set by bits 4:2 of CTRL_REG1
+		// Active mode set by bits 0:1
+		writeReg(Register::CTRL_REG1, 0x3 | ((byte) odr << 2));
+		return true;
     }
 
     /*
@@ -58,7 +68,7 @@ namespace FXAS {
      *
      * This option is only available in active mode.
      */
-	void read(sample&) {
+	void read(sample& s) {
 
     }
 
@@ -69,7 +79,7 @@ namespace FXAS {
      * The size of the FIFO buffer is defined in the documentation.
      * [TODO] Figure that out
      */
-	void read_burst(sample*, size_t) {
+	void read_burst(sample* s, size_t n) {
 
     }
 
@@ -79,5 +89,31 @@ namespace FXAS {
     float s2f(short s) {
 
     }
+
+	// Private function definitions
+
+	byte readReg(Register reg) {
+		byte data;
+		// Get address
+		Wire.beginTransmission(i2c_addr);
+		Wire.write((byte) reg);
+		Wire.endTransmission(false);
+		// Read data
+		Serial.println(F("Read data"));
+		Wire.requestFrom(i2c_addr, 1);
+		while (Wire.available() < 1)
+			;
+		data = Wire.read();
+		Wire.endTransmission(true);
+		return data;
+	}
+
+	void writeReg(Register reg, byte val) {
+		Wire.beginTransmission(i2c_addr);
+		// TODO see if we could use a byte-buffer instead for one call?
+		Wire.write((byte) reg);
+		Wire.write(val);
+		Wire.endTransmission();
+}
 
 }

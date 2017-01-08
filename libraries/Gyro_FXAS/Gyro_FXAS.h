@@ -14,6 +14,9 @@
  * to dps is dependent on the range of the gyroscope. Use s2f to convert
  * shorts to floats.
  */
+#include <stddef.h>
+#include "Arduino.h"
+ 
 namespace FXAS {
 	
 	/*
@@ -24,24 +27,34 @@ namespace FXAS {
         short x, y, z;
     };
     
-    enum ODR { };
-    enum RANGE { };
+	// Output data rates, in order specified by CTRL_REG1
+    enum class ODR {
+		HZ_800 = 0x00,
+		HZ_400,
+		HZ_200,
+		HZ_100,
+		HZ_50,
+		HZ_25,
+		HZ_12_5,
+	};
+	
+	// Range, in order specified by CTRL_REG0
+    enum class Range {
+		DPS_2000,
+		DPS_1000,
+		DPS_500,
+		DPS_250
+	};
 	
     // [TODO] Actually set this
-    //~const short burst_buffer_max = -1;
+    //~constexpr short burst_buffer_max = -1;
+	constexpr byte i2c_addr = 0x20;
 	
-	//Setup
-	bool begin();
-	//~void standbyMode();
-	//~void activeMode();
-	//Configuration
-    //~void setODRAndRange(ODR,RANGE);
-	//~void setBurst(bool);
-	// Reading data
-    //~void read(sample&);
-    //~void read_burst(sample*, size_t);
+	bool begin(ODR odr, Range range, bool burst);
+    void read(sample&);
+    void read_burst(sample*, size_t);
 
     //Convert sample short to float in dps
     //Used for debug; we store the data as shorts
-    //~float s2f(short s);
+    float s2f(short s);
 }
