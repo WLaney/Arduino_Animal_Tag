@@ -1,0 +1,24 @@
+Serial.println(F(
+	"00	:	STATUS         DR_STATUS or F_STATUS, depending on FIFO settings\n" \
+	"01	:	OUT_X_MSB      Data. Should be read in order.\n" \
+	"02	:	OUT_X_LSB      ''\n" \
+	"03	:	OUT_Y_MSB      ''\n" \
+	"04	:	OUT_Y_LSB      ''\n" \
+	"05	:	OUT_Z_MSB      ''\n" \
+	"06	:	OUT_Z_LSB      ''\n" \
+	"07	:	DR_STATUS      See if data is ready (interrupt flags)\n" \
+	"08	:	F_STATUS       Check samples in FIFO\n" \
+	"09	:	F_SETUP        FIFO configuration (check REG3 too)\n" \
+	"0A	:	F_EVENT        Check FIFO overload & periods missed\n" \
+	"0B	:	INT_SRC_FLAG   Check interrupts & boot sequence complete\n" \
+	"0C	:	WHO_AM_I       Device ID (should be 0xD7)\n" \
+	"0D	:	CTRL_REG0      Range, filters, SPI\n" \
+	"0E	:	RT_CFG         Rate threshold stuff\n" \
+	"0F	:	RT_SRC         ''\n" \
+	"10	:	RT_THS         ''\n" \
+	"11	:	RT_COUNT       ''\n" \
+	"12	:	TEMP           Temp as signed char; only works in active mode\n" \
+	"13	:	CTRL_REG1      Reset, self-test, ODR, active/standby/ready\n" \
+	"14	:	CTRL_REG2      Interrupt configuration/routing\n" \
+	"15	:	CTRL_REG3      Miscellaneous stuff; use for FIFO"
+));
