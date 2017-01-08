@@ -50,12 +50,12 @@ namespace FXAS {
 	};
 	
     // [TODO] Actually set this
-    //~constexpr short burst_buffer_max = -1;
+    constexpr byte burst_buffer_max = 20;
 	constexpr byte i2c_addr = 0x20;
 	
 	bool begin(ODR odr, Range range, bool burst);
     void read(sample&);
-    //void readBurst(sample*, size_t);
+    void readBurst(sample*, size_t);
 
     //Convert sample short to float in dps
     //Used for debug; we store the data as shorts
