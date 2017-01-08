@@ -49,8 +49,8 @@ namespace FXAS {
 		DPS_250
 	};
 	
-    // [TODO] Actually set this
-    constexpr byte burst_buffer_max = 20;
+    // Actual maximum is 31 or 32
+    constexpr byte burst_buffer_max = 10;
 	constexpr byte i2c_addr = 0x20;
 	
 	bool begin(ODR odr, Range range, bool burst);

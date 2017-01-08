@@ -44,9 +44,8 @@ namespace FXAS {
      * This returns whether or not the gyro could be successfully reached.
      */
 	bool begin(ODR odr, Range range, bool burst) {
+		// TODO Reset FIFO somehow
 		currentRange = range;
-		// TODO add FIFO
-		// Once we get into FIFO, we should look into resetting the device
 		Wire.begin();
 		// Go into standby mode
 		writeReg(Register::CTRL_REG1, 0x00);
@@ -54,7 +53,19 @@ namespace FXAS {
 		byte wai = readReg(Register::WHO_AM_I);
         if (wai != whoAmIValue)
 			return false;
-
+		
+		if (burst) {
+			// FIFO uses circular buffer mode, no watermark use
+			writeReg(Register::F_SETUP, 0x40);
+			// Make Z_LSB auto-increment to X_MSB (0x01) instead of STATUS (0x00)
+			writeReg(Register::CTRL_REG3, 0x08);
+		} else {
+			// Clear FIFO options; we need to do this for begin() to work
+			// without turning the device off and on
+			writeReg(Register::F_SETUP, 0x00);
+			writeReg(Register::CTRL_REG3, 0x00);
+		}
+		
 		// Range is set by last two bits of CTRL_REG0
 		writeReg(Register::CTRL_REG0, (byte) range);
 		// ODR set by bits 4:2 of CTRL_REG1
@@ -97,7 +108,26 @@ namespace FXAS {
      * [TODO] Figure that out
      */
 	void readBurst(sample* s, size_t n) {
-
+		/*
+		 * The gyroscope buffer size is 31/32 samples or 192 bytes.
+		 * I seem to remember that you can't read all of them at once...
+		 */
+		byte to_read = n * 6;
+		byte *b = (byte *) s;
+		Wire.beginTransmission(i2c_addr);
+		Wire.write((byte) Register::OUT_X_MSB);
+		Wire.endTransmission(false);
+		
+		Wire.requestFrom(i2c_addr, to_read);
+		// Instead of blocking, we should probably do something else
+		while (Wire.available() < n)
+			;
+		for (int i = 0; i < to_read; i += 6) {
+			b[i+1] = Wire.read(); b[i]   = Wire.read(); // X
+			b[i+3] = Wire.read(); b[i+2] = Wire.read(); // Y
+			b[i+5] = Wire.read(); b[i+4] = Wire.read(); // Z
+		}
+		Wire.endTransmission(true);
     }
 
     /*
