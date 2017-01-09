@@ -40,14 +40,14 @@ void setup()   {
   
   if(!RTC.time_is_set()) // set a time, if none set already...
   {
-    Serial.print("Clock not set. ");
+    Serial.print(F("Clock not set. "));
     set_time();
   }
   
   // If the oscillator is borked (or not really talking to the RTC), try to warn about it
   if(!RTC.time_is_set())
   {
-    Serial.println("Clock did not set! Check that its oscillator is working.");
+    Serial.println(F("Clock did not set! Check that its oscillator is working."));
   }
 }
 
@@ -67,7 +67,7 @@ int read_int(char sep)
   
     if (c == sep)
     {
-      // Serial.print("Return value is");
+      // Serial.print(F("Return value is"));
       // Serial.println(i);
       return i;
     }
@@ -77,9 +77,9 @@ int read_int(char sep)
     }
     else
     {
-      Serial.print("\r\nERROR: \"");
+      Serial.print(F("\r\nERROR: \""));
       Serial.write(c);
-      Serial.print("\" is not a digit\r\n");
+      Serial.print(F("\" is not a digit\r\n"));
       return -1;
     }
   }
@@ -107,14 +107,14 @@ int read_int(int numbytes)
     }
     else
     {
-      Serial.print("\r\nERROR: \"");
+      Serial.print(F("\r\nERROR: \""));
       Serial.write(c);
-      Serial.print("\" is not a digit\r\n");
+      Serial.print(F("\" is not a digit\r\n"));
       return -1;
     }
     if (num == numbytes)
     {
-      // Serial.print("Return value is");
+      // Serial.print(F("Return value is"));
       // Serial.println(i);
       return i;
     }
@@ -139,7 +139,7 @@ void nap()
   // Dummy function. We don't actually want to do anything here, just use an interrupt to wake up.
   //RTC.clear_interrupt();
   // For some reason, sending commands to clear the interrupt on the RTC here does not work. Maybe Wire uses interrupts itself?
-  Serial.print(".");
+  Serial.print(F("."));
 
 }
 
@@ -177,11 +177,11 @@ void loop()
 
 void set_time()
 {
-    Serial.println("Enter date and time (YYYYMMDD HH:MM:SS)");
+    Serial.println(F("Enter date and time (YYYYMMDD HH:MM:SS)"));
     int year, month, day, hour, minute, second;
     int result = read_date(&year, &month, &day, &hour, &minute, &second);
     if (result != 0) {
-      Serial.println("Date not in correct format!");
+      Serial.println(F("Date not in correct format!"));
       return;
     } 
     
@@ -211,7 +211,7 @@ void test_basic()
   Serial.print ("The current time is ");
   RTC.readTime(); // update RTC library's buffers from chip
   printTime(0);
-  Serial.println("\nSetting times using direct method: 1/31/07 12:34:56");
+  Serial.println(F("\nSetting times using direct method: 1/31/07 12:34:56"));
   
     RTC.setSeconds(56);
     RTC.setMinutes(34);
@@ -222,19 +222,19 @@ void test_basic()
     RTC.writeTime();
     delay(500);  // This is not needed; just making it more clear that we are reading a new result
     RTC.readTime();
-    Serial.print("Read back: ");
+    Serial.print(F("Read back: "));
     printTime(0);
-    Serial.println("  (we'll never forget)");
+    Serial.println(F("  (we'll never forget)"));
     
-    Serial.println("Setting time using epoch seconds: 2971468800 (midnight on 2/29/2064)");
+    Serial.println(F("Setting time using epoch seconds: 2971468800 (midnight on 2/29/2064)"));
     RTC.writeTime(2971468800u);
     delay(500);  
     RTC.readTime();    
-    Serial.print("Read back: ");
+    Serial.print(F("Read back: "));
     printTime(0);
-    Serial.println("  (Happy 21st birthday Carlotta) ");    
+    Serial.println(F("  (Happy 21st birthday Carlotta) "));    
 
-    Serial.println("Writing alarm: 8:00am on the 15th of the month.");
+    Serial.println(F("Writing alarm: 8:00am on the 15th of the month."));
     RTC.setSeconds(0);
     RTC.setMinutes(0);
     RTC.setHours(8);
@@ -243,10 +243,10 @@ void test_basic()
     RTC.writeAlarm();
     delay(500);
     RTC.readAlarm();
-    Serial.print("Read back: ");
+    Serial.print(F("Read back: "));
     printTime(1);    
 
-    Serial.println("\nWriting alarm: 2:31:05 pm on the 3rd day of the week.");
+    Serial.println(F("\nWriting alarm: 2:31:05 pm on the 3rd day of the week."));
     RTC.setSeconds(5);
     RTC.setMinutes(31);
     RTC.setHours(14);
@@ -255,14 +255,14 @@ void test_basic()
     RTC.writeAlarm();
     delay(500);
     RTC.readAlarm();
-    Serial.print("Read back: ");
+    Serial.print(F("Read back: "));
     printTime(1);
-    Serial.println("\n");
+    Serial.println(F("\n"));
  }
 
 void test_interrupts()
 {
-  Serial.println("Setting a 1Hz periodic alarm interrupt to sleep in between. Watchen das blinkenlights...");
+  Serial.println(F("Setting a 1Hz periodic alarm interrupt to sleep in between. Watchen das blinkenlights..."));
   Serial.flush();
   
   // Steps to use an alarm interrupt:
@@ -300,14 +300,14 @@ void test_interrupts()
   
   detachInterrupt(int_number);
   
-  Serial.println("Going to snooze for 10 seconds...");
+  Serial.println(F("Going to snooze for 10 seconds..."));
   Serial.flush();
   read_time();
   Serial.flush();
   RTC.snooze(10);
   read_time();
   Serial.flush();
-  Serial.println("...and wake up again.");  
+  Serial.println(F("...and wake up again."));  
 }
 
 void test_epoch_seconds()
@@ -330,13 +330,13 @@ void test_epoch_seconds()
   unsigned long old_epoch_seconds = 946684800;
   unsigned long new_epoch_seconds = 946684800 + 1;
   
-  Serial.println("Going to output and check epoch seconds at midnight on every day \n  from 1/1/2000 to 12/31/2099. This will take a long time! (overnight)\n  You probably want to capture the output to a file (e.g. hyperterminal). \n  Press SPACE to continue or any other key to skip.\n");
+  Serial.println(F("Going to output and check epoch seconds at midnight on every day \n  from 1/1/2000 to 12/31/2099. This will take a long time! (overnight)\n  You probably want to capture the output to a file (e.g. hyperterminal). \n  Press SPACE to continue or any other key to skip.\n"));
   Serial.flush();
   
   while(!Serial.available()){}
   if(Serial.read() == ' ')
   {
-    Serial.println("Date, Seconds Since Epoch, Consistency Check Date, Consistency Check Result");
+    Serial.println(F("Date, Seconds Since Epoch, Consistency Check Date, Consistency Check Result"));
 
 
     RTC.writeTime(old_epoch_seconds); // reset time to epoch
@@ -372,9 +372,9 @@ void test_epoch_seconds()
         old_epoch_seconds = new_epoch_seconds;
         new_epoch_seconds = RTC.date_to_epoch_seconds();
 
-        Serial.print(" , ");
+        Serial.print(F(" , "));
         Serial.print(new_epoch_seconds);
-        Serial.print(" , ");
+        Serial.print(F(" , "));
         
         // ensure that the result converted back to date matches the original value.
         // Remember that this function will update the contents of the RTC library's buffer, NOT on the chip.
@@ -383,15 +383,15 @@ void test_epoch_seconds()
         
         if( second == RTC.getSeconds() && minute == RTC.getMinutes() && hour == RTC.getHours() && day == RTC.getDays() && month == RTC.getMonths() && year == RTC.getYears() )
         {
-          Serial.println(", Pass");
+          Serial.println(F(", Pass"));
         }
         else
         {
-          Serial.println(", FAIL!");
+          Serial.println(F(", FAIL!"));
         }
         
     }
-    Serial.println("\n\nDone!");
+    Serial.println(F("\n\nDone!"));
     RTC.disable_interrupt();
   }
 }
@@ -406,9 +406,9 @@ void printTime(byte type)
   if(!type)
   {
     Serial.print(int(RTC.getMonths()));
-    Serial.print("/");  
+    Serial.print(F("/"));  
     Serial.print(int(RTC.getDays()));
-    Serial.print("/");  
+    Serial.print(F("/"));  
     Serial.print(RTC.getYears());
   }
   else
@@ -416,20 +416,20 @@ void printTime(byte type)
     //if(RTC.getDays() == 0) // Day-Of-Week repeating alarm will have DayOfWeek *instead* of date, so print that.
     {
       Serial.print(int(RTC.getDayOfWeek()));
-      Serial.print("th day of week, ");
+      Serial.print(F("th day of week, "));
     }
     //else
     {
       Serial.print(int(RTC.getDays()));
-      Serial.print("th day of month, ");      
+      Serial.print(F("th day of month, "));      
     }
   }
   
-  Serial.print("  ");
+  Serial.print(F("  "));
   Serial.print(int(RTC.getHours()));
-  Serial.print(":");
+  Serial.print(F(":"));
   Serial.print(int(RTC.getMinutes()));
-  Serial.print(":");
+  Serial.print(F(":"));
   Serial.print(int(RTC.getSeconds()));  
 }
 
