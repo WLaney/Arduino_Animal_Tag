@@ -1,3 +1,0 @@
-This branch is a little hack to get this sketch up and running. As such, you shouldn't use any of it in production code; the changes are not meant to be sane or compatible with our other stuff.
-
-I know the filename is a little clickbait-y, but I wanted to get you to read it, BEN.
