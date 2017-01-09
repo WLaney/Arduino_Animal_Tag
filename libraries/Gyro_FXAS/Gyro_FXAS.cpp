@@ -103,29 +103,31 @@ namespace FXAS {
     /*
      * Read N (x, y, z) samples from the gyroscope into the internal
      * buffer. This should only be used when FIFO is active.
-     * 
-     * The size of the FIFO buffer is defined in the documentation.
-     * [TODO] Figure that out
      */
 	void readBurst(sample* s, size_t n) {
-		/*
-		 * The gyroscope buffer size is 31/32 samples or 192 bytes.
-		 * I seem to remember that you can't read all of them at once...
-		 */
-		byte to_read = n * 6;
 		byte *b = (byte *) s;
+		byte in_buffer, to_read;
+		
+		// Get the number of samples in the buffer
+		in_buffer = readReg(Register::F_STATUS) & 0x3F;
+		if (n > in_buffer) n = in_buffer;
+		to_read = n * 6;
+		
 		Wire.beginTransmission(i2c_addr);
 		Wire.write((byte) Register::OUT_X_MSB);
 		Wire.endTransmission(false);
 		
-		Wire.requestFrom(i2c_addr, to_read);
-		// Instead of blocking, we should probably do something else
-		while (Wire.available() < n)
-			;
-		for (int i = 0; i < to_read; i += 6) {
-			b[i+1] = Wire.read(); b[i]   = Wire.read(); // X
-			b[i+3] = Wire.read(); b[i+2] = Wire.read(); // Y
-			b[i+5] = Wire.read(); b[i+4] = Wire.read(); // Z
+		// requestFrom() can only get 32 bytes at once
+		for (int i = 0; i < to_read; i += 32) {
+			byte amt = (to_read - i);
+			if (amt > 32) amt = 32;
+			Wire.requestFrom(i2c_addr, amt);
+			while (Wire.available() < amt)
+				;
+			for (int j = i; j < i + amt; j += 2) {
+				b[j] = Wire.read();
+				b[j+1]   = Wire.read();
+			}
 		}
 		Wire.endTransmission(true);
     }

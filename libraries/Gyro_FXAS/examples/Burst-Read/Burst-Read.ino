@@ -22,21 +22,23 @@ void setup() {
 
 void loop() {
 	long time;
-	
 	delay(80 * bmax);
 	Serial.println(F("Reading..."));
 	time = millis();
 	readBurst(buffer, bmax);
-	time = time - millis();
+	time = millis() - time;
 	for (int i = 0; i < bmax; i++) {
 		sample s = buffer[i];
-		Serial.print(i);
-		Serial.print(F(": "));
-		Serial.print(F("X: "));    Serial.print(s2f(s.x));
-		Serial.print(F(" Y: "));   Serial.print(s2f(s.y));
-		Serial.print(F(" Z: ")); Serial.println(s2f(s.z));
+		// Floats
+		Serial.print(F("X: "));   Serial.print(s2f(s.x));
+		Serial.print(F("\tY: ")); Serial.print(s2f(s.y));
+		Serial.print(F("\tZ: ")); Serial.println(s2f(s.z));
 	}
 	Serial.print(F("Read in "));
 	Serial.print(time);
 	Serial.println(F("ms"));
+	
+	for (int i = 0; i < bmax; i++) {
+		buffer[i] = {-1, -1, -1};
+	}
 }
