@@ -232,10 +232,11 @@ namespace Gyro {
     byte *b = (byte *) ds;
     byte full = (to_read / max_wire) * max_wire;
     for (byte i=0; i<full; i+=max_wire) {
+		// why max_wire-1?
 		Wire.requestFrom(address, max_wire-1);
 		while (Wire.available() < max_wire-1)
 			;
-		// get reads
+		// I thought we read max_wire bytes here?
 		for (byte j=i; j<i+max_wire; j++) {
 			b[j] = Wire.read();
 		}
@@ -244,6 +245,7 @@ namespace Gyro {
 	// Leftovers
 	byte left = to_read-full;
 	if (left > 0) {
+		// And now we grab everything! Why?!
 		Wire.requestFrom(address, left);
 		while (Wire.available() < left)
 			;

@@ -5,7 +5,7 @@
 
 using namespace FXAS;
 
-constexpr byte bmax = burst_buffer_max;
+constexpr byte bmax = bufferSize;
 sample buffer[bmax];
 
 void setup() {
@@ -20,6 +20,10 @@ void setup() {
 	}
 }
 
+inline void print_abs(short s) {
+	Serial.print((s < 0 ? -s : s), HEX);
+}
+
 void loop() {
 	long time;
 	delay(80 * bmax);
@@ -30,15 +34,16 @@ void loop() {
 	for (int i = 0; i < bmax; i++) {
 		sample s = buffer[i];
 		// Floats
-		Serial.print(F("X: "));   Serial.print(s2f(s.x));
-		Serial.print(F("\tY: ")); Serial.print(s2f(s.y));
-		Serial.print(F("\tZ: ")); Serial.println(s2f(s.z));
+		Serial.print(F("X: "));   print_abs(s.x);
+		Serial.print(F("\tY: ")); print_abs(s.y);
+		Serial.print(F("\tZ: ")); print_abs(s.z);
+		Serial.println();
 	}
 	Serial.print(F("Read in "));
 	Serial.print(time);
 	Serial.println(F("ms"));
 	
 	for (int i = 0; i < bmax; i++) {
-		buffer[i] = {-1, -1, -1};
+		buffer[i] = {0, 0, 0};
 	}
 }

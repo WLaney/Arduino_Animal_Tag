@@ -50,8 +50,8 @@ namespace FXAS {
 		DPS_250
 	};
 	
-    constexpr byte burst_buffer_max = 32;
-    static_assert(burst_buffer_max % 2 == 0, "burst_buffer_max should be even");
+    constexpr byte bufferSize = 32;
+    static_assert(bufferSize % 2 == 0, "burst_buffer_max should be even");
 	constexpr byte i2c_addr = 0x20;
 	
 	bool begin(ODR odr, Range range, bool burst);

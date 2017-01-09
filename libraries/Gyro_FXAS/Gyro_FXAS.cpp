@@ -117,18 +117,22 @@ namespace FXAS {
 		Wire.write((byte) Register::OUT_X_MSB);
 		Wire.endTransmission(false);
 		
-		// requestFrom() can only get 32 bytes at once
+		// requestFrom() can only get 32 bytes at once;
+		// we also need to avoid sending a NACK after reading until
+		// the very end
 		for (int i = 0; i < to_read; i += 32) {
 			byte amt = (to_read - i);
 			if (amt > 32) amt = 32;
-			Wire.requestFrom(i2c_addr, amt);
+			Wire.requestFrom(i2c_addr, amt, false);
 			while (Wire.available() < amt)
 				;
+			// Flip byte order from big to little endian
 			for (int j = i; j < i + amt; j += 2) {
-				b[j] = Wire.read();
-				b[j+1]   = Wire.read();
+				b[j+1] = Wire.read();
+				b[j]   = Wire.read();
 			}
 		}
+		
 		Wire.endTransmission(true);
     }
 
