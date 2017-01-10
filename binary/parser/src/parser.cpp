@@ -24,7 +24,8 @@ inline float accel_s2f(short s, float scale) {
  */
 inline float gyro_s2f(short s, float scale) {
 	// Should only have these scales
-	if (scale != 2000.0 || scale != 1000.0 || scale != 500.0  || scale != 250.0) {
+    int scs = (int) scale;
+	if (scs != 2000 && scs != 1000 && scs != 500  && scs != 250) {
 		std::cout << "ERROR: Invalid gyroscope scale " << scale << std::endl;
 		exit(EXIT_FAILURE);
 	}
