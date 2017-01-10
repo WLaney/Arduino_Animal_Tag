@@ -54,10 +54,12 @@ namespace FXAS {
     static_assert(bufferSize % 2 == 0, "burst_buffer_max should be even");
 	constexpr byte i2c_addr = 0x20;
 	
+	extern Range currentRange;
+	
 	bool begin(ODR odr, Range range, bool burst);
     void read(sample&);
     void readBurst(sample*, size_t);
-
+	
     //Convert sample short to float in dps
     //Used for debug; we store the data as shorts
     float s2f(short s);

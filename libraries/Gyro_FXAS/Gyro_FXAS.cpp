@@ -5,8 +5,6 @@
 
 namespace FXAS {
 	
-	Range currentRange;
-	
 	// Register addresses
     enum class Register {
 		STATUS = 0x00,
@@ -38,6 +36,8 @@ namespace FXAS {
 	
 	// Value factory-coded into WHO_AM_I register
 	constexpr byte whoAmIValue = 0xD7;
+	
+	Range currentRange = Range::DPS_250;
 	
     /*
      * Start the gyroscope in standby mode.
