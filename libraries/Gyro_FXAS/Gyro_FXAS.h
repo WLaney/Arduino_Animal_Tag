@@ -18,8 +18,8 @@
 #define __GYRO_FXAS_H__
 
 #include <stddef.h>
-#include "Arduino.h"
 #include "assert.h"
+#include "Arduino.h"
 
 namespace FXAS {
 	
