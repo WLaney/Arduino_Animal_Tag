@@ -7,5 +7,8 @@
 /binary/parser/shark-parser
 /binary/parser/tests
 
+# Vim swap files
+*.swp
+
 #raw data file
 *.SRK
