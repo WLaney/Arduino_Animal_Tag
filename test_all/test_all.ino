@@ -7,6 +7,7 @@
 #include <SD.h>
 #include <SPI.h>
 #include <ds3234.h>
+#include <DSRTCLib.h>
 #include <Gyro_FXAS.h>
 #include <Light_L3GD20.h>
 #include <SFE_MMA8452Q.h>
@@ -20,6 +21,7 @@ constexpr int temp102_address = 0x48;
 
 MMA8452Q accel;
 MS5803 pressure(ADDRESS_LOW);
+DS1339 RTC = DS1339(2, 0);
 
 Sd2Card card;
 SdVolume volume;
@@ -168,8 +170,8 @@ void test_fxas21002c_gyro() {
          "These values should be within the maximum range of the gyroscope (currently 250DPS).");
   run_until_input([&] () {
     FXAS::sample data[FXAS::bufferSize];
-    FXAS::burstRead(data, FXAS::bufferSize);
-    for (auto s : sample) {
+    FXAS::readBurst(data, FXAS::bufferSize);
+    for (auto s : data) {
       Serial.print(FXAS::s2f(s.x)) ; Serial.write('\t');
       Serial.print(FXAS::s2f(s.y)) ; Serial.write('\t');
       Serial.println(FXAS::s2f(s.z));
@@ -203,8 +205,17 @@ void test_ds3234_rtc() {
 }
 
 void test_ds1339b_rtc() {
-  DBGSTR("DS1339B RTC (STUB)");
-  //DBGSTR("RTC: Display current time once per second.");
+  DBGSTR("RTC: Display current time once per second.");
+  run_until_input([] () {
+    RTC.readTime();
+    Serial.print((int)RTC.getYears());   Serial.write('-');
+    Serial.print((int)RTC.getMonths());  Serial.write('-');
+    Serial.print((int)RTC.getDays());    Serial.write('\t');
+    Serial.print((int)RTC.getHours());   Serial.write('-');
+    Serial.print((int)RTC.getMinutes()); Serial.write('-');
+    Serial.println((int)RTC.getSeconds());
+    delay(1000);
+  });
 }
 
 void test_pressure() {
