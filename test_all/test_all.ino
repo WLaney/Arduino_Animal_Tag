@@ -2,24 +2,26 @@
    A test suite for our sensors.
    Tests can be run individually or one after the other.
 */
+#include <ctype.h>
 #include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
 #include <ds3234.h>
-#include <SFE_MMA8452Q.h>
+#include <DSRTCLib.h>
+#include <Gyro_FXAS.h>
 #include <Light_L3GD20.h>
-#include <ctype.h>
+#include <SFE_MMA8452Q.h>
 #include <SparkFun_MS5803_I2C.h>
 
 #define DBGSTR(s) Serial.println(F(s))
 
 constexpr int cs_sd = 10;
 constexpr int cs_rtc = 9;
-
 constexpr int temp102_address = 0x48;
 
 MMA8452Q accel;
 MS5803 pressure(ADDRESS_LOW);
+DS1339 RTC = DS1339(2, 0);
 
 Sd2Card card;
 SdVolume volume;
@@ -37,9 +39,9 @@ inline float get_temp() {
 }
 
 /*
-   Switch SPI so that it can work with either the SD card
-   or real-time clock.
-*/
+ * Switch SPI so that it can work with either the SD card
+ * or real-time clock.
+ */
 inline void sd_mode() {
   SPI.setDataMode(SPI_MODE0);
 }
@@ -48,44 +50,49 @@ inline void rtc_mode() {
 }
 
 void setup() {
-  // General setup
   Serial.begin(9600);
-  DBGSTR("Starting Accelerometer...");
-  accel.init(SCALE_8G, ODR_12);
 
-  DBGSTR("Starting Gyroscope...");
-  Gyro::begin();
-
-  DBGSTR("Starting Wire (Temperature)...");
-  Wire.begin();
-
-  DBGSTR("Starting SPI...");
+  DBGSTR("Starting SPI (SD, DS3234)");
   SPI.begin();
 
-  DBGSTR("Starting RTC");
+  DBGSTR("Starting Wire (Everything Else)");
+  Wire.begin();
+
+  DBGSTR("Starting Accelerometer");
+  accel.init(SCALE_8G, ODR_12);
+
+  DBGSTR("Starting L3GD20 Gyroscope");
+  Gyro::begin();
+
+  DBGSTR("Starting FXAS21002C Gyroscope");
+  FXAS::begin(FXAS::ODR::HZ_12_5, FXAS::Range::DPS_250, true);
+
+  DBGSTR("Starting DS3234 RTC");
   rtc_mode();
   DS3234_init(cs_rtc, DS3234_INTCN);
 
-  DBGSTR("Starting SD...");
+  DBGSTR("Starting SD");
   sd_mode();
   if (!SD.begin(cs_sd)) {
     DBGSTR("SD card could not initialize\n");
   }
 
-  DBGSTR("Starting pressure...");
+  DBGSTR("Starting pressure");
   pressure.begin();
 }
 
 void loop() {
   String response;
   DBGSTR("Choose a test to run: \n"
-         "  a) All\n"
+         "  a) All (No L3GD20, DS3234)\n"
          "  b) Accelerometer\n"
-         "  c) Gyroscope\n"
-         "  d) Temperature\n"
-         "  e) Real-Time Clock\n"
-         "  f) SD Card\n"
-         "  g) Pressure (not tested)\n");
+         "  c) L3GD20 Gyroscope\n"
+         "  d) FXAS21002C Gyroscope\n"
+         "  e) Temperature\n"
+         "  f) DS3234 Real-Time Clock\n"
+         "  g) DS1339B Real-Time Clock\n"
+         "  h) SD Card\n"
+         "  i) External Temperature/Pressure\n");
   while (!Serial.available())
     ;
   response = Serial.readString();
@@ -93,11 +100,9 @@ void loop() {
 
   switch (letter) {
     case 'a':
-      DBGSTR("All Tests");
+      DBGSTR("All Tests (No Obsolete Sensors)");
       test_accelerometer();
-      test_gyroscope();
       test_temperature();
-      test_rtc();
       test_sd();
       test_pressure();
       break;
@@ -105,18 +110,24 @@ void loop() {
       test_accelerometer();
       break;
     case 'c':
-      test_gyroscope();
+      test_l3gd20_gyro();
       break;
     case 'd':
-      test_temperature();
+      test_fxas21002c_gyro();
       break;
     case 'e':
-      test_rtc();
+      test_temperature();
       break;
     case 'f':
-      test_sd();
+      test_ds3234_rtc();
       break;
     case 'g':
+      test_ds1339b_rtc();
+      break;
+    case 'h':
+      test_sd();
+      break;
+    case 'i':
       test_pressure();
       break;
     default:
@@ -137,7 +148,7 @@ void test_accelerometer() {
   });
 }
 
-void test_gyroscope() {
+void test_l3gd20_gyro() {
   DBGSTR("Gyroscope:\n" \
          "(x, y, z) values will appear in short bursts.\n" \
          "These values should be within the maximum range of the gyroscope (currently 250DPS).");
@@ -153,6 +164,22 @@ void test_gyroscope() {
   });
 }
 
+void test_fxas21002c_gyro() {
+  DBGSTR("Gyroscope:\n" \
+         "(x, y, z) values will appear in short bursts.\n" \
+         "These values should be within the maximum range of the gyroscope (currently 250DPS).");
+  run_until_input([&] () {
+    FXAS::sample data[FXAS::bufferSize];
+    FXAS::readBurst(data, FXAS::bufferSize);
+    for (auto s : data) {
+      Serial.print(FXAS::s2f(s.x)) ; Serial.write('\t');
+      Serial.print(FXAS::s2f(s.y)) ; Serial.write('\t');
+      Serial.println(FXAS::s2f(s.z));
+    }
+    delay(80 * FXAS::bufferSize);
+  });
+}
+
 void test_temperature() {
   DBGSTR("Temperature");
   run_until_input([]() {
@@ -161,7 +188,7 @@ void test_temperature() {
   });
 }
 
-void test_rtc() {
+void test_ds3234_rtc() {
   DBGSTR("RTC: Displays current time once per second.");
   rtc_mode();
   run_until_input([]() {
@@ -177,6 +204,20 @@ void test_rtc() {
   });
 }
 
+void test_ds1339b_rtc() {
+  DBGSTR("RTC: Display current time once per second.");
+  run_until_input([] () {
+    RTC.readTime();
+    Serial.print((int)RTC.getYears());   Serial.write('-');
+    Serial.print((int)RTC.getMonths());  Serial.write('-');
+    Serial.print((int)RTC.getDays());    Serial.write('\t');
+    Serial.print((int)RTC.getHours());   Serial.write('-');
+    Serial.print((int)RTC.getMinutes()); Serial.write('-');
+    Serial.println((int)RTC.getSeconds());
+    delay(1000);
+  });
+}
+
 void test_pressure() {
   DBGSTR("Pressure\n" \
          "Should display temperature and pressure.");
@@ -184,7 +225,7 @@ void test_pressure() {
     float pres = pressure.getPressure(ADC_4096);
     float temp = pressure.getTemperature(CELSIUS, ADC_4096);
     DBGSTR("Pressure: "); Serial.println(pres);
-    DBGSTR("Pressure: "); Serial.println(temp);
+    DBGSTR("Temperature (C): "); Serial.println(temp);
     delay(1000);
   });
 }

@@ -1,3 +1,6 @@
+// DANGER!
+// This code contains dickish hardcoding hacks to get some code in
+// this branch working. DO NOT use it in production code!
 /***************************************************
   This is a library for the L3GD20 and L3GD20H GYROSCOPE
 
@@ -68,9 +71,15 @@ bool Adafruit_L3GD20::begin(l3gd20Range_t rng, byte addr)
      1  YEN       Y-axis enable (0 = disabled, 1 = enabled)           1
      0  XEN       X-axis enable (0 = disabled, 1 = enabled)           1 */
 
-  /* Switch to normal mode and enable all three channels */
-  write8(L3GD20_REGISTER_CTRL_REG1, 0x0F);
+  // DICKISH HARDCODING IN OF 25Hz
+  // With LOW_ODR set to 1, sets data rate to 25Hz with no filtering
+  write8(L3GD20_REGISTER_CTRL_REG1, 0x4F);
   /* ------------------------------------------------------------------ */
+
+  // DICKISH HARDCODING IN OF LOW-POWER MODE
+  // NOTE THE HACKISH NATURE OF THIS HARDCODING
+  // Sets the LOW_ODR register (0x39) to 1
+  write8(0x39, 0x01);
 
   /* Set CTRL_REG2 (0x21)
    ====================================================================

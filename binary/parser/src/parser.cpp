@@ -23,18 +23,14 @@ inline float accel_s2f(short s, float scale) {
  * Convert a raw gyroscope value into a float.
  */
 inline float gyro_s2f(short s, float scale) {
-	// constants derived from Light_L3GD20.hpp
-	switch ((int) scale) {
-	case 250:
-		return s * 0.00875F;
-	case 500:
-		return s * 0.0175F;
-	case 2000:
-		return s * 0.070F;
-	default:
-		std::cout << "ERROR: Invalid gyroscope scale" << scale << std::endl;
+	// Should only have these scales
+    int scs = (int) scale;
+	if (scs != 2000 && scs != 1000 && scs != 500  && scs != 250) {
+		std::cout << "ERROR: Invalid gyroscope scale " << scale << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	float fs = ((float) s) / 32678.0;
+	return fs * scale;
 }
 
 /*
