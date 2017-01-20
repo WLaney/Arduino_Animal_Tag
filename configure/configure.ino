@@ -33,7 +33,11 @@ void setup() {
   bool valid = question("Is your device an early prototype with an incorrect orientation? (y/n)\n");
   orient = (byte)valid;
 
-  // Gyroscope calibration
+  PRINTSTR("We don't currenty use the calibration feature. Skipping...");
+  gx = 0;
+  gy = 0;
+  gz = 0;
+/*
   if (question("Would you like to calibrate the gyroscope? (y/n)\n")) {
     PRINTSTR("Keep the serial monitor open! Otherwise, the sketch will restart!");
     PRINTSTR("Lay the device on a flat surface. The test will begin in 5 seconds.\n");
@@ -66,7 +70,7 @@ void setup() {
     gy = 0.0;
     gz = 0.0;
   }
-
+*/
   PRINTSTR("Writing values to EEPROM...\n");
   EEPROM.put(0, name[0]);
   EEPROM.put(1, name[1]);
@@ -80,7 +84,7 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
 }
 
 // Ask a (y/n) question and return the response
@@ -101,7 +105,7 @@ bool question(const char *msg) {
 		return false;
         break;
       default:
-        PRINTSTR("Incorrect input.\n");
+        PRINTSTR("Invalid input.\n");
     }
   }
 }

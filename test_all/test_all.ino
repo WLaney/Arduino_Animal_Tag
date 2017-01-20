@@ -172,9 +172,9 @@ void test_fxas21002c_gyro() {
     FXAS::sample data[FXAS::bufferSize];
     FXAS::readBurst(data, FXAS::bufferSize);
     for (auto s : data) {
-      Serial.print(FXAS::s2f(s.x)) ; Serial.write('\t');
-      Serial.print(FXAS::s2f(s.y)) ; Serial.write('\t');
-      Serial.println(FXAS::s2f(s.z));
+      Serial.print(FXAS::sampleToDps(s.x)) ; Serial.write('\t');
+      Serial.print(FXAS::sampleToDps(s.y)) ; Serial.write('\t');
+      Serial.println(FXAS::sampleToDps(s.z));
     }
     delay(80 * FXAS::bufferSize);
   });

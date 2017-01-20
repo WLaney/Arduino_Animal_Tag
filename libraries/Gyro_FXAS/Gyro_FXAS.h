@@ -72,8 +72,8 @@ namespace FXAS {
 	};
 	
     constexpr byte bufferSize = 32;
-    static_assert(bufferSize % 2 == 0, "burst_buffer_max should be even");
 	constexpr byte i2c_addr = 0x20;
+    static_assert(bufferSize % 2 == 0, "burst_buffer_max should be even");
 	
 	extern Range currentRange;
 	
@@ -81,9 +81,7 @@ namespace FXAS {
     void read(sample&);
     void readBurst(sample*, size_t);
 	
-    //Convert sample short to float in dps
-    //Used for debug; we store the data as shorts
-    float s2f(short s);
+    float sampleToDps(short s);
 }
 
 #endif //__GYRO_FXAS_H__

@@ -112,7 +112,7 @@ namespace FXAS {
     /*
      * Convert sample to a floating-point number based on the range
      */
-    float s2f(short s) {
+    float sampleToDps(short s) {
 		float fs = ((float) s) / 32768.0;
 		switch (currentRange) {
 			case Range::DPS_2000: return fs * 2000.0;
