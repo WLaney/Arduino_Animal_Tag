@@ -5,34 +5,8 @@
 
 namespace FXAS {
 	
-	// Register addresses
-    enum class Register {
-		STATUS = 0x00,
-		OUT_X_MSB,
-		OUT_X_LSB,
-		OUT_Y_MSB,
-		OUT_Y_LSB,
-		OUT_Z_MSB,
-		OUT_Z_LSB,
-		DR_STATUS,
-		F_STATUS,
-		F_SETUP,
-		F_EVENT,
-		INT_SRC_FLAG,
-		WHO_AM_I,
-		CTRL_REG0,
-		RT_CFG,
-		RT_SRC,
-		RT_THS,
-		RT_COUNT,
-		TEMP,
-		CTRL_REG1,
-		CTRL_REG2,
-		CTRL_REG3
-	};
-	
-	byte readReg(Register);
-	void writeReg(Register, byte);
+	static byte readReg(Register);
+	static void writeReg(Register, byte);
 	
 	// Value factory-coded into WHO_AM_I register
 	constexpr byte whoAmIValue = 0xD7;
@@ -117,12 +91,11 @@ namespace FXAS {
 		Wire.write((byte) Register::OUT_X_MSB);
 		Wire.endTransmission(false);
 		
-		// requestFrom() can only get 32 bytes at once;
-		// we also need to avoid sending a NACK after reading until
-		// the very end
+		// requestFrom() can only get 32 bytes at once
 		for (int i = 0; i < to_read; i += 32) {
 			byte amt = (to_read - i);
 			if (amt > 32) amt = 32;
+			// Avoid sending a NACK until the very end
 			Wire.requestFrom(i2c_addr, amt, false);
 			while (Wire.available() < amt)
 				;
@@ -132,7 +105,7 @@ namespace FXAS {
 				b[j]   = Wire.read();
 			}
 		}
-		
+		// Send NACK
 		Wire.endTransmission(true);
     }
 
@@ -150,8 +123,7 @@ namespace FXAS {
     }
 
 	// Private function definitions
-
-	byte readReg(Register reg) {
+	static byte readReg(Register reg) {
 		byte data;
 		// Get address
 		Wire.beginTransmission(i2c_addr);
@@ -166,7 +138,7 @@ namespace FXAS {
 		return data;
 	}
 
-	void writeReg(Register reg, byte val) {
+	static void writeReg(Register reg, byte val) {
 		Wire.beginTransmission(i2c_addr);
 		// TODO see if we could use a byte-buffer instead for one call?
 		Wire.write((byte) reg);

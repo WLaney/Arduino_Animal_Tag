@@ -16,20 +16,41 @@
  */
 #ifndef __GYRO_FXAS_H__
 #define __GYRO_FXAS_H__
-
 #include <stddef.h>
-#include "assert.h"
+#include <assert.h>
 #include "Arduino.h"
 
 namespace FXAS {
 	
-	/*
-	 * Lines commented out with //~ are not yet implemented.
-	 */
-	
     struct sample {
         short x, y, z;
     };
+    
+    // Register addresses
+    enum class Register {
+		STATUS = 0x00,
+		OUT_X_MSB,
+		OUT_X_LSB,
+		OUT_Y_MSB,
+		OUT_Y_LSB,
+		OUT_Z_MSB,
+		OUT_Z_LSB,
+		DR_STATUS,
+		F_STATUS,
+		F_SETUP,
+		F_EVENT,
+		INT_SRC_FLAG,
+		WHO_AM_I,
+		CTRL_REG0,
+		RT_CFG,
+		RT_SRC,
+		RT_THS,
+		RT_COUNT,
+		TEMP,
+		CTRL_REG1,
+		CTRL_REG2,
+		CTRL_REG3
+	};
     
 	// Output data rates, in order specified by CTRL_REG1
     enum class ODR {
