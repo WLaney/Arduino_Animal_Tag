@@ -38,7 +38,7 @@ void setup()
   rtc_setup();
   
   // Setup SD card
-  sd_mode();
+  SPI.setDataMode(SPI_MODE0);
   pinMode(cs_sd, OUTPUT);
   if (!SD.begin(cs_sd)) {
     DBGSTR("SD card not inserted. Insert it and restart.");
@@ -66,11 +66,9 @@ void setup()
   header.as = accel_scale();
   header.gs = gyro_scale();
   // RTC Update (written separately)
-  rtc_mode();
   rtc_update();
 
   // Write header (and time) to SD
-  sd_mode();
   File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
@@ -110,14 +108,12 @@ void flush_and_write()
   // Read long-term from sensors
   if (++write_num == long_term_write_max) {
     write_num = 0;
-    rtc_mode();
     rtc_update();
     temp_update();
   }
 
   DBGSTR("Writing to SD...\n");
   long time = millis();
-  sd_mode();
   File file = SD.open(file_name, FILE_WRITE);
   if (file) {
     // Accelerometer/gyro writes
@@ -140,16 +136,6 @@ void flush_and_write()
   DBGSTR(" ms to write\n");
   accel_reset();
   gyro_reset();
-}
-
-// Prep SPI to write to the SD card
-inline void sd_mode() {
-  SPI.setDataMode(SPI_MODE0);
-}
-
-// Prep to work with RTC
-inline void rtc_mode() {
-  SPI.setDataMode(SPI_MODE1);
 }
 
 // A special version of delay() with
