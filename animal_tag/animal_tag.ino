@@ -46,6 +46,8 @@ void loop() {
     n_delay(80);
   }
   flush_and_write();
+  accel_reset();
+  gyro_reset();
 }
 
 // Flush the buffer to the SD card, writing temperature and time

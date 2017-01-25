@@ -65,7 +65,7 @@ bool output_write_header() {
   File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
-	byte b = sd.write((byte *) &header, sizeof(header_data));
+  byte b = sd.write((byte *) &header, sizeof(header_data));
     rtc_write(sd);
     sd.close();
     DBGSTR("Header bytes written (minus timer): ");
@@ -78,7 +78,7 @@ bool output_write_header() {
 
 void output_write_data(bool long_data) {
   if (long_data) {
-	rtc_update();
+    rtc_update();
     temp_update();
   }
   DBGSTR("Writing to SD...\n");
