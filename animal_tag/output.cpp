@@ -12,7 +12,7 @@
 
 constexpr byte cs_sd = 10;
 constexpr byte long_term_write_max = 3;
-constexpr char *file_name = "DATA.SRK";
+char *file_name = "YYYY-MM-DD_HH-MM-SS.SRK";
 
 // Header data is packed into this when
 // written to the SD card
@@ -27,6 +27,11 @@ struct header_data
 };
 
 bool output_setup() {
+  // Set filename
+  file_name = "debug.srk";
+  //rtc_update();
+  //rtc_print(file_name);
+  DBGSTR("Out file: "); DBGLN(file_name);
   // Setup SD card
   SPI.setDataMode(SPI_MODE0); // unnecessary?
   pinMode(cs_sd, OUTPUT);
@@ -60,10 +65,11 @@ bool output_write_header() {
   File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
-    DBGSTR("Header bytes written: ");
-    DBGLN(sd.write((byte *) &header, sizeof(header_data)));
+	byte b = sd.write((byte *) &header, sizeof(header_data));
     rtc_write(sd);
     sd.close();
+    DBGSTR("Header bytes written (minus timer): ");
+    DBGLN(b);
     return true; 
   } else {
     return false;
@@ -91,9 +97,9 @@ void output_write_data(bool long_data) {
       temp_write(file);
     }
     file.close();
-    DBGSTR("sd written written\n");
+    DBGSTR("wrote long-term\n");
   } else {
-    DBGSTR("sd could not be opened\n");
+    DBGSTR("ERROR: COULD NOT WRITE LONG-TERM DATA\n");
   }
   DBG(millis() - time);
   DBGSTR(" ms to write\n");

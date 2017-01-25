@@ -27,9 +27,8 @@ void setup()
     while (true)
       ;
   }
-
   if (!output_write_header()) {
-    DBGSTR("Could not write the header");
+    DBGSTR("ERROR: COULD NOT WRITE HEADER\n");
   }
   DBGSTR("setup done\n");
 }

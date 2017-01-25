@@ -1,14 +1,8 @@
 #include <DSRTCLib.h>
 
-char *filename = "XX-XX-XX_XX:XX:XX_DATA.SRK";
+char *filename = "YYYY-MM-DD_HH:MM:SS.SRK";
 
 DSRTCLib rtc;
-
-// Identical to printf("%02d"), but with strings
-inline void print02d(char *s, int i) {
-	s[0] = '0' + (char) (i % 100) / 10;
-	s[1] = '0' + (char) (i % 10);
-}
 
 // Set the filename based on the date and time
 void setup() {
@@ -16,16 +10,39 @@ void setup() {
 	rtc.start();
 	
 	rtc.readTime();
-	print02d(filename,    rtc.getYears());
-	print02d(filename+3,  rtc.getMonths());
-	print02d(filename+6,  rtc.getDays());
-  print02d(filename+9,  rtc.getHours());
-  print02d(filename+12, rtc.getMinutes());
-  print02d(filename+15, rtc.getSeconds());
-	
+	writeTime(rtc, filename);
 	Serial.println(filename);
 }
 
 void loop() {
 	
 }
+
+/*
+ * Identical to sprintf("%02d"), but leaner and restricted to
+ * the last two digits of the integer.
+ */
+inline void print02d(char *s, byte i) {
+  s[0] = '0' + (i % 100 / 10);
+  s[1] = '0' + (i % 10);
+}
+
+/*
+ * Writes the current time (as defined by the RTC) to a string as:
+ *   YYYY-MM-DD_HH:MM:SS
+ * Obviously, the string must be long enough to this data.
+ */
+void writeTime(DSRTCLib rtc, char *c) {
+  rtc.readTime();
+  short y = rtc.getYears();
+  c[0] = '0' + (y / 1000);
+  c[1] = '0' + (y / 100 % 10);
+  c[2] = '0' + (y % 100 / 10);
+  c[3] = '0' + (y % 10);
+  print02d(c + 5,  rtc.getMonths());
+  print02d(c + 8,  rtc.getDays());
+  print02d(c + 11, rtc.getHours());
+  print02d(c + 14, rtc.getMinutes());
+  print02d(c + 17, rtc.getSeconds());
+}
+
