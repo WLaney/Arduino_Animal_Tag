@@ -47,9 +47,9 @@ void loop() {
  * 
  */
 void set_file_name(char *c) {
-  // c = "DATA-";
-  // c[5..7] are set below; \0 from above statement is ignored
-  // c[8] = ".SRK";
+  c[0]='D'; c[1]='A'; c[2]='T'; c[3]='A';
+  // c[5..7] are set below
+  c[8]='.'; c[9]='S'; c[10]='R'; c[11]='K'; c[12]='\0';
   
   // Find the lowest number to use (max 255)
   unsigned char n = 0;
