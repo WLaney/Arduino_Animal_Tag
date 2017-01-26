@@ -6,13 +6,15 @@
 #include "temp.hpp"
 #include "pressure.hpp"
 #include <Arduino.h>
-#include <SD.h>
 #include <SPI.h>
+#include <SD.h>
 #include <EEPROM.h>
 
 constexpr byte cs_sd = 10;
 constexpr byte long_term_write_max = 3;
-char *file_name = "YYYY-MM-DD_HH-MM-SS.SRK";
+char *file_name = "DATA-XXX.SRK";
+
+static void set_file_name(char *);
 
 // Header data is packed into this when
 // written to the SD card
@@ -27,15 +29,15 @@ struct header_data
 };
 
 bool output_setup() {
-  // Set filename
-  file_name = "OUT.SRK";
-  //rtc_update();
-  //rtc_print(file_name);
-  DBGSTR("Out file: "); DBGLN(file_name);
-  // Setup SD card
   SPI.setDataMode(SPI_MODE0); // unnecessary?
   pinMode(cs_sd, OUTPUT);
-  return SD.begin(cs_sd);
+  bool sd_active = SD.begin(cs_sd);
+  if (!sd_active) {
+	  return false;
+  }
+  set_file_name(file_name);
+  DBGSTR("Out file: "); DBGLN(file_name);
+  return true;
 }
 
 bool output_write_header() {
@@ -103,4 +105,32 @@ void output_write_data(bool long_data) {
   }
   DBG(millis() - time);
   DBGSTR(" ms to write\n");
+}
+
+/*
+ * Tries to set c to an unused filename of the format DATA-XXX.SRK,
+ * 
+ */
+static void set_file_name(char *c) {
+  c[0]='D'; c[1]='A'; c[2]='T'; c[3]='A';
+  // c[5..7] are set below
+  c[8]='.'; c[9]='S'; c[10]='R'; c[11]='K'; c[12]='\0';
+  
+  // Find the lowest number to use (max 255)
+  unsigned char n = 0;
+  do {
+    c[5] = '0' + (n / 100) % 10;
+    c[6] = '0' + (n / 10) % 10;
+    c[7] = '0' + n % 10;
+    if (!SD.exists(c)) {
+      break;
+    }
+    n++;
+  } while (n != 0);
+  
+  if (n == 255) {
+    c[5] = 'M';
+    c[6] = 'A';
+    c[7] = 'X';
+  }
 }
