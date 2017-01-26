@@ -28,7 +28,7 @@ struct header_data
 
 bool output_setup() {
   // Set filename
-  file_name = "debug.srk";
+  file_name = "OUT.SRK";
   //rtc_update();
   //rtc_print(file_name);
   DBGSTR("Out file: "); DBGLN(file_name);

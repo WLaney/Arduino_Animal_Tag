@@ -48,32 +48,3 @@ void rtc_write(File sd) {
   // other fields are unused, but included in the parser for some reason
   sd.write((byte *) &t, sizeof(t));
 }
-
-/*
- * Identical to sprintf("%02d"), but leaner and restricted to
- * the last two digits of i.
- */
-inline void print02d(char *s, byte i) {
-  s[0] = '0' + (i % 100 / 10);
-  s[1] = '0' + (i % 10);
-}
-
-/*
- * Writes the current time (as defined by the RTC) to a string as:
- *   YYYY-MM-DD_HH-MM-SS
- * The string must be long enough to this data. The RTC needs to be
- * updated before calling this.
- */
-void rtc_print(char *s) {
-  short y = rtc.getYears();
-  s[0] = '0' + (y / 1000);
-  s[1] = '0' + (y / 100 % 10);
-  s[2] = '0' + (y % 100 / 10);
-  s[3] = '0' + (y % 10);
-  s[4] = '-';
-  print02d(s + 5,  rtc.getMonths());  s[7]  = '-';
-  print02d(s + 8,  rtc.getDays());    s[10] = '_';
-  print02d(s + 11, rtc.getHours());   s[13] = '-';
-  print02d(s + 14, rtc.getMinutes()); s[16] = '-';
-  print02d(s + 17, rtc.getSeconds());
-}
