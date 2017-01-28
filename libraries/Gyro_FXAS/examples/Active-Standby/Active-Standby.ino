@@ -1,7 +1,12 @@
 #include "Gyro_FXAS.h"
+#include <Narcoleptic.h>
+
+constexpr long brate = 9600;
+
+inline void n_delay(long);
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(brate);
 	FXAS::begin(FXAS::ODR::HZ_25,
 	            FXAS::Range::DPS_250,
 	            false);
@@ -14,7 +19,7 @@ void loop() {
 	} else {
 		Serial.print("Active");
 		FXAS::active();
-		delay(FXAS::timeToActive());
+		n_delay(FXAS::timeToActive());
 	}
 	Serial.println(": reading data");
 	for (int i=0; i<10; i++) {
@@ -23,6 +28,12 @@ void loop() {
 		Serial.print(FXAS::sampleToDps(s.x)) ; Serial.write(' ');
 		Serial.print(FXAS::sampleToDps(s.y)) ; Serial.write(' ');
 		Serial.println(FXAS::sampleToDps(s.z));
-		delay(40);
+		n_delay(40);
 	}
+}
+
+inline void n_delay(long ms) {
+	Serial.end();
+	Narcoleptic.delay(ms);
+	Serial.begin(brate);
 }
