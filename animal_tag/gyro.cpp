@@ -73,3 +73,21 @@ float gyro_scale() {
 void gyro_reset() {
   
 }
+
+/*
+ * Set the gyroscope to active or standby mode.
+ */
+void gyro_set_active(bool active) {
+	if (active) {
+		FXAS::active();
+	} else {
+		FXAS::standby();
+	}
+}
+
+/*
+ * Get the gyroscope's current status: active (true) or standy.
+ */
+bool gyro_is_active() {
+	return FXAS::isActive;
+}
