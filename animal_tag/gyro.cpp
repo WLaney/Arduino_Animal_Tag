@@ -16,7 +16,7 @@ void gyro_setup() {
   DBGSTR(" (software + hardware)\n");
   FXAS::begin(FXAS::ODR::HZ_25,
               FXAS::Range::DPS_250,
-			  true); // enable burst-reading
+			        true); // enable burst-reading
 }
 
 /*
@@ -24,8 +24,12 @@ void gyro_setup() {
  * into our buffer
  */
 void gyro_read_all() {
-  DBGSTR("G-READ\n");
-  FXAS::readBurst(buffer, gyro_buffer_size);
+  if (gyro_is_active) {
+    DBGSTR("G-READ\n");
+    FXAS::readBurst(buffer, gyro_buffer_size);
+  } else {
+    DBGSTR("ERROR: inactive gyroscope read!\n");
+  }
 }
 
 /*
@@ -46,11 +50,15 @@ unsigned short gyro_write_size() {
  * Write every value in the software and hardware buffer to the SD card.
  */
 void gyro_write(File sd) {
-  DBGSTR("Gyro write\n");
-  for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
-    sd.write((byte *) buffer, gyro_buffer_size * sizeof(FXAS::sample));
-    // I think we're currently doing a spurious read here; be cautious
-    gyro_read_all();
+  if (gyro_is_active) {
+    DBGSTR("Gyro write\n");
+    for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
+      sd.write((byte *) buffer, gyro_buffer_size * sizeof(FXAS::sample));
+      // I think we're currently doing a spurious read here; be cautious
+      gyro_read_all();
+    }
+  } else {
+    DBGSTR("ERROR: inactive gyro write!\n");
   }
 }
 
