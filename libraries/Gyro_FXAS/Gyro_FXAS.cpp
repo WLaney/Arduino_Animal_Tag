@@ -12,14 +12,17 @@ namespace FXAS {
 	constexpr byte whoAmIValue = 0xD7;
 	
 	Range currentRange = Range::DPS_250;
+	ODR currentOdr = ODR::HZ_12_5;
+	bool isActive = false;
 	
     /*
      * Start the gyroscope in standby mode.
      * This returns whether or not the gyro could be successfully reached.
      */
 	bool begin(ODR odr, Range range, bool burst) {
-		// TODO Reset FIFO somehow
+		isActive = true; // well, it'll be true after this function returns
 		currentRange = range;
+		currentOdr = odr;
 		Wire.begin();
 		// Go into standby mode
 		writeReg(Register::CTRL_REG1, 0x00);
@@ -47,6 +50,29 @@ namespace FXAS {
 		writeReg(Register::CTRL_REG1, 0x3 | ((byte) odr << 2));
 		return true;
     }
+	
+	/*
+	 * Go to standby mode. The device can be configured in this mode,
+	 * but isn't collecting data. It also saves power.
+	 */
+	void standby() {
+		isActive = false;
+		byte ctrl_reg1 = readReg(Register::CTRL_REG1);
+		ctrl_reg1 &= ~0x3; // clear active and ready bits
+		writeReg(Register::CTRL_REG1, ctrl_reg1);
+	}
+	
+	/*
+	 * Go to active mode. The device is collecting data, but can't
+	 * be configured.
+	 */
+	void active() {
+		isActive = true;
+		byte ctrl_reg1 = readReg(Register::CTRL_REG1);
+		ctrl_reg1 &= ~0x3; // need to go to standby before setting mode?
+		ctrl_reg1 |= 0x2;  // set active bit
+		writeReg(Register::CTRL_REG1, ctrl_reg1);
+	}
 
     /*
      * Read data from the gyroscope.
@@ -121,6 +147,22 @@ namespace FXAS {
 			case Range::DPS_250:  return fs *  250.0;
 		}
     }
+    
+    /*
+     * Return time, in ms, to get from standby to active mode.
+     * Calculated from datasheet: (1/ODR) + 60ms
+     */
+    byte timeToActive() {
+		switch (currentOdr) {
+			case ODR::HZ_800:  return byte{(1000.0 / 800.0) + 60.0}; //61
+			case ODR::HZ_400:  return byte{(1000.0 / 400.0) + 60.0};
+			case ODR::HZ_200:  return byte{(1000.0 / 200.0) + 60.0};
+			case ODR::HZ_100:  return byte{(1000.0 / 100.0) + 60.0};
+			case ODR::HZ_50:   return byte{(1000.0 /  50.0) + 60.0};
+			case ODR::HZ_25:   return byte{(1000.0 /  25.0) + 60.0};
+			case ODR::HZ_12_5: return byte{(1000.0 /  12.5) + 60.0}; //140
+		}
+	}
 
 	// Private function definitions
 	static byte readReg(Register reg) {

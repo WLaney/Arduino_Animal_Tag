@@ -76,12 +76,28 @@ namespace FXAS {
     static_assert(bufferSize % 2 == 0, "burst_buffer_max should be even");
 	
 	extern Range currentRange;
+	extern ODR currentOdr;
+	extern bool isActive;
 	
 	bool begin(ODR odr, Range range, bool burst);
+    void standby();
+    void active();
+    
     void read(sample&);
     void readBurst(sample*, size_t);
 	
+	/*
+	 * Converts one axis of the sample into degrees per second
+	 * based on the current range.
+	 */
     float sampleToDps(short s);
+    
+    /*
+     * Returns the time, in milliseconds, for the chip to go from
+     * standby to active mode. According to the datasheet, this is
+     * (1/ODR) + 60ms.
+     */
+    byte timeToActive();
 }
 
 #endif //__GYRO_FXAS_H__
