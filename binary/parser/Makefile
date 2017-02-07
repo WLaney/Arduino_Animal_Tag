@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -std=c++11 -Wall -pedantic
+CFLAGS = -std=gnu++11 -Wall -pedantic
 SRC=src
 
 all:	main tests new-tests
