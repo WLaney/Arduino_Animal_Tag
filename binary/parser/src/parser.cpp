@@ -54,7 +54,7 @@ std::ostream& operator<<(std::ostream &s, const ts &t) {
  * Due to word alignment, the Arduino and Windows time structs aren't
  * quite identical. As a result, we have to do this...
  */
- void read_time(std::ifstream &file, ts &time) {
+void read_time(std::ifstream &file, ts &time) {
 	 read_into(file, time.sec);
 	 read_into(file, time.min);
 	 read_into(file, time.hour);
@@ -65,7 +65,7 @@ std::ostream& operator<<(std::ostream &s, const ts &t) {
 	 read_into(file, time.yday);
 	 read_into(file, time.isdst);
 	 read_into(file, time.year_s);
- }
+}
 
 /*
  * Parse in_file's header and return the relevant data.

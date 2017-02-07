@@ -95,6 +95,8 @@ struct long_term_data {
 	float millibars;
 };
 
+void read_time(std::ifstream&, ts&);
+
 std::unique_ptr<header_data> parse_header(std::ifstream &in_file);
 std::vector<accel_data> parse_accel(std::ifstream &in_file, float scale, uint16_t size);
 std::vector<gyro_data> parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient);
