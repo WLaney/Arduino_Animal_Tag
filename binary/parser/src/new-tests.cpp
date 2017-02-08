@@ -68,4 +68,43 @@ TEST_CASE ( "Individual sections are parsed" ) {
 		REQUIRE(actual->time.isdst  == 8);
 		REQUIRE(actual->time.year_s == 9);
 	}
+	
+	SECTION("Long-Term") {
+		auto file = get_test_data("long-term.test");
+		auto actual = parse_long_term(*file);
+		REQUIRE(actual->time.sec    == 0);
+		REQUIRE(actual->time.min    == 1);
+		REQUIRE(actual->time.hour   == 2);
+		REQUIRE(actual->time.mday   == 3);
+		REQUIRE(actual->time.mon    == 4);
+		REQUIRE(actual->time.year   == 5);
+		REQUIRE(actual->time.wday   == 6);
+		REQUIRE(actual->time.yday   == 7);
+		REQUIRE(actual->time.isdst  == 8);
+		REQUIRE(actual->time.year_s == 9);
+		REQUIRE(actual->celsius == 0.5f);
+		//REQUIRE(actual->pressure == 0.0f);
+	}
+
+	SECTION("Gyroscope") {
+		auto file = get_test_data("gyro.test");
+		// 3 reads, 3 samples per read, 2 bytes per sample
+		auto actual = parse_gyro(*file, 2000.0, 3 * 3 * 2, 0);
+		CHECK(actual[0].x ==  Approx(1500.0));
+		CHECK(actual[0].y ==  Approx(1000.0));
+		CHECK(actual[0].z ==  Approx( 500.0));
+		CHECK(actual[1].x ==  Approx( 200.0));
+		CHECK(actual[1].y ==  Approx( 100.0));
+		CHECK(actual[1].z ==  Approx(  50.0));
+		CHECK(actual[2].x ==  Approx(  20.0));
+		CHECK(actual[2].y ==  Approx(   5.0));
+		CHECK(actual[2].z ==  Approx(   1.0));
+	}
+
+	SECTION("Accel") {
+		
+	}
+	
+
+
 }
