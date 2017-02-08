@@ -15,7 +15,7 @@
  * Convert a raw accelerometer read into a float.
  */
 inline float accel_s2f(short s, float scale) {
-	return (float) s / (float)(1<<11) * scale;
+	return s * float{scale / (1 << 11)};
 }
 
 
@@ -29,8 +29,7 @@ inline float gyro_s2f(short s, float scale) {
 		std::cout << "ERROR: Invalid gyroscope scale " << scale << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	float fs = ((float) s) / 32678.0;
-	return fs * scale;
+	return float{s} * scale / float{1 << 15};
 }
 
 /*
@@ -145,10 +144,10 @@ parse_gyro(std::ifstream &in_file, float scale, uint16_t size, bool orient) {
 		read_into(in_file, raw);
 		data.x = gyro_s2f(raw.x, scale);
 		data.y = gyro_s2f(raw.y, scale);
+		data.z = gyro_s2f(raw.z, scale);
 		if (orient) {
 			std::swap(data.x, data.y);
 		}
-		data.z = gyro_s2f(raw.z, scale);
 		out.push_back(data);
 	}
 	return out;

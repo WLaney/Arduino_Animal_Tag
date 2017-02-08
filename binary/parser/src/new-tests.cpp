@@ -93,16 +93,31 @@ TEST_CASE ( "Individual sections are parsed" ) {
 		CHECK(actual[0].x ==  Approx(1500.0));
 		CHECK(actual[0].y ==  Approx(1000.0));
 		CHECK(actual[0].z ==  Approx( 500.0));
-		CHECK(actual[1].x ==  Approx( 200.0));
-		CHECK(actual[1].y ==  Approx( 100.0));
-		CHECK(actual[1].z ==  Approx(  50.0));
-		CHECK(actual[2].x ==  Approx(  20.0));
-		CHECK(actual[2].y ==  Approx(   5.0));
-		CHECK(actual[2].z ==  Approx(   1.0));
+		CHECK(actual[1].x ==  Approx( 250.0));
+		CHECK(actual[1].y ==  Approx( 125.0));
+		CHECK(actual[1].z ==  Approx(  62.5));
+		CHECK(actual[2].x ==  Approx( 31.25));
+		CHECK(actual[2].y ==  Approx(15.625));
+		CHECK(actual[2].z ==  Approx(7.8125));
 	}
 
 	SECTION("Accel") {
-		
+		auto file = get_test_data("accel.test");
+		// two packs of six reads each, two bytes per read
+		auto actual = parse_accel(*file, float{1 << 11}, 2 * 6 * 2);
+		REQUIRE(actual.size() == 4);
+		CHECK(actual[0].x == Approx(2000.0));
+		CHECK(actual[0].y == Approx(2001.0));
+		CHECK(actual[0].z == Approx(2002.0));
+		CHECK(actual[1].x == Approx(2003.0));
+		CHECK(actual[1].y == Approx(2004.0));
+		CHECK(actual[1].z == Approx(2005.0));
+		CHECK(actual[2].x == Approx(2006.0));
+		CHECK(actual[2].y == Approx(2007.0));
+		CHECK(actual[2].z == Approx(2008.0));
+		CHECK(actual[3].x == Approx(2009.0));
+		CHECK(actual[3].y == Approx(2010.0));
+		CHECK(actual[3].z == Approx(2011.0));
 	}
 	
 
