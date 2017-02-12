@@ -14,17 +14,53 @@ constexpr char *accel_magic = "ACCL";
 constexpr char *gyro_magic = "GYRO";
 constexpr char *long_term_magic = "LONG";
 
+const char *magic[] {
+	"ACCL",
+	"GYRO",
+	"GSKP",
+	"LONG",
+};
+
+enum class MAGIC {
+	ACCL = 0,
+	GYRO = 1,
+	GSKP = 2,
+	LONG = 3,
+	BROKEN = -1,
+};
+
 /*
- * Grab the next four bytes and see if they match a magic word.
- * If not, print an error and exit.
+ * Read the next four bytes and return the magic word
+ * that they correspond to. If nothing is found,
+ * BROKEN is returned instead.
  */
-void check_magic_word(std::ifstream &in_file, const char *expected) {
+MAGIC get_next_magic(std::ifstream &in_file) {
 	char actual[5];
 	in_file.read(actual, 4);
 	actual[4] = '\0';
-	if (strncmp(expected, actual, 4) != 0) {
-		std::cerr << "ERROR: Expected header " << expected << ", got " << actual << std::endl;
-		exit(EXIT_FAILURE);
+	for (int i = 0; i < sizeof(magic) / sizeof(char *); i++) {
+		if (strncmp(actual, magic[i], 4) == 0) {
+			return static_cast<MAGIC>(i);
+		}
+	}
+	return MAGIC::BROKEN;
+}
+
+/*
+ * Grab the next four bytes and see if they match a magic word.
+ * If not, print an error and exit.
+ *
+ * Deprecated in favor of get_next_magic
+ */
+void check_magic_word(std::ifstream &in_file, const char *expected) {
+	// Get next magic
+	MAGIC actual = get_next_magic(in_file);
+	// Convert enum to string
+	const char *actual_s = magic[static_cast<int>(actual)];
+	// Compare string
+	if (strncmp(actual_s, expected, 4) != 0) {
+		std::cerr << "ERROR: expected chunk " << expected << ", got " << actual_s << std::endl;
+		exit(1);
 	}
 }
 
@@ -57,11 +93,24 @@ void write_short_term(std::ofstream &file,
 }
 
 /*
+ * Write just accelerometer data to a file.
+ * The skipped gyroscope writes will be represented with an empty cell
+ */
+void write_short_term_no_gyro(std::ofstream &file,
+                            std::vector<accel_data> accel) {
+	for (auto a : accel) {
+		file << a.x << ',' << a.y << ',' << a.z
+		     << ",,,,,," << std::endl;
+	}
+}
+
+/*
  * Write long-term data to file.
  */
 void write_long_term(std::ofstream &file, long_term_data &data) {
 	file << ",,,,,," << data.time << ',' << data.celsius << ",0" << std::endl;
 }
+
 
 /*
  * Print a short readme.
@@ -143,11 +192,17 @@ int main(int argc, char *argv[]) {
 		if (long_term_index++ < long_term_period) {
 			// Accelerometer
 			check_magic_word(in_file, accel_magic);
-			auto accel_data = parse_accel(in_file, accel_scale, accel_size);
-			// Gyroscope
-			check_magic_word(in_file, gyro_magic);
-			auto gyro_data = parse_gyro(in_file, gyro_scale, gyro_size, orient);
-			write_short_term(data_file, accel_data, gyro_data);
+			auto accel_reads = parse_accel(in_file, accel_scale, accel_size);
+			// Gyroscope OR Gskip
+			MAGIC m = get_next_magic(in_file);
+			if (m == MAGIC::GYRO) {
+				auto gyro_reads = parse_gyro(in_file, gyro_scale, gyro_size, orient);
+				write_short_term(data_file, accel_reads, gyro_reads);
+			} else if (m == MAGIC::GSKP) {
+				write_short_term_no_gyro(data_file, accel_reads);
+			} else {
+				std::cerr << "ERROR: expected GYRO or GSKP, got " << magic[static_cast<int>(m)] << std::endl;
+			}
 		} else {
 			// Long-term
 			check_magic_word(in_file, long_term_magic);
