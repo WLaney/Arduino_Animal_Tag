@@ -90,8 +90,12 @@ void output_write_data(bool long_data) {
     // Accelerometer/gyro writes
     file.print("ACCL");
     accel_write(file);
-    file.print("GYRO");
-    gyro_write(file);
+	if (gyro_is_active()) {
+    	file.print("GYRO");
+    	gyro_write(file);
+	} else {
+		file.print("GSKP");
+	}
     // Long-term writes
     if (long_data) {
       file.print("LONG");
