@@ -7,12 +7,9 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
-
-constexpr char *accel_magic = "ACCL";
-constexpr char *gyro_magic = "GYRO";
-constexpr char *long_term_magic = "LONG";
 
 const char *magic[] {
 	"ACCL",
@@ -38,12 +35,22 @@ MAGIC get_next_magic(std::ifstream &in_file) {
 	char actual[5];
 	in_file.read(actual, 4);
 	actual[4] = '\0';
-	for (int i = 0; i < sizeof(magic) / sizeof(char *); i++) {
+	for (unsigned i = 0; i < sizeof(magic) / sizeof(char *); i++) {
 		if (strncmp(actual, magic[i], 4) == 0) {
 			return static_cast<MAGIC>(i);
 		}
 	}
 	return MAGIC::BROKEN;
+}
+
+void check_magic_word(std::ifstream &in_file, const MAGIC expected) {
+    MAGIC actual = get_next_magic(in_file);
+    if (expected != actual) {
+        const char *expected_name = magic[static_cast<int>(expected)];
+        const char *actual_name   = magic[static_cast<int>(actual)];
+		std::cerr << "ERROR: expected chunk " << expected_name << ", got " << actual_name << std::endl;
+		exit(1);
+    }
 }
 
 /*
@@ -126,20 +133,19 @@ void usage(char *fname) {
 
 int main(int argc, char *argv[]) {
 	std::string in_fname, data_fname, header_fname;
-
+    std::unique_ptr<header_data> header;
+    
+    size_t accel_size;
+	size_t gyro_size;
+	int long_term_period;
+	float accel_scale;
+	float gyro_scale;
+	bool orient;
+    
 	// Argument parsing
 	if (argc == 2) {
-		// Infer output filenames
+		// Infer output filenames, leave output names blank
 		in_fname = std::string(argv[1]);
-		std::string noext;
-		size_t pos;
-		// Remove file extension
-		noext = in_fname;
-		pos = in_fname.rfind('.');
-		noext.resize(pos);
-		// Add names
-		data_fname = noext + "-data.csv";
-		header_fname = noext + "-header.csv";
 	} else if (argc == 4) {
 		// data-csv and header-csv are specified
 		in_fname = std::string(argv[1]);
@@ -159,6 +165,22 @@ int main(int argc, char *argv[]) {
 		std::cerr << "ERROR: Could not open " << in_fname << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	
+	// Read header, infer filenames if necessary
+	header = parse_header(in_file);
+    if (data_fname.empty()) {
+        std::stringstream prefix_s;
+        std::string prefix;
+        prefix_s << header->time << '_'
+                 << header->name;
+        // time << has a tab by default
+        prefix = prefix_s.str();
+        prefix[prefix.find('\t')] = ' ';
+        data_fname   = prefix + "_data.csv";
+        header_fname = prefix + "_header.csv";
+    }
+	
+	// Open output files
 	std::ofstream data_file(data_fname);
 	if (!data_file.is_open()) {
 		std::cerr << "ERROR: Could not open " << data_fname << std::endl;
@@ -173,25 +195,23 @@ int main(int argc, char *argv[]) {
 	// Write column names
 	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
 	header_file << "name,xbias,ybias,zbias" << std::endl;
-
-	// Parse header; get relevant data
-	std::unique_ptr<header_data> header = parse_header(in_file);
+    
 	write_header(header_file, data_file, *header);
 	
-	size_t accel_size = header->accel_section_size;
-	size_t gyro_size = header->gyro_section_size;
-	int long_term_period = header->long_term_period;
+	accel_size = header->accel_section_size;
+	gyro_size = header->gyro_section_size;
+	long_term_period = header->long_term_period;
 	
-	float accel_scale = header->accel_scale;
-	float gyro_scale = header->gyro_scale;
-	bool orient = header->orient;
+	accel_scale = header->accel_scale;
+	gyro_scale = header->gyro_scale;
+	orient = header->orient;
 	
 	// Go through each section
 	int long_term_index = 0;
 	while (!in_file.eof()) {
 		if (long_term_index++ < long_term_period) {
 			// Accelerometer
-			check_magic_word(in_file, accel_magic);
+			check_magic_word(in_file, MAGIC::ACCL);
 			auto accel_reads = parse_accel(in_file, accel_scale, accel_size);
 			// Gyroscope OR Gskip
 			MAGIC m = get_next_magic(in_file);
@@ -205,7 +225,7 @@ int main(int argc, char *argv[]) {
 			}
 		} else {
 			// Long-term
-			check_magic_word(in_file, long_term_magic);
+			check_magic_word(in_file, MAGIC::LONG);
 			write_long_term(data_file, *parse_long_term(in_file));
 			long_term_index = 0;
 		}
