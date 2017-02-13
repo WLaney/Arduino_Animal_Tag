@@ -22,15 +22,18 @@ void setup()
   gyro_setup();
   temp_setup();
   rtc_setup();
-  if (!output_setup()) {
-    DBGSTR("SD card not inserted. Insert it and restart.");
-    while (true)
-      ;
+  if (output_setup() && output_write_header()) {
+    DBGSTR("Setup successful\n");
+  } else {
+    DBGSTR("SD card failed to initialize. Insert it and restart\n");
+    // SPI uses pin 13 for something, so we turn it off
+    SPI.end();
+    pinMode(LED_BUILTIN, OUTPUT);
+    while (true) {
+      digitalWrite(LED_BUILTIN, HIGH); n_delay(500);
+      digitalWrite(LED_BUILTIN, LOW);  n_delay(500);
+    }
   }
-  if (!output_write_header()) {
-    DBGSTR("ERROR: COULD NOT WRITE HEADER\n");
-  }
-  DBGSTR("setup done\n");
 }
 
 void loop() {
