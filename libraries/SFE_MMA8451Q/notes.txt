@@ -1,0 +1,32 @@
+DEVICE ADDRESS
+
+The value of SA0 is controlled by the level of the SA0 pin. If SA0 is high, then SA0 = 0.
+
+If SA0 = 0: 0x1C
+If SA0 = 1: 0x1D
+
+READING DATA
+
+Works just like it does for other I2C devices, with repeated start conditions, etc. I think it would go something like:
+
+Wire.beginTransmission(address);      // send ST, slave address + 0 for write; get ACK
+Wire.write(register);                 // queue data
+Wire.endTransmission(address, false); // send register address; get ACK; send SR
+Wire.requestFrom(address, 1, true);   // send slave address + 1 for read; get byte; send STOP
+return Wire.read();
+
+IMPORTANT REGISTERS
+
+These aren't comprehensive, but contain the important stuff
+
+WHO_AM_I     - 0x0D, by default 0x1A
+F_SETUP      - 0x09; FIFO setup
+XYZ_DATA_CFG - 0x0E; controls range and high-pass filtering
+SYSMOD       - 0x0B; shows range and errors. Can't be written to
+
+CTRL_REG1 - Controls data rate selection, noise levels, 8-bit vs 14-bit, active/standby mode
+CTRL_REG2 - Sleep and active mode power schemes (power vs noise)
+CTRL_REG3 - FIFO control, auto-sleep
+CTRL_REG4 - Interrupt enables
+CTRL_REG5 - Interrupt destinations
+
