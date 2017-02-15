@@ -29,7 +29,7 @@ inline float gyro_s2f(short s, float scale) {
 		std::cout << "ERROR: Invalid gyroscope scale " << scale << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	return float{s} * scale / float{1 << 15};
+	return ((float) s) * scale / float{1 << 15};
 }
 
 /*
