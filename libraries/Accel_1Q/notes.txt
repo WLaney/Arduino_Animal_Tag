@@ -30,3 +30,8 @@ CTRL_REG3 - FIFO control, auto-sleep
 CTRL_REG4 - Interrupt enables
 CTRL_REG5 - Interrupt destinations
 
+
+WHO_AM_I
+XYZ_DATA_CFG
+CTRL_REG1
+CTRL_REG2
