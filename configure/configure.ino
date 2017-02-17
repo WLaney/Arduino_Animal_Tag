@@ -9,82 +9,88 @@
  *            * 1 - Gyroscope needs rotation (see MATLAB sketch).
  */
 #include <EEPROM.h>
-#include <Light_L3GD20.h>
+#include "tag.h"
 #define PRINTSTR(S) Serial.print(F(S))
 
-const int gyro_calibration_reads=12*60;
+Tag tag;
 
 void setup() {
-  char name[5];
-  byte orient;
-  float gx = 0;
-  float gy = 0;
-  float gz = 0;
-  
   Serial.begin(9600);
   PRINTSTR("Device Configuration\n\n");
-  PRINTSTR("Enter a 4-letter name for the device:\n");
-  while (Serial.available() < 4)
-    ;
-  Serial.readBytes(name, 4);
-  name[4] = '\0';
-  Serial.println(name);
-  
-  bool valid = question("Is your device an early prototype with an incorrect orientation? (y/n)\n");
-  orient = (byte)valid;
-
-  PRINTSTR("We don't currenty use the calibration feature. Skipping...");
-  gx = 0;
-  gy = 0;
-  gz = 0;
-/*
-  if (question("Would you like to calibrate the gyroscope? (y/n)\n")) {
-    PRINTSTR("Keep the serial monitor open! Otherwise, the sketch will restart!");
-    PRINTSTR("Lay the device on a flat surface. The test will begin in 5 seconds.\n");
-    delay(5000);
-    PRINTSTR("Alright. Go do something else for minute or two.\n");
-    
-    Gyro::begin();
-    Gyro::l3gd20Data_t gd;
-    for (int i=1; i<=gyro_calibration_reads; i++) {
-      Gyro::read(&gd);
-      float ri = 1.0 / i;
-      gx = gx + (Gyro::s2f(gd.x) - gx) * ri;
-      gy = gy + (Gyro::s2f(gd.y) - gy) * ri;
-      gz = gz + (Gyro::s2f(gd.z) - gz) * ri;
-      delay(80);
-    }
-    if (orient) {
-      float temp = gx;
-      gx = gy;
-      gy = temp;
-    }
-
-    PRINTSTR("Done calibrating.\n");
-    PRINTSTR("X: ") ; Serial.print(gx) ; Serial.write('\n');
-    PRINTSTR("Y: ") ; Serial.print(gy) ; Serial.write('\n');
-    PRINTSTR("Z: ") ; Serial.print(gz) ; Serial.write('\n');
-  } else {
-    PRINTSTR("Assuming bias of (0,0,0)...");
-    gx = 0.0;
-    gy = 0.0;
-    gz = 0.0;
-  }
-*/
-  PRINTSTR("Writing values to EEPROM...\n");
-  EEPROM.put(0, name[0]);
-  EEPROM.put(1, name[1]);
-  EEPROM.put(2, name[2]);
-  EEPROM.put(3, name[3]);
-  EEPROM.put(4, orient);
-  EEPROM.put(5, gx);
-  EEPROM.put(9, gy);
-  EEPROM.put(13, gz);
-  PRINTSTR("Done.\n");
+  tag = Tag(true);
 }
 
 void loop() {
+  PRINTSTR(
+    "a) Print current device configuration\n" \
+    "b) Set device name\n" \
+    "c) Set device orientation (for old tags)\n" \
+    "d) Calibrate gyroscope (not implemented)\n" \
+    "e) Write changes\n\n" \
+  );
+  while (!Serial.available())
+    ;
+  char result = Serial.read();
+  // Somewhat janky downcase() method
+  if (result < 'a') result = (result - 'A') + 'a';
+  switch (result) {
+  case 'a':
+    print_configuration();
+    break;
+  case 'b':
+    set_name();
+    break;
+  case 'c':
+    set_orientation();
+    break;
+  case 'd':
+    calibrate();
+    break;
+  case 'e':
+    write_changes();
+    break;
+  default:
+    PRINTSTR("Sorry, didn't quite catch that...");
+  }
+  Serial.println('\n');
+}
 
+// Update the current settings here
+void get_configuration() {
+  tag.update();
+}
+
+// Print the tag's current values
+void print_configuration() {
+  Tag current(true);
+  PRINTSTR("Name:   "); Serial.write(tag.name, 4); Serial.write('\n');
+  PRINTSTR("Orient: "); Serial.println(tag.orient);
+  PRINTSTR("X Bias: "); Serial.println(tag.bias_x);
+  PRINTSTR("Y Bias: "); Serial.println(tag.bias_y);
+  PRINTSTR("Z Bias: "); Serial.println(tag.bias_z);
+  PRINTSTR("");
+}
+
+void set_name() {
+  PRINTSTR("Enter a 4-letter name for the device:\n");
+  while (Serial.available() < 4)
+    ;
+  Serial.readBytes(tag.name, 4);
+  Serial.println(tag.name);
+}
+
+void set_orientation() {
+  bool valid = question("Is your device an early prototype with an incorrect orientation? (y/n)\n");
+  tag.orient = (byte)valid;
+}
+
+void calibrate() {
+  PRINTSTR("We don't currenty use the calibration feature. Skipping...\n");
+}
+
+void write_changes() {
+  PRINTSTR("Writing values to EEPROM...\n");
+  tag.write();
 }
 
 // Ask a (y/n) question and return the response
