@@ -1,22 +1,43 @@
-/*
- * Wrapper namespace; access tag configuration.
- */
-
 #ifndef __TAG_H__
 #define __TAG_H__
 #include <Arduino.h>
 
+/*
+Class representing tag configuration data.
+Can be updated from or written to the actual tag's EEPROM.
+
+EEPROM address map:
+
+byte | val         | type
+-----|-------------|------
+0-3  | name        | char[4] (no \0)
+4    | orient      | bool
+5    | bias_x      | float
+9    | bias_y      | float
+13   | bias_z      | float
+17   | accel_scale | byte
+18   | gyro_scale  | byte
+19   | sample_rate | byte
+*/
+
 class Tag {
 public:
+	enum ACCEL_SCALE { ACCEL_2G, ACCEL_4G, ACCEL_8G, };
+	enum GYRO_SCALE  { GYRO_250DPS, GYRO_500DPS, GYRO_2000DPS };
+	enum SAMPLE_RATE { ODR_6_25_HZ, ODR_12_5_HZ, ODR_25_HZ, ODR_50_HZ };
+
 	char name[4];
 	bool orient;
 	float bias_x;
 	float bias_y;
 	float bias_z;
+	ACCEL_SCALE accel_scale;
+	GYRO_SCALE  gyro_scale;
+	SAMPLE_RATE sample_rate;
 	
 	Tag(bool update=false);
 	Tag(Tag &);
-	Tag(char*, bool, float, float, float);
+	Tag(char*, bool, float, float, float, ACCEL_SCALE, GYRO_SCALE, SAMPLE_RATE);
 	
 	void update();
 	void write();

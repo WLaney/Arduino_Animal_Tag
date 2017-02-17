@@ -24,9 +24,12 @@ void loop() {
   PRINTSTR(
     "a) Print current device configuration\n" \
     "b) Set device name\n" \
-    "c) Set device orientation (for old tags)\n" \
-    "d) Calibrate gyroscope (not implemented)\n" \
-    "e) Write changes\n\n" \
+    "c) Set accelerometer scale\n" \
+    "d) Set gyroscope scale\n" \
+    "e) Set samplerate\n" \
+    "f) Set device orientation (for old tags)\n" \
+    "g) Calibrate gyroscope (not implemented)\n" \
+    "h) Write changes\n\n" \
   );
   while (!Serial.available())
     ;
@@ -41,12 +44,21 @@ void loop() {
     set_name();
     break;
   case 'c':
-    set_orientation();
+    set_accel_scale();
     break;
   case 'd':
-    calibrate();
+    set_gyro_scale();
     break;
   case 'e':
+    set_odr();
+    break;
+  case 'f':
+    set_orientation();
+    break;
+  case 'g':
+    calibrate();
+    break;
+  case 'h':
     write_changes();
     break;
   default:
@@ -68,7 +80,23 @@ void print_configuration() {
   PRINTSTR("X Bias: "); Serial.println(tag.bias_x);
   PRINTSTR("Y Bias: "); Serial.println(tag.bias_y);
   PRINTSTR("Z Bias: "); Serial.println(tag.bias_z);
-  PRINTSTR("");
+  PRINTSTR("Accel Scale: ");
+  switch (tag.accel_scale) {
+    case Tag::ACCEL_2G: PRINTSTR("2G\n"); break;
+    case Tag::ACCEL_4G: PRINTSTR("4G\n"); break;
+    case Tag::ACCEL_8G: PRINTSTR("8G\n"); break;
+    default:
+      PRINTSTR("UKNOWN VALUE - "); Serial.println(tag.accel_scale);
+  }
+  PRINTSTR("Gyro Scale:  ");
+  switch (tag.gyro_scale) {
+    case Tag::GYRO_250DPS:  PRINTSTR("250DPS\n"); break;
+    case Tag::GYRO_500DPS:  PRINTSTR("500DPS\n"); break;
+    case Tag::GYRO_2000DPS: PRINTSTR("2000DPS\n"); break;
+    default:
+      PRINTSTR("UNKNOWN VALUE - "); Serial.println(tag.gyro_scale);
+  }
+  PRINTSTR("Samplerate:  "); Serial.println(tag.sample_rate);
 }
 
 void set_name() {
@@ -77,6 +105,58 @@ void set_name() {
     ;
   Serial.readBytes(tag.name, 4);
   Serial.println(tag.name);
+}
+
+void set_accel_scale() {
+  PRINTSTR("Enter your scale in G's (2, 4, or 8):");
+  while (!Serial.available())
+   ;
+  char r = Serial.read();
+  Tag::ACCEL_SCALE a;
+  switch (r) {
+  case '2':
+    a = Tag::ACCEL_2G;
+    break;
+  case '4':
+    a = Tag::ACCEL_4G;
+    break;
+  case '8':
+    a = Tag::ACCEL_8G;
+    break;
+  default:
+    PRINTSTR("Not a valid option\n");
+    return;
+  }
+  tag.accel_scale = a;
+}
+
+void set_gyro_scale() {
+  PRINTSTR(
+    "What'll it be, pal?\n" \
+    "a) 250DPS\n" \
+    "b) 500DPS\n" \
+    "c) 2000DPS\n"
+  );
+  while (!Serial.available())
+   ;
+  char r = Serial.read();
+  switch (r) {
+    case 'a':
+      tag.gyro_scale = Tag::GYRO_250DPS;
+      break;
+    case 'b':
+      tag.gyro_scale = Tag::GYRO_500DPS;
+      break;
+    case 'c':
+      tag.gyro_scale = Tag::GYRO_2000DPS;
+      break;
+    default:
+      PRINTSTR("Not a valid option\n");
+  }
+}
+
+void set_odr() {
+  PRINTSTR("stub\n");
 }
 
 void set_orientation() {
