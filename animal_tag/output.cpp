@@ -16,18 +16,6 @@ char *file_name = "DATA-XXX.SRK";
 
 static void set_file_name(char *);
 
-// Header data is packed into this when
-// written to the SD card
-struct header_data
-{
-  char name[4];            // Name of device [4 chars]
-  byte orient;             // Orientation
-  float gx, gy, gz;        // Gyroscope Bias
-  unsigned short aws, gws; // Accelerometer and Gyroscope write size
-  unsigned short period;
-  float as, gs;            // Accelerometer and gyroscope scale
-};
-
 bool output_setup() {
   SPI.setDataMode(SPI_MODE0); // unnecessary?
   pinMode(cs_sd, OUTPUT);
@@ -40,34 +28,13 @@ bool output_setup() {
   return true;
 }
 
-bool output_write_header() {
-  // Get header information
-  header_data header;
-  // Name of device
-  for (byte i=0; i<4; i++) {
-    header.name[i] = EEPROM.read(i);
-  }
-  // Orientation
-  header.orient = EEPROM.read(4);
-  EEPROM.get(5, header.gx);
-  EEPROM.get(9, header.gy);
-  EEPROM.get(13, header.gz);
-  // Accelerometer, Gyroscope Write Size
-  header.aws = accel_write_size();
-  header.gws = gyro_write_size();
-  // Write period (long_term_write_max)
-  header.period = long_term_write_max;
-  // Scaling
-  header.as = accel_scale();
-  header.gs = gyro_scale();
-  // Read time before opening card to save power
+bool output_write_header(header_data &header) {
   rtc_update();
-  
   // Write header (and time) to SD
   File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
-  byte b = sd.write((byte *) &header, sizeof(header_data));
+	byte b = sd.write((byte *) &header, sizeof(header_data));
     rtc_write(sd);
     sd.close();
     DBGSTR("Header bytes written (minus timer): ");

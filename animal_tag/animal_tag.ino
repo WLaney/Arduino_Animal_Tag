@@ -15,6 +15,17 @@ byte long_term_write_num = 0;
 
 void setup()
 {
+  header_data header;
+  
+  // Get configuration from EEPROM
+  for (byte i=0; i<4; i++) {
+    header.name[i] = EEPROM.read(i);
+  }
+  header.orient = EEPROM.read(4);
+  EEPROM.get(5, header.gx); // gyroscope bias
+  EEPROM.get(9, header.gy);
+  EEPROM.get(13, header.gz);
+  
   // Debug commands won't show up if they're
   // turned off in debug.h
   DBEGIN();
@@ -22,7 +33,9 @@ void setup()
   gyro_setup();
   temp_setup();
   rtc_setup();
-  if (output_setup() && output_write_header()) {
+  
+  // Start SD card
+  if (output_setup()) {
     DBGSTR("Setup successful\n");
   } else {
     DBGSTR("SD card failed to initialize. Insert it and restart\n");
@@ -34,6 +47,17 @@ void setup()
       digitalWrite(LED_BUILTIN, LOW);  n_delay(500);
     }
   }
+  
+  // Write header
+  // Accelerometer, Gyroscope Write Size
+  header.aws = accel_write_size();
+  header.gws = gyro_write_size();
+  // Write period (long_term_write_max)
+  header.period = long_term_write_max;
+  // Scaling
+  header.as = accel_scale();
+  header.gs = gyro_scale();
+  output_write_header(header);
 }
 
 void loop() {
