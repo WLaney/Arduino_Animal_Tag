@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <SD.h>
 
+
 void accel_setup();
 void accel_read();
 bool accel_full();

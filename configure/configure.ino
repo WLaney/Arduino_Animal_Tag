@@ -96,7 +96,15 @@ void print_configuration() {
     default:
       PRINTSTR("UNKNOWN VALUE - "); Serial.println(tag.gyro_scale);
   }
-  PRINTSTR("Samplerate:  "); Serial.println(tag.sample_rate);
+  PRINTSTR("Samplerate:  ");
+  switch (tag.sample_rate) {
+    case Tag::ODR_6_25_HZ: PRINTSTR("6.25Hz\n"); break;
+    case Tag::ODR_12_5_HZ: PRINTSTR("12.5Hz\n"); break;
+    case Tag::ODR_25_HZ:   PRINTSTR("25Hz\n"); break;
+    case Tag::ODR_50_HZ:   PRINTSTR("50Hz\n"); break;
+    default:
+      PRINTSTR("UNKNOWN VALUE - "); Serial.println(tag.sample_rate);
+  }
 }
 
 void set_name() {
@@ -141,22 +149,47 @@ void set_gyro_scale() {
    ;
   char r = Serial.read();
   switch (r) {
-    case 'a':
-      tag.gyro_scale = Tag::GYRO_250DPS;
-      break;
-    case 'b':
-      tag.gyro_scale = Tag::GYRO_500DPS;
-      break;
-    case 'c':
-      tag.gyro_scale = Tag::GYRO_2000DPS;
-      break;
-    default:
-      PRINTSTR("Not a valid option\n");
+  case 'a':
+    tag.gyro_scale = Tag::GYRO_250DPS;
+    break;
+  case 'b':
+    tag.gyro_scale = Tag::GYRO_500DPS;
+    break;
+  case 'c':
+    tag.gyro_scale = Tag::GYRO_2000DPS;
+    break;
+  default:
+    PRINTSTR("Not a valid option\n");
   }
 }
 
 void set_odr() {
-  PRINTSTR("stub\n");
+  PRINTSTR(
+    "What'll it be, pal?\n" \
+    "a) 6.25Hz\n" \
+    "b) 12.5Hz\n" \
+    "c) 25Hz\n" \
+    "d) 50Hz\n"
+  );
+  while (!Serial.available())
+   ;
+  char r = Serial.read();
+  switch (r) {
+  case 'a':
+    tag.sample_rate = Tag::ODR_6_25_HZ;
+    break;
+  case 'b':
+    tag.sample_rate = Tag::ODR_12_5_HZ;
+    break;
+  case 'c':
+    tag.sample_rate = Tag::ODR_25_HZ;
+    break;
+  case 'd':
+    tag.sample_rate = Tag::ODR_50_HZ;
+    break;
+  default:
+    PRINTSTR("Not a valid option\n");
+  }
 }
 
 void set_orientation() {
@@ -171,6 +204,7 @@ void calibrate() {
 void write_changes() {
   PRINTSTR("Writing values to EEPROM...\n");
   tag.write();
+  PRINTSTR("Done.\n");
 }
 
 // Ask a (y/n) question and return the response
@@ -182,14 +216,14 @@ bool question(const char *msg) {
     switch (Serial.read()) {
       case 'Y':
       case 'y':
-        PRINTSTR("Yes\n");
-		return true;
+      PRINTSTR("Yes\n");
+    return true;
         break;
       case 'N':
       case 'n':
-        PRINTSTR("No\n");
-		return false;
-        break;
+      PRINTSTR("No\n");
+    return false;
+      break;
       default:
         PRINTSTR("Invalid input.\n");
     }
