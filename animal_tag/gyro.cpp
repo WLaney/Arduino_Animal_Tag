@@ -10,13 +10,11 @@ static FXAS::sample buffer[gyro_buffer_size];
  * Setup the gyroscope's internal buffer, do some
  * debugging reports
  */
-void gyro_setup() {
+void gyro_setup(FXAS::Range range, FXAS::ODR odr) {
   DBGSTR("Gyroscope buffer size: ");
   DBG(gyro_buffer_size + gyro_fifo_size);
   DBGSTR(" (software + hardware)\n");
-  FXAS::begin(FXAS::ODR::HZ_25,
-              FXAS::Range::DPS_250,
-			        true); // enable burst-reading
+  FXAS::begin(odr, range, true); // enable burst-reading
 }
 
 /*

@@ -19,11 +19,11 @@ static MMA8452Q accel;
 // specialization defined in PackedBuffer.cpp
 PackedBuffer<24> buffer;
 
-void accel_setup() {
+void accel_setup(MMA8452Q_Scale scale, MMA8452Q_ODR odr) {
   DBGSTR("Accelerometer buffer: ");
   DBG(accel_buffer_packs);
   DBGSTR(" (x2)\n");
-	accel.init(SCALE_8G, ODR_12);
+	accel.init(scale, odr);
 }
 
 void accel_read() {

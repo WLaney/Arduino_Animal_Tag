@@ -29,8 +29,8 @@ void setup()
   // Debug commands won't show up if they're
   // turned off in debug.h
   DBEGIN();
-  accel_setup();
-  gyro_setup();
+  accel_setup(SCALE_2G, ODR_50); // not a misprint, accel can't do 25Hz
+  gyro_setup(FXAS::Range::DPS_250, FXAS::ODR::HZ_25);
   temp_setup();
   rtc_setup();
   
