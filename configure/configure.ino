@@ -99,7 +99,6 @@ void print_configuration() {
   }
   PRINTSTR("Samplerate:  ");
   switch (tag.sample_rate) {
-    case Tag::ODR_6_25_HZ: PRINTSTR("6.25Hz\n"); break;
     case Tag::ODR_12_5_HZ: PRINTSTR("12.5Hz\n"); break;
     case Tag::ODR_25_HZ:   PRINTSTR("25Hz\n"); break;
     case Tag::ODR_50_HZ:   PRINTSTR("50Hz\n"); break;
@@ -170,25 +169,21 @@ void set_gyro_scale() {
 void set_odr() {
   PRINTSTR(
     "What'll it be, pal?\n" \
-    "a) 6.25Hz\n" \
-    "b) 12.5Hz\n" \
-    "c) 25Hz\n" \
-    "d) 50Hz\n"
+    "a) 12.5Hz\n" \
+    "b) 25Hz\n" \
+    "c) 50Hz\n"
   );
   while (!Serial.available())
    ;
   char r = Serial.read();
   switch (r) {
   case 'a':
-    tag.sample_rate = Tag::ODR_6_25_HZ;
-    break;
-  case 'b':
     tag.sample_rate = Tag::ODR_12_5_HZ;
     break;
-  case 'c':
+  case 'b':
     tag.sample_rate = Tag::ODR_25_HZ;
     break;
-  case 'd':
+  case 'c':
     tag.sample_rate = Tag::ODR_50_HZ;
     break;
   default:

@@ -24,7 +24,7 @@ class Tag {
 public:
 	enum ACCEL_SCALE { ACCEL_2G, ACCEL_4G, ACCEL_8G, };
 	enum GYRO_SCALE  { GYRO_2000DPS, GYRO_1000DPS, GYRO_500DPS, GYRO_250DPS};
-	enum SAMPLE_RATE { ODR_6_25_HZ, ODR_12_5_HZ, ODR_25_HZ, ODR_50_HZ };
+	enum SAMPLE_RATE { ODR_12_5_HZ, ODR_25_HZ, ODR_50_HZ };
 
 	char name[4];
 	bool orient;

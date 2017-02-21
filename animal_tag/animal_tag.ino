@@ -12,7 +12,6 @@
 
 // Copied from configure.ino
 enum SAMPLE_RATE {
-	ODR_6_25_HZ,
 	ODR_12_5_HZ,
 	ODR_25_HZ,
 	ODR_50_HZ
@@ -45,12 +44,6 @@ void setup()
   gscale = static_cast<FXAS::Range>(EEPROM.read(18));
   odr = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
-	case ODR_6_25_HZ:
-		DBGSTR("Don't use this option yet!\n");
-		aodr = ODR_6;
-		godr = FXAS::ODR::HZ_12_5;
-		sample_delay = byte{1000.0 / 6.25} - 10;
-		break;
 	case ODR_12_5_HZ:
 		aodr = ODR_12;
 		godr = FXAS::ODR::HZ_12_5;
