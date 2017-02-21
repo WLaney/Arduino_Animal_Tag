@@ -92,6 +92,7 @@ void print_configuration() {
   switch (tag.gyro_scale) {
     case Tag::GYRO_250DPS:  PRINTSTR("250DPS\n"); break;
     case Tag::GYRO_500DPS:  PRINTSTR("500DPS\n"); break;
+    case Tag::GYRO_1000DPS: PRINTSTR("1000DPS\n"); break;
     case Tag::GYRO_2000DPS: PRINTSTR("2000DPS\n"); break;
     default:
       PRINTSTR("UNKNOWN VALUE - "); Serial.println(tag.gyro_scale);
@@ -143,7 +144,8 @@ void set_gyro_scale() {
     "What'll it be, pal?\n" \
     "a) 250DPS\n" \
     "b) 500DPS\n" \
-    "c) 2000DPS\n"
+    "c) 1000DPS\n" \
+    "d) 2000DPS\n"
   );
   while (!Serial.available())
    ;
@@ -156,8 +158,10 @@ void set_gyro_scale() {
     tag.gyro_scale = Tag::GYRO_500DPS;
     break;
   case 'c':
-    tag.gyro_scale = Tag::GYRO_2000DPS;
+    tag.gyro_scale = Tag::GYRO_1000DPS;
     break;
+  case 'd':
+    tag.gyro_scale = Tag::GYRO_2000DPS;
   default:
     PRINTSTR("Not a valid option\n");
   }

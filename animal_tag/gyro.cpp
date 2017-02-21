@@ -14,6 +14,9 @@ void gyro_setup(FXAS::Range range, FXAS::ODR odr) {
   DBGSTR("Gyroscope buffer size: ");
   DBG(gyro_buffer_size + gyro_fifo_size);
   DBGSTR(" (software + hardware)\n");
+  if (range > FXAS::Range::DPS_250) {
+    DBGSTR("ERROR: INVALID GYROSCOPE RANGE");
+  }
   FXAS::begin(odr, range, true); // enable burst-reading
 }
 
