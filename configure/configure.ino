@@ -109,7 +109,13 @@ void print_configuration() {
 
 void set_name() {
   PRINTSTR("Enter a 4-letter name for the device:\n");
-  while (Serial.available() < 4)
+  // Wait for the user to enter 1 byte.
+  // Then wait about an eighth of a second for 3 more bytes to complete the name.
+  tag.name[0] = ' ';
+  tag.name[1] = ' ';
+  tag.name[2] = ' ';
+  tag.name[3] = ' ';
+  while (!Serial.available())
     ;
   Serial.readBytes(tag.name, 4);
   Serial.println(tag.name);
