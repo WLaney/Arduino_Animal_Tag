@@ -20,7 +20,6 @@ enum SAMPLE_RATE {
 constexpr byte long_term_write_max = 3;
 byte long_term_write_num = 0;
 
-SAMPLE_RATE sample_rate;
 byte sample_delay;
 
 void setup()
@@ -47,23 +46,23 @@ void setup()
 	case ODR_12_5_HZ:
 		aodr = ODR_12;
 		godr = FXAS::ODR::HZ_12_5;
-		sample_delay = byte{1000.0 / 12.5} - 10;
+		sample_delay = byte{1000.0 / 12.5};
 		break;
 	case ODR_25_HZ:
 		aodr = ODR_50;
 		godr = FXAS::ODR::HZ_25;
-		sample_delay = byte{1000.0 / 25.0} - 10;
+		sample_delay = byte{1000.0 / 25.0};
 		break;
 	case ODR_50_HZ:
 		aodr = ODR_50;
 		godr = FXAS::ODR::HZ_50;
-		sample_delay = byte{1000.0 / 50.0} - 10;
+		sample_delay = byte{1000.0 / 50.0};
 		break;
 	default:
 		DBGSTR("Invalid sample rate; assuming you meant 25Hz");
 		aodr = ODR_50;
 		godr = FXAS::ODR::HZ_25;
-		sample_delay = byte{1000.0 / 25.0} - 10;
+		sample_delay = byte{1000.0 / 25.0};
   }
   
   // Debug commands won't show up if they're
