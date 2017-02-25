@@ -2,7 +2,7 @@
 #include "debug.h"
 #include <Arduino.h>
 #include <SD.h>
-#include <Wire.h>
+#include <I2C.h>
 
 #define TMP102ADDRESS 0x48
 
@@ -13,11 +13,12 @@ void temp_setup() {
 }
 
 void temp_update() {
+    short temperatureSum;
+    byte b[2];
+    
     DBGSTR("Read temp\n");
-    Wire.requestFrom(TMP102ADDRESS, 2);
-    byte MSB = Wire.read();
-    byte LSB = Wire.read();
-    short temperatureSum = ((MSB << 8) | LSB) >> 4;
+    I2c.read(TMP102ADDRESS, 2, b);
+    temperatureSum = ((b[0] << 8) | b[1]) >> 4;
     celsius = temperatureSum * 0.0625;
 }
 
