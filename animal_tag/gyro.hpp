@@ -3,14 +3,14 @@
 
 #include <Arduino.h>
 #include <SD.h>
-#include "Gyro_FXAS.h"
+#include "fxas_2.h"
 
 // Size of software buffer (samples)
 constexpr byte gyro_buffer_size = 16;
 // Size of hardware buffer (samples)
 constexpr byte gyro_fifo_size = 32;
 
-void gyro_setup(FXAS::Range, FXAS::ODR);
+void gyro_setup(FXAS2::Range, FXAS2::ODR);
 
 /*
  * Copy the gyroscope's internal FIFO buffer into the Arduino's

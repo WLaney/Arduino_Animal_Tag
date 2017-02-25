@@ -9,7 +9,7 @@
 float celsius;
 
 void temp_setup() {
-    Wire.begin();
+    I2c.begin();
 }
 
 void temp_update() {

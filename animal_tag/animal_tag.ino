@@ -25,8 +25,8 @@ byte sample_delay;
 void setup()
 {
   header_data header;
-  FXAS::Range gscale;
-  FXAS::ODR godr;
+  FXAS2::Range gscale;
+  FXAS2::ODR godr;
   MMA8452Q_Scale ascale;
   MMA8452Q_ODR aodr;
   SAMPLE_RATE odr;
@@ -40,28 +40,28 @@ void setup()
   EEPROM.get(9,  header.gy);
   EEPROM.get(13, header.gz);
   ascale = static_cast<MMA8452Q_Scale>(EEPROM.read(17));
-  gscale = static_cast<FXAS::Range>(EEPROM.read(18));
+  gscale = static_cast<FXAS2::Range>(EEPROM.read(18));
   odr = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
 	case ODR_12_5_HZ:
 		aodr = ODR_12;
-		godr = FXAS::ODR::HZ_12_5;
+		godr = FXAS2::ODR::HZ_12_5;
 		sample_delay = byte{1000.0 / 12.5};
 		break;
 	case ODR_25_HZ:
 		aodr = ODR_50;
-		godr = FXAS::ODR::HZ_25;
+		godr = FXAS2::ODR::HZ_25;
 		sample_delay = byte{1000.0 / 25.0};
 		break;
 	case ODR_50_HZ:
 		aodr = ODR_50;
-		godr = FXAS::ODR::HZ_50;
+		godr = FXAS2::ODR::HZ_50;
 		sample_delay = byte{1000.0 / 50.0};
 		break;
 	default:
 		DBGSTR("Invalid sample rate; assuming you meant 25Hz");
 		aodr = ODR_50;
-		godr = FXAS::ODR::HZ_25;
+		godr = FXAS2::ODR::HZ_25;
 		sample_delay = byte{1000.0 / 25.0};
   }
   
@@ -69,7 +69,7 @@ void setup()
   // turned off in debug.h
   DBEGIN();
   accel_setup(SCALE_2G, ODR_50); // not a misprint, accel can't do 25Hz
-  gyro_setup(FXAS::Range::DPS_250, FXAS::ODR::HZ_25);
+  gyro_setup(FXAS2::Range::DPS_250, FXAS2::ODR::HZ_25);
   temp_setup();
   rtc_setup();
   

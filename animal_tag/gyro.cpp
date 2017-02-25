@@ -1,23 +1,23 @@
 #include "gyro.hpp"
 #include <Arduino.h>
 #include <SD.h>
-#include "Gyro_FXAS.h"
+#include "fxas_2.h"
 #include "debug.h"
 
-static FXAS::sample buffer[gyro_buffer_size];
+static FXAS2::sample buffer[gyro_buffer_size];
 
 /*
  * Setup the gyroscope's internal buffer, do some
  * debugging reports
  */
-void gyro_setup(FXAS::Range range, FXAS::ODR odr) {
+void gyro_setup(FXAS2::Range range, FXAS2::ODR odr) {
   DBGSTR("Gyroscope buffer size: ");
   DBG(gyro_buffer_size + gyro_fifo_size);
   DBGSTR(" (software + hardware)\n");
-  if (range > FXAS::Range::DPS_250) {
+  if (range > FXAS2::Range::DPS_250) {
     DBGSTR("ERROR: INVALID GYROSCOPE RANGE");
   }
-  FXAS::begin(odr, range, true); // enable burst-reading
+  FXAS2::begin(odr, range, true); // enable burst-reading
 }
 
 /*
@@ -27,7 +27,7 @@ void gyro_setup(FXAS::Range range, FXAS::ODR odr) {
 void gyro_read_all() {
   if (gyro_is_active) {
     DBGSTR("G-READ\n");
-    FXAS::readBurst(buffer, gyro_buffer_size);
+    FXAS2::readBurst(buffer, gyro_buffer_size);
   } else {
     DBGSTR("ERROR: inactive gyroscope read!\n");
   }
@@ -44,7 +44,7 @@ byte gyro_size() {
  * Size, in bytes, of a single SD card write.
  */
 unsigned short gyro_write_size() {
-  return (gyro_buffer_size + gyro_fifo_size) * sizeof(FXAS::sample);
+  return (gyro_buffer_size + gyro_fifo_size) * sizeof(FXAS2::sample);
 }
 
 /*
@@ -54,7 +54,7 @@ void gyro_write(File sd) {
   if (gyro_is_active) {
     DBGSTR("Gyro write\n");
     for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
-      sd.write((byte *) buffer, gyro_buffer_size * sizeof(FXAS::sample));
+      sd.write((byte *) buffer, gyro_buffer_size * sizeof(FXAS2::sample));
       // I think we're currently doing a spurious read here; be cautious
       gyro_read_all();
     }
@@ -67,11 +67,11 @@ void gyro_write(File sd) {
  * Return the gyroscope's scale. This is written to the header
  */
 float gyro_scale() {
-  switch (FXAS::currentRange) {
-    case FXAS::Range::DPS_2000: return 2000.0; break;
-    case FXAS::Range::DPS_1000: return 1000.0; break;
-    case FXAS::Range::DPS_500:  return  500.0; break;
-    case FXAS::Range::DPS_250:  return  250.0; break;
+  switch (FXAS2::currentRange) {
+    case FXAS2::Range::DPS_2000: return 2000.0; break;
+    case FXAS2::Range::DPS_1000: return 1000.0; break;
+    case FXAS2::Range::DPS_500:  return  500.0; break;
+    case FXAS2::Range::DPS_250:  return  250.0; break;
   }
 }
 
@@ -88,9 +88,9 @@ void gyro_reset() {
  */
 void gyro_set_active(bool active) {
 	if (active) {
-		FXAS::active();
+		FXAS2::active();
 	} else {
-		FXAS::standby();
+		FXAS2::standby();
 	}
 }
 
@@ -98,5 +98,5 @@ void gyro_set_active(bool active) {
  * Get the gyroscope's current status: active (true) or standy.
  */
 bool gyro_is_active() {
-	return FXAS::isActive;
+	return FXAS2::isActive;
 }

@@ -2,7 +2,7 @@
 #include <SD.h>
 #include "rtc.hpp"
 #include "debug.h"
-#include "DSRTCLib.h"
+#include "DSRTCLib2.h"
 
 // Copied from ds3234.h
 // TODO Replace with smaller ts instead of attempting backwards compatibility
