@@ -3,9 +3,9 @@
 #define __ACCEL_HPP__
 #include <Arduino.h>
 #include <SD.h>
-#include <SFE_MMA8452Q.h>
+#include "Accel_1Q.h"
 
-void accel_setup(MMA8452Q_Scale, MMA8452Q_ODR);
+void accel_setup(Accel::Range, Accel::ODR);
 void accel_read();
 bool accel_full();
 byte accel_size();

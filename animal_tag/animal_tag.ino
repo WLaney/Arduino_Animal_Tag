@@ -27,8 +27,8 @@ void setup()
   header_data header;
   FXAS2::Range gscale;
   FXAS2::ODR godr;
-  MMA8452Q_Scale ascale;
-  MMA8452Q_ODR aodr;
+  Accel::Range ascale;
+  Accel::ODR aodr;
   SAMPLE_RATE odr;
   
   // Get configuration from EEPROM
@@ -39,28 +39,28 @@ void setup()
   EEPROM.get(5,  header.gx); // gyroscope bias
   EEPROM.get(9,  header.gy);
   EEPROM.get(13, header.gz);
-  ascale = static_cast<MMA8452Q_Scale>(EEPROM.read(17));
+  ascale = static_cast<Accel::Range>(EEPROM.read(17));
   gscale = static_cast<FXAS2::Range>(EEPROM.read(18));
-  odr = static_cast<SAMPLE_RATE>(EEPROM.read(19));
+  odr    = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
 	case ODR_12_5_HZ:
-		aodr = ODR_12;
+		aodr = Accel::ODR::HZ_12_5;
 		godr = FXAS2::ODR::HZ_12_5;
 		sample_delay = byte{1000.0 / 12.5};
 		break;
 	case ODR_25_HZ:
-		aodr = ODR_50;
+		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_25;
 		sample_delay = byte{1000.0 / 25.0};
 		break;
 	case ODR_50_HZ:
-		aodr = ODR_50;
+		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_50;
 		sample_delay = byte{1000.0 / 50.0};
 		break;
 	default:
 		DBGSTR("Invalid sample rate; assuming you meant 25Hz");
-		aodr = ODR_50;
+		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_25;
 		sample_delay = byte{1000.0 / 25.0};
   }
@@ -68,8 +68,8 @@ void setup()
   // Debug commands won't show up if they're
   // turned off in debug.h
   DBEGIN();
-  accel_setup(SCALE_2G, ODR_50); // not a misprint, accel can't do 25Hz
-  gyro_setup(FXAS2::Range::DPS_250, FXAS2::ODR::HZ_25);
+  accel_setup(ascale, aodr); // not a misprint, accel can't do 25Hz
+  gyro_setup(gscale, godr);
   temp_setup();
   rtc_setup();
   

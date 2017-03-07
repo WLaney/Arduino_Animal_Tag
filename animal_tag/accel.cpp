@@ -6,63 +6,56 @@
  */
 #include "accel.hpp"
 #include "debug.h"
-#include "PackedBuffer.h"
+#include <Accel_1Q.h>
 #include <Arduino.h>
 #include <SD.h>
-#include <SFE_MMA8452Q.h>
 
-// Number of accelerometer "packs" of two reads.
-constexpr int accel_buffer_packs = 24;
+constexpr int buffer_s = 48;
+static Accel::sample_raw buffer[48];
+static byte buffer_i;
+
 float scale = 8.0;
 
-static MMA8452Q accel;
-// specialization defined in PackedBuffer.cpp
-PackedBuffer<24> buffer;
-
-void accel_setup(MMA8452Q_Scale scl, MMA8452Q_ODR odr) {
-  DBGSTR("Accelerometer buffer: ");
-  DBG(accel_buffer_packs);
-  DBGSTR(" (x2)\n");
-  accel.init(scl, odr);
-  switch (scl) {
-    case SCALE_2G: scale = 2.0F; break;
-    case SCALE_4G: scale = 4.0F; break;
-    case SCALE_8G: scale = 8.0F; break;
+void accel_setup(Accel::Range rng, Accel::ODR odr) {
+  DBGSTR("Accelerometer buffer: "); DBGLN(buffer_s);
+  Accel::begin(odr, rng);
+  accel_reset();
+  switch (rng) {
+    case Accel::Range::G2: scale = 2.0F; break;
+    case Accel::Range::G4: scale = 4.0F; break;
+    case Accel::Range::G8: scale = 8.0F; break;
     default:
-	  DBGSTR("ERROR: BAD ACCEL SCALE VALUE\n");
+	  DBGSTR("ERROR: A.SCALE INVALID\n");
   }
 }
 
 void accel_read() {
-  accel.read();
-  if (!buffer.push(accel.x, accel.y, accel.z)) {
-    DBGSTR("ERROR: ACCEL FULL");
-  }
-  DBGSTR("a.read\n");
+	if (!accel_full()) {
+		DBGSTR("ERROR: A.BUFFER FULL\n");
+		return;
+	}
+	DBGSTR("a.read\n");
+	buffer[buffer_i++] = Accel::read_raw();
 }
 
 bool accel_full() {
-  return buffer.full();
-}
-
-inline float s2f(short s) {
-  return (float) s / (float)(1<<11) * scale;
+  return buffer_i == buffer_s;
 }
 
 unsigned short accel_write_size() {
-  return buffer.write_size();
+  return sizeof(buffer);
 }
 
 float accel_scale() {
   return scale;
 }
 
-// write data as "{x}\t{y}\t{z}\n"
+// Write raw data
 void accel_write(File sd) {
-  DBGSTR("Accel write\n");
-  buffer.write_all(sd);
+  DBGSTR("a.write\n");
+  sd.write((byte *) buffer, sizeof(buffer));
 }
 
 void accel_reset() {
-  buffer.reset();
+  buffer_i = 0;
 }
