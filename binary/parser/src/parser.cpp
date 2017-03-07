@@ -15,7 +15,7 @@
  * Convert a raw accelerometer read into a float.
  */
 inline float accel_s2f(short s, float scale) {
-	return s * float{scale / (1 << 11)};
+	return s * float{scale / (1 << 13)};
 }
 
 
@@ -102,28 +102,19 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
 	int reads = size / sizeof(raw_accel_data);
 	std::vector<accel_data> out;
 	for (int i = 0; i < reads; i++) {
-		accel_data data1, data2;
 		raw_accel_data raw;
+		accel_data prc;
 		read_into<raw_accel_data>(in_file, raw);
-		// First, unpack the raw data into shorts
-		short x1, y1, z1, x2, y2, z2;
-		x1 = (((int8_t) raw.msb_nibbles.x1_x2) >> 4) << 8 | raw.lsb_bytes.x1;
-		y1 = (((int8_t) raw.msb_nibbles.y1_y2) >> 4) << 8 | raw.lsb_bytes.y1;
-		z1 = (((int8_t) raw.msb_nibbles.z1_z2) >> 4) << 8 | raw.lsb_bytes.z1;
-		
-		x2 = (int16_t) (raw.msb_nibbles.x1_x2 << 12) >> 4 | raw.lsb_bytes.x2;
-		y2 = (int16_t) (raw.msb_nibbles.y1_y2 << 12) >> 4 | raw.lsb_bytes.y2;
-		z2 = (int16_t) (raw.msb_nibbles.z1_z2 << 12) >> 4 | raw.lsb_bytes.z2;
+		// Unpack data into little-endian shorts
+		raw.x = (((raw.x & 0xFF00) >> 6) & 0x00FF) | (raw.x & 0x00FF) << 8; raw.x >>= 2;
+		raw.y = (((raw.y & 0xFF00) >> 6) & 0x00FF) | (raw.y & 0x00FF) << 8; raw.y >>= 2;
+		raw.z = (((raw.z & 0xFF00) >> 6) & 0x00FF) | (raw.z & 0x00FF) << 8; raw.z >>= 2;
 		// Convert to floats
-		data1.x = accel_s2f(x1, scale);
-		data1.y = accel_s2f(y1, scale);
-		data1.z = accel_s2f(z1, scale);
-		data2.x = accel_s2f(x2, scale);
-		data2.y = accel_s2f(y2, scale);
-		data2.z = accel_s2f(z2, scale);
+		prc.x = accel_s2f(raw.x, scale);
+		prc.y = accel_s2f(raw.y, scale);
+		prc.z = accel_s2f(raw.z, scale);
 		// Push to out
-		out.push_back(data1);
-		out.push_back(data2);
+		out.push_back(prc);
 	}
 	return out;
 }

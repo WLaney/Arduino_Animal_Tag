@@ -11,10 +11,8 @@
 typedef uint8_t byte;
 
 /*
- * The order of this struct matters, since we're importing it wholesale.
- * Don't change it!
- *
- * Data representing time. Culled directly from ds3234.h
+ * Data representing time. Taken directly from ds3234.h, it has a lot of
+ * irrelevant or unset data. Everything from sec to year should be accurate
  */
 struct ts {
 	byte sec;
@@ -22,7 +20,6 @@ struct ts {
 	byte hour;
 	byte mday;
 	byte mon;
-	// single byte of padding
 	int16_t year;
 	byte wday;
 	byte yday;
@@ -32,8 +29,8 @@ struct ts {
 std::ostream& operator<<(std::ostream&, const ts&);
 
 /*
- * All the data collected from the header. Some of it's relevant to 
- * the header file; the rest is relevant to parsing the rest of the file.
+ * Data from the start of the file. Some of this is thrown into the header.csv;
+ * the rest is used to parse the rest of the file
  */
 struct header_data {
 	char name[5];
@@ -50,22 +47,12 @@ struct header_data {
 };
 
 /*
- * A raw accelerometer read. 3 12-bit integers are packed into 
- * 9 bytes
+ * A raw accelerometer read from the Accel_1Q library. Stores signed
+ * big-endian 14-bit integers, arranged such that the last two bits of
+ * the LSB are padding
  */
 struct raw_accel_data {
-	// We store the full LSBs of each read in here
-	struct {
-		byte x1, y1, z1;
-		byte x2, y2, z2;
-	} lsb_bytes;
-	// Then we store each "nibble" (the top 4 bits)
-	// r1 takes the most significant nibble, and r2 the least
-	struct {
-		byte x1_x2;
-		byte y1_y2;
-		byte z1_z2;
-	} msb_nibbles;
+	short x, y, z;
 };
 
 /*
@@ -76,7 +63,7 @@ struct raw_gyro_data {
 };
 
 /*
- * Processed data from the accelerometer an gyroscope.
+ * Processed data from the accelerometer and gyroscope.
  */
 struct accel_data {
 	float x, y, z;
