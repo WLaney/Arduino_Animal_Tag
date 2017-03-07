@@ -73,10 +73,12 @@ namespace Accel {
 	const byte address = 0x1d; // SA0 is high -> 0x1C
 	
 	/*
-	 * Compactly stores 3 14-bit big-endian integer samples.
-	 * Since the Arduino is little-endian, these should not
-	 * be used directly unless you understand what the previous
-	 * sentence means. Use parse_raw() or read() to convert them
+	 * Compactly stores 3 14-bit big-endian integer samples. They're
+	 * stored (in binary) as:
+	 * MMMMMMMMLLLLLL00
+	 *
+	 * This means that they're not really usable outside of storage.
+	 * Convert them via prase_raw(), or just use read().
 	 */
 	struct sample_raw {
 		short x, y, z;

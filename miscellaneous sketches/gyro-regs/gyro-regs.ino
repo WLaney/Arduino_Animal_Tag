@@ -1,4 +1,8 @@
 #include <Wire.h>
+/*
+ * A simple device registry editor. Originally made for the FXAS21002C gyro,
+ * edited for the MMA8451Q accelerometer
+ */
 
 byte readReg(byte);
 void writeReg(byte, byte);
@@ -7,19 +11,20 @@ int parseHex(char *, size_t);
 
 void printHelp();
 
-// Constants
-constexpr byte addr = 0x20;
+// Device address - currently for Accel_1Q
+byte addr = 0x1d;
 
 // Main code
 void setup() {
 	Serial.begin(9600);
 	Serial.setTimeout(100);
+	
 	Wire.begin();
 	// Halt unless device found
 	Wire.beginTransmission(addr);
 	byte res = Wire.endTransmission();
 	if (res != 0) {
-		Serial.print(F("The gyroscope at address "));
+		Serial.print(F("The device at address "));
 		Serial.print((short) addr, HEX);
 		Serial.println(" could not be found.");
 		while (true)
@@ -115,9 +120,9 @@ void writeReg(byte reg, byte val) {
 
 void printHelp() {
 	Serial.println(F(
-		"GYROSCOPE REGISTER EDITOR\n" \
+		"REGISTER EDITOR\n" \
 		"All inputs/outputs are in hex (FF, not 0xFF)\n" \
-		"Refer to page 30 of datasheet for regs\n\n" \
+		"Refer to your device's datasheet for regs\n\n" \
 		"    r <reg>       - Get the value of <reg>\n" \
 		"    w <reg> <val> - Set the value of <reg> to <val>\n" \
 		"    ?             - Display this help message\n"
