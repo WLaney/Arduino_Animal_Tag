@@ -1,5 +1,6 @@
 #ifndef __ACCEL_1Q_H__
 #define __ACCEL_1Q_H__
+#include <Arduino.h>
 
 namespace Accel {
 
@@ -71,18 +72,23 @@ namespace Accel {
 	
 	const byte address = 0x1d; // SA0 is high -> 0x1C
 	
-	// Three 14-bit reads - check endianness plz
+	/*
+	 * Compactly stores 3 14-bit big-endian integer samples.
+	 * Since the Arduino is little-endian, these should not
+	 * be used directly unless you understand what the previous
+	 * sentence means. Use parse_raw() or read() to convert them
+	 */
 	struct sample_raw {
 		short x, y, z;
-	}
+	};
 
+	/*
+	 * Stores 3 floating-point samples, corrected for accelerometer range.
+	 */
 	struct sample {
 		float x, y, z;
-	}
+	};
 
-	Range current_range_;
-	ODR current_odr_;
-	
 	bool begin(ODR, Range);
 	
 	sample_raw read_raw();
