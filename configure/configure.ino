@@ -118,7 +118,7 @@ void set_name() {
   while (!Serial.available())
     ;
   Serial.readBytes(tag.name, 4);
-  Serial.println(tag.name);
+  Serial.write((byte *) &tag.name, 4);
 }
 
 void set_accel_scale() {
@@ -208,6 +208,9 @@ void calibrate() {
 
 void write_changes() {
   PRINTSTR("Writing values to EEPROM...\n");
+  tag.bias_x = 0.0F;
+  tag.bias_y = 0.0F;
+  tag.bias_z = 0.0F;
   tag.write();
   PRINTSTR("Done.\n");
 }

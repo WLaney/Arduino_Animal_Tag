@@ -15,7 +15,7 @@ void gyro_setup(FXAS2::Range range, FXAS2::ODR odr) {
   DBG(gyro_buffer_size + gyro_fifo_size);
   DBGSTR(" (software + hardware)\n");
   if (range > FXAS2::Range::DPS_250) {
-    DBGSTR("ERROR: INVALID GYROSCOPE RANGE");
+    DBGSTR("ERROR: G. SCALE INVALID\n");
   }
   FXAS2::begin(odr, range, true); // enable burst-reading
 }
@@ -26,7 +26,7 @@ void gyro_setup(FXAS2::Range range, FXAS2::ODR odr) {
  */
 void gyro_read_all() {
   if (gyro_is_active) {
-    DBGSTR("G-READ\n");
+    DBGSTR("G.READ\n");
     FXAS2::readBurst(buffer, gyro_buffer_size);
   } else {
     DBGSTR("ERROR: inactive gyroscope read!\n");
@@ -52,14 +52,14 @@ unsigned short gyro_write_size() {
  */
 void gyro_write(File sd) {
   if (gyro_is_active) {
-    DBGSTR("Gyro write\n");
+    DBGSTR("G.WRITE\n");
     for (byte i = 0; i < gyro_fifo_size + gyro_buffer_size; i += gyro_buffer_size) {
       sd.write((byte *) buffer, gyro_buffer_size * sizeof(FXAS2::sample));
       // I think we're currently doing a spurious read here; be cautious
       gyro_read_all();
     }
   } else {
-    DBGSTR("ERROR: inactive gyro write!\n");
+    DBGSTR("ERROR: wrote inactive gyro data!\n");
   }
 }
 

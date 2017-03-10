@@ -30,7 +30,7 @@ void accel_setup(Accel::Range rng, Accel::ODR odr) {
 }
 
 void accel_read() {
-	if (!accel_full()) {
+	if (accel_full()) {
 		DBGSTR("ERROR: A.BUFFER FULL\n");
 		return;
 	}
