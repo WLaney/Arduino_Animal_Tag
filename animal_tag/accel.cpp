@@ -18,7 +18,7 @@ float scale = 8.0;
 
 void accel_setup(Accel::Range rng, Accel::ODR odr) {
   DBGSTR("Accelerometer buffer: "); DBGLN(buffer_s);
-  Accel::begin(odr, rng, Accel::FIFO_Mode::DISABLED);
+  Accel::begin(odr, rng);
   accel_reset();
   switch (rng) {
     case Accel::Range::G2: scale = 2.0F; break;

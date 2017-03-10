@@ -71,18 +71,9 @@ namespace Accel {
 	};
 
 	enum class FIFO_Mode {
-		/*
-		 * Disable the internal FIFO buffer.
-		 */
-		DISABLED = 0x0,
-		/*
-		 * Circular buffer; old samples are discarded if the buffer is full
-		 */
-		CIRCULAR = 0x1,
-		/*
-		 * Stop collecting new samples if the buffer is full
-		 */
-		FILL = 0x2
+		DISABLED = 0x0, // Disable the internal FIFO buffer
+		CIRCULAR = 0x1, // Circular buffer; new samples replace oldest ones
+		FILL     = 0x2  // Stop collecting new samples if the buffer is full
 		//TRIGGER -- Not implemented
 	};
 	
@@ -108,7 +99,38 @@ namespace Accel {
 		float x, y, z;
 	};
 
-	bool begin(ODR, Range, FIFO_Mode);
+	/*
+	 * Start the tag without using any advanced features.
+	 * The tag will immediately start collecting data.
+	 */
+	bool begin(ODR, Range);
+
+	/*
+	 * Start the tag in standby mode.
+	 * It will not collect data, but advanced features (like set_fifo,
+	 * set_fifo_interrupt) can be set before making the tag active
+	 * (set_active).
+	 */
+	bool begin_standby(ODR, Range);
+
+	/*
+	 * Configure the tag's internal FIFO buffer.
+	 */
+	void set_fifo(FIFO_Mode);
+
+	/*
+	 * Configure the tag's internal interrupts.
+	 * Right now, the only option is to enable or disable the FIFO
+	 * interrupt coming out of Pin 1.
+	 */
+	void set_fifo_interrupt(bool);
+
+	/*
+	 * Put the tag into active or standby mode.
+	 * While active, it can receive data, but advanced features cannot
+	 * be used.
+	 */
+	void set_active(bool);
 	
 	sample_raw read_raw();
 	sample read();

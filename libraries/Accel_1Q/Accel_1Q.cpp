@@ -10,11 +10,18 @@ namespace Accel {
 	static ODR current_odr_        = ODR::HZ_12_5;
 	static Range current_range_    = Range::G4;
 	static FIFO_Mode current_mode_ = FIFO_Mode::DISABLED;
-	
-	bool begin(ODR odr, Range range, FIFO_Mode mode) {
+
+	bool begin(ODR odr, Range range) {
+		bool result = begin_standby(odr, range);
+		if  (!result) return false;
+		
+		set_active(true);
+		return true;
+	}
+
+	bool begin_standby(ODR odr, Range range) {
 		current_odr_ = odr;
 		current_range_ = range;
-		current_mode_ = mode;
 		
 		// Go to standby so we can set things up
 		byte r1 = read_single(Register::CTRL_REG1);
@@ -24,18 +31,35 @@ namespace Accel {
 		if (read_single(Register::WHO_AM_I) != 0x1A)
 			return false;
 		
-		// Set FIFO mode
-		write_single(Register::F_SETUP, static_cast<byte>(mode) << 6);
-		
 		// Set Range; no high-pass filtering
 		write_single(Register::XYZ_DATA_CFG, static_cast<byte>(range));
 		// Set to low-power use
 		write_single(Register::CTRL_REG2, 0x3);
 		// Set ODR; no low-noise or fast-read functionality
-		// Then go into active mode!
-		write_single(Register::CTRL_REG1, (static_cast<byte>(odr) << 3) | 0x1);
+		write_single(Register::CTRL_REG1, (static_cast<byte>(odr) << 3));
 		
 		return true;
+	}
+	
+	void set_fifo(FIFO_Mode mode) {
+		current_mode_ = mode;
+		write_single(Register::F_SETUP, static_cast<byte>(mode) << 6);
+	}
+
+	void set_fifo_interrupt(bool) {
+	
+	}
+
+	void set_active(bool active) {
+		byte reg1 = read_single(Register::CTRL_REG1);
+		// {bit or active, then bit and active}
+		// 1 or 1 = 1 ; 1 and 1 = 1
+		// 0 or 1 = 1 ; 1 and 1 = 1
+		// 1 or 0 = 1 ; 1 and 0 = 0
+		// 0 or 0 = 0 ; 0 and 0 = 0
+		reg1 |= active;
+		reg1 &= active;
+		write_single(Register::CTRL_REG1, reg1);
 	}
 
 	sample read() {

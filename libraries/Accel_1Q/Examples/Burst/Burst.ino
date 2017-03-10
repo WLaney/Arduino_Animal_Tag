@@ -4,14 +4,15 @@ Accel::sample_raw buffer[32];
 
 void setup() {
 	Serial.begin(9600);
-	bool good = Accel::begin(
+	bool good = Accel::begin_standby(
 		Accel::ODR::HZ_12_5,
-		Accel::Range::G2,
-		Accel::FIFO_Mode::FILL
+		Accel::Range::G2
 	);
 	if (!good) {
 		Serial.println(F("Accelerometer couldn't be found."));
 	}
+	Accel::set_fifo(Accel::FIFO_Mode::FILL);
+	Accel::set_active(true);
 }
 
 void loop() {
