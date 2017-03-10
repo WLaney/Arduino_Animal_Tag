@@ -7,12 +7,14 @@ namespace Accel {
 	static byte read_single(Register);
 	static void write_single(Register, byte);
 
-	static ODR current_odr_ = ODR::HZ_12_5;
-	static Range current_range_ = Range::G4;
+	static ODR current_odr_        = ODR::HZ_12_5;
+	static Range current_range_    = Range::G4;
+	static FIFO_Mode current_mode_ = FIFO_Mode::DISABLED;
 	
-	bool begin(ODR odr, Range range) {
+	bool begin(ODR odr, Range range, FIFO_Mode mode) {
 		current_odr_ = odr;
 		current_range_ = range;
+		current_mode_ = mode;
 		
 		// Go to standby so we can set things up
 		byte r1 = read_single(Register::CTRL_REG1);
@@ -21,6 +23,9 @@ namespace Accel {
 		// Get WHO_AM_I
 		if (read_single(Register::WHO_AM_I) != 0x1A)
 			return false;
+		
+		// Set FIFO mode
+		write_single(Register::F_SETUP, static_cast<byte>(mode) << 6);
 		
 		// Set Range; no high-pass filtering
 		write_single(Register::XYZ_DATA_CFG, static_cast<byte>(range));
@@ -51,6 +56,14 @@ namespace Accel {
 			b[i] = Wire.read();
 		}
 		return sr;
+	}
+	
+	/*
+	 * Read the contents of the internal FIFO buffer into a 32-sample
+	 * array. This will only work if fifo_mode != DISABLED.
+	 */
+	void read_burst(sample_raw *s) {
+	
 	}
 	
 	/*

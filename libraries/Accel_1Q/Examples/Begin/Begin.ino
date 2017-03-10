@@ -5,7 +5,8 @@
 void setup() {
 	Serial.begin(9600);
 	bool success = Accel::begin(Accel::ODR::HZ_12_5,
-	               Accel::Range::G4);
+	               Accel::Range::G4,
+	               Accel::FIFO_Mode::DISABLED);
     if (success) {
 		PRINTSTR("Accelerometer initialized\n");
 	} else {

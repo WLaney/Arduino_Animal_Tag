@@ -69,8 +69,25 @@ namespace Accel {
 		G4 = 0x1,
 		G8 = 0x2
 	};
+
+	enum class FIFO_Mode {
+		/*
+		 * Disable the internal FIFO buffer.
+		 */
+		DISABLED = 0x0,
+		/*
+		 * Circular buffer; old samples are discarded if the buffer is full
+		 */
+		CIRCULAR = 0x1,
+		/*
+		 * Stop collecting new samples if the buffer is full
+		 */
+		STOP_WHEN_FULL = 0x2
+		//TRIGGER -- Not implemented
+	};
 	
-	const byte address = 0x1d; // SA0 is high -> 0x1C
+	constexpr byte address = 0x1d; // SA0 is high -> 0x1C
+	constexpr byte buffer_size = 32;
 	
 	/*
 	 * Compactly stores 3 14-bit big-endian integer samples. They're
@@ -91,10 +108,11 @@ namespace Accel {
 		float x, y, z;
 	};
 
-	bool begin(ODR, Range);
+	bool begin(ODR, Range, FIFO_Mode);
 	
 	sample_raw read_raw();
 	sample read();
+	void read_burst(sample_raw s[buffer_size]);
 	
 	sample parse_raw(sample_raw);
 
