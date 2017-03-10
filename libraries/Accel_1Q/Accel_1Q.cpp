@@ -65,9 +65,25 @@ namespace Accel {
 	 * If n is greater than the number of bytes in the hardware buffer,
 	 * the rest of s will not be written to. The buffer cannot hold more
 	 * than 32 samples, so sizes greater than n will be ignored.
+	 *
+	 * This returns the number of samples written.
 	 */
-	void read_burst(sample_raw *s, int n) {
+	byte read_burst(sample_raw *s, int n) {
+		byte smps = read_single(Register::STATUS) & 0x3F;
+		if (n > smps) n = smps;
+		Wire.beginTransmission(address);
+		Wire.write(static_cast<byte>(Register::OUT_X_MSB));
+		Wire.endTransmission(false);
 		
+		for (int i=0; i<n; i++) {
+			Wire.requestFrom(address, byte{6}, byte{false});
+			byte *b = (byte *) &s[i];
+			for (byte j=0; j<6; j++) {
+				b[j] = Wire.read();
+			}
+		}
+		Wire.endTransmission(true);
+		return n;
 	}
 	
 	/*

@@ -82,7 +82,7 @@ namespace Accel {
 		/*
 		 * Stop collecting new samples if the buffer is full
 		 */
-		STOP = 0x2
+		FILL = 0x2
 		//TRIGGER -- Not implemented
 	};
 	
@@ -95,7 +95,7 @@ namespace Accel {
 	 * MMMMMMMMLLLLLL00
 	 *
 	 * This means that they're not really usable outside of storage.
-	 * Convert them via prase_raw(), or just use read().
+	 * Convert them via parse_raw(), or just use read().
 	 */
 	struct sample_raw {
 		short x, y, z;
@@ -112,7 +112,7 @@ namespace Accel {
 	
 	sample_raw read_raw();
 	sample read();
-	void read_burst(sample_raw *s, int n);
+	byte read_burst(sample_raw *s, int n);
 	
 	sample parse_raw(sample_raw);
 
