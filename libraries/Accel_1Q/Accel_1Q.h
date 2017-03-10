@@ -82,7 +82,7 @@ namespace Accel {
 		/*
 		 * Stop collecting new samples if the buffer is full
 		 */
-		STOP_WHEN_FULL = 0x2
+		STOP = 0x2
 		//TRIGGER -- Not implemented
 	};
 	
@@ -112,7 +112,7 @@ namespace Accel {
 	
 	sample_raw read_raw();
 	sample read();
-	void read_burst(sample_raw s[buffer_size]);
+	void read_burst(sample_raw *s, int n);
 	
 	sample parse_raw(sample_raw);
 

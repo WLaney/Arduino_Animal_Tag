@@ -59,11 +59,15 @@ namespace Accel {
 	}
 	
 	/*
-	 * Read the contents of the internal FIFO buffer into a 32-sample
+	 * Read the contents of the internal FIFO buffer into an n-sample
 	 * array. This will only work if fifo_mode != DISABLED.
+	 *
+	 * If n is greater than the number of bytes in the hardware buffer,
+	 * the rest of s will not be written to. The buffer cannot hold more
+	 * than 32 samples, so sizes greater than n will be ignored.
 	 */
-	void read_burst(sample_raw *s) {
-	
+	void read_burst(sample_raw *s, int n) {
+		
 	}
 	
 	/*
