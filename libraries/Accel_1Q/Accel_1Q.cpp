@@ -23,20 +23,20 @@ namespace Accel {
 		current_odr_ = odr;
 		current_range_ = range;
 		
-		// Go to standby so we can set things up
-		byte r1 = read_single(Register::CTRL_REG1);
-		write_single(Register::CTRL_REG1, r1 & ~0x01);
-		
 		// Get WHO_AM_I
 		if (read_single(Register::WHO_AM_I) != 0x1A)
 			return false;
 		
+		// Go to standby so we can set things up
+		byte r1 = read_single(Register::CTRL_REG1);
+		write_single(Register::CTRL_REG1, r1 & ~0x01);
+		
+		// Set ODR; no low-noise or fast-read functionality
+		write_single(Register::CTRL_REG1, (static_cast<byte>(odr) << 3));
 		// Set Range; no high-pass filtering
 		write_single(Register::XYZ_DATA_CFG, static_cast<byte>(range));
 		// Set to low-power use
 		write_single(Register::CTRL_REG2, 0x3);
-		// Set ODR; no low-noise or fast-read functionality
-		write_single(Register::CTRL_REG1, (static_cast<byte>(odr) << 3));
 		
 		return true;
 	}
@@ -46,8 +46,9 @@ namespace Accel {
 		write_single(Register::F_SETUP, static_cast<byte>(mode) << 6);
 	}
 
-	void set_fifo_interrupt(bool) {
-	
+	void set_fifo_interrupt(bool active) {
+		write_single(Register::CTRL_REG4, active << 6);
+		write_single(Register::CTRL_REG5, 1 << 6);
 	}
 
 	void set_active(bool active) {
@@ -58,7 +59,7 @@ namespace Accel {
 		// 1 or 0 = 1 ; 1 and 0 = 0
 		// 0 or 0 = 0 ; 0 and 0 = 0
 		reg1 |= active;
-		reg1 &= active;
+		reg1 &= active | 0xFC;
 		write_single(Register::CTRL_REG1, reg1);
 	}
 
@@ -107,12 +108,16 @@ namespace Accel {
 			}
 		}
 		Wire.endTransmission(true);
+		// If interrupts are set up, we need to read F_STATUS
+		// (in this case, just STATUS) to clear it
+		byte f = read_single(Register::STATUS);
+		//Serial.println(f, BIN);
 		return n;
 	}
 	
 	/*
 	 * Convert raw samples into floating-point samples using the current
-	 * accelerometer scale. TODO Add option for arbitrary range
+	 * accelerometer scale
 	 */
 	sample parse_raw(sample_raw s) {
 		// Convert samples to little-endian

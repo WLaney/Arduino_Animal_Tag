@@ -71,9 +71,9 @@ namespace Accel {
 	};
 
 	enum class FIFO_Mode {
-		DISABLED = 0x0, // Disable the internal FIFO buffer
-		CIRCULAR = 0x1, // Circular buffer; new samples replace oldest ones
-		FILL     = 0x2  // Stop collecting new samples if the buffer is full
+		DISABLED = 0b00, // Disable the internal FIFO buffer
+		CIRCULAR = 0b01, // Circular buffer; new samples replace oldest ones
+		FILL     = 0b10  // Stop collecting new samples if the buffer is full
 		//TRIGGER -- Not implemented
 	};
 	
@@ -115,6 +115,7 @@ namespace Accel {
 
 	/*
 	 * Configure the tag's internal FIFO buffer.
+	 * This will fail if the tag is in active mode.
 	 */
 	void set_fifo(FIFO_Mode);
 
@@ -122,6 +123,7 @@ namespace Accel {
 	 * Configure the tag's internal interrupts.
 	 * Right now, the only option is to enable or disable the FIFO
 	 * interrupt coming out of Pin 1.
+	 * This will fail if the tag is in active mode.
 	 */
 	void set_fifo_interrupt(bool);
 
