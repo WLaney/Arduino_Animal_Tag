@@ -120,10 +120,11 @@ namespace Accel {
 	void set_fifo(FIFO_Mode);
 
 	/*
-	 * Configure the tag's internal interrupts.
-	 * Right now, the only option is to enable or disable the FIFO
-	 * interrupt coming out of Pin 1.
-	 * This will fail if the tag is in active mode.
+	 * Configure the tag's FIFO interrupt capability.
+	 * 
+	 * If this is set to true, then the tag will assert an interrupt
+	 * from the INT1 pin whenever the FIFO overflows. This should be
+	 * detected via FALLING-edge processing (I think...?)
 	 */
 	void set_fifo_interrupt(bool);
 
