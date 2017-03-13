@@ -55,9 +55,22 @@ namespace FXAS2 {
 		writeReg(Register::CTRL_REG0, (byte) range);
 		// ODR set by bits 4:2 of CTRL_REG1
 		// Active mode set by bits 0:1
-		writeReg(Register::CTRL_REG1, 0x3 | ((byte) odr << 2));
+		writeReg(Register::CTRL_REG1, 0x2 | ((byte) odr << 2));
 		return true;
     }
+    
+    bool beginSelfTest() {
+		I2c.begin();
+		// Go into standby mode
+		writeReg(Register::CTRL_REG1, 0x00);
+		// Check WHO_AM_I byte
+		byte wai = readReg(Register::WHO_AM_I);
+        if (wai != whoAmIValue)
+			return false;
+		
+		writeReg(Register::CTRL_REG1, 1 << 5);
+		return true;
+	}
 	
 	/*
 	 * Go to standby mode. The device can be configured in this mode,

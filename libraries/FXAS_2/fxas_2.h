@@ -67,6 +67,7 @@ namespace FXAS2 {
 	extern bool isActive;
 	
 	bool begin(ODR odr, Range range, bool burst);
+	bool beginSelfTest();
     void standby();
     void active();
     
