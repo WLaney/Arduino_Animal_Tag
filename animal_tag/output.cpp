@@ -17,65 +17,16 @@ char *file_name = "DATA-XXX.SRK";
 static void set_file_name(char *);
 
 bool output_setup() {
-  SPI.setDataMode(SPI_MODE0); // unnecessary?
-  pinMode(cs_sd, OUTPUT);
-  bool sd_active = SD.begin(cs_sd);
-  if (!sd_active) {
-	  return false;
-  }
-  set_file_name(file_name);
-  DBGSTR("Out file: "); DBGLN(file_name);
   return true;
 }
 
 bool output_write_header(header_data &header) {
-  rtc_update();
-  // Write header (and time) to SD
-  File sd = SD.open(file_name, FILE_WRITE);
-  delay(100);
-  if (sd) {
-	byte b = sd.write((byte *) &header, sizeof(header_data));
-    rtc_write(sd);
-    sd.close();
-    DBGSTR("Header bytes written (minus timer): ");
-    DBGLN(b);
-    return true; 
-  } else {
-    return false;
-  }
+  DBGSTR("Header (would be) written\n");
+  return true;
 }
 
 void output_write_data(bool long_data) {
-  if (long_data) {
-    rtc_update();
-    temp_update();
-  }
-  DBGSTR("Writing to SD...\n");
-  long time = millis();
-  File file = SD.open(file_name, FILE_WRITE);
-  if (file) {
-    // Accelerometer/gyro writes
-    file.print("ACCL");
-    accel_write(file);
-	if (gyro_is_active()) {
-    	file.print("GYRO");
-    	gyro_write(file);
-	} else {
-		file.print("GSKP");
-	}
-    // Long-term writes
-    if (long_data) {
-      file.print("LONG");
-      rtc_write(file);
-      temp_write(file);
-    }
-    file.close();
-    DBGSTR("wrote long-term\n");
-  } else {
-    DBGSTR("ERROR: COULD NOT WRITE LONG-TERM DATA\n");
-  }
-  DBG(millis() - time);
-  DBGSTR(" ms to write\n");
+  DBGSTR("Data (would be) written\n");
 }
 
 /*
@@ -83,25 +34,4 @@ void output_write_data(bool long_data) {
  * 
  */
 static void set_file_name(char *c) {
-  c[0]='D'; c[1]='A'; c[2]='T'; c[3]='A';
-  // c[5..7] are set below
-  c[8]='.'; c[9]='S'; c[10]='R'; c[11]='K'; c[12]='\0';
-  
-  // Find the lowest number to use (max 255)
-  unsigned char n = 0;
-  do {
-    c[5] = '0' + (n / 100) % 10;
-    c[6] = '0' + (n / 10) % 10;
-    c[7] = '0' + n % 10;
-    if (!SD.exists(c)) {
-      break;
-    }
-    n++;
-  } while (n != 0);
-  
-  if (n == 255) {
-    c[5] = 'M';
-    c[6] = 'A';
-    c[7] = 'X';
-  }
 }
