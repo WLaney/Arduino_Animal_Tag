@@ -118,11 +118,11 @@ void loop() {
   gyro_reset();
   // Right now, the gyroscope is on for every other read
   // Functionality is subject to change
-  if (gyro_is_active()) {
-    gyro_set_active(false);
-  } else {
-    gyro_set_active(true);
-  }
+  //~if (gyro_is_active()) {
+  //~  gyro_set_active(false);
+  //~} else {
+  //~  gyro_set_active(true);
+  //~}
 }
 
 // Flush the buffer to the SD card, writing temperature and time
