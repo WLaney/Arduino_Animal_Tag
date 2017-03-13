@@ -6,6 +6,7 @@
 # Executables; compile these from source yourself
 /binary/parser/shark-parser
 /binary/parser/tests
+/binary/parser/new-tests
 
 # Vim swap files
 *.swp
