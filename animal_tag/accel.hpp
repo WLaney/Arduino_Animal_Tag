@@ -3,7 +3,7 @@
 #define __ACCEL_HPP__
 #include <Arduino.h>
 #include <SD.h>
-#include "Accel_1Q.h"
+#include "Accel_1Q_2.h"
 
 void accel_setup(Accel::Range, Accel::ODR);
 void accel_read();

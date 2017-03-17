@@ -1,4 +1,4 @@
-#include "Accel_1Q.h"
+#include "Accel_1Q_2.h"
 
 #define PRINTSTR(s) Serial.print(F(s))
 

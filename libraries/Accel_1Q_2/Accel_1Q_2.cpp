@@ -1,6 +1,6 @@
-#include "Accel_1Q.h"
+#include "Accel_1Q_2.h"
 #include <Arduino.h>
-#include <I2c.h>
+#include <I2C.h>
 
 namespace Accel {
 	
@@ -87,7 +87,7 @@ namespace Accel {
 	 *
 	 * This returns the number of samples written.
 	 */
-	byte read_burst(sample_raw *s, int n) {
+	byte read_burst(sample_raw *s, byte n) {
 		byte smps = read_single(Register::STATUS) & 0x3F;
 		if (n > smps) n = smps;
 		byte *b = (byte *) s;
@@ -95,6 +95,21 @@ namespace Accel {
 		// If interrupts are set up, we need to read F_STATUS
 		// (in this case, just STATUS) to clear it
 		read_single(Register::STATUS);
+		return n;
+	}
+
+	byte read_burst_dsmp(sample_raw *s, byte n) {
+		// For now, do this the dumb way
+		sample_raw temp[2];
+		byte smps;
+		
+		smps = read_single(Register::STATUS) & 0x3F;
+		if (n*2 > smps) n = smps/2;
+		
+		for (byte i=0; i<n; i++) {
+			I2c.read(address, static_cast<byte>(Register::OUT_X_MSB), sizeof(temp), (byte *) temp);
+			s[i] = temp[0];
+		}
 		return n;
 	}
 	
@@ -136,7 +151,9 @@ namespace Accel {
 	}
 	
 	static byte read_single(Register reg) {
-		return I2c.read(address, static_cast<byte>(reg), 1);
+		byte out;
+		I2c.read(address, static_cast<byte>(reg), 1, &out);
+		return out;
 	}
 	
 	static void write_single(Register reg, byte val) {

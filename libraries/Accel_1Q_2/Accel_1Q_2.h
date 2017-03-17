@@ -135,13 +135,52 @@ namespace Accel {
 	 */
 	void set_active(bool);
 	
+	/*
+	 * Read a raw sample. Faster and leaner than read(), but the output
+	 * can't be used.
+	 */
 	sample_raw read_raw();
-	sample read();
-	byte read_burst(sample_raw *s, int n);
 	
+	/*
+	 * Read a sample and convert it to floating-point.
+	 */
+	sample read();
+	
+	/*
+	 * Read the contents of the internal FIFO buffer into an n-sample
+	 * array. This will only work if fifo_mode != DISABLED.
+	 *
+	 * If n is greater than the number of bytes in the hardware buffer,
+	 * the rest of s will not be written to. The buffer cannot hold more
+	 * than 32 samples, so sizes greater than n will be ignored.
+	 *
+	 * This returns the number of samples written.
+	 */
+	byte read_burst(sample_raw *s, byte n);
+	
+	/*
+	 * Read n*2 elements from the FIFO buffer s (a buffer of size n),
+	 * discarding every even read. This was included mainly to simulate
+	 * a sample rate of 25Hz, which is a common sample rate for many
+	 * gyroscopes.
+	 */
+	byte read_burst_dsmp(sample_raw *s, byte n);
+	
+	/*
+	 * Convert a raw sample into a floating-point one based on the
+	 * current accelerometer range. Storing a read in sample_raw uses
+	 * less memory, but they can't be used arithmetically.
+	 */
 	sample parse_raw(sample_raw);
-
+	
+	/*
+	 * Get the current Output Data Rate.
+	 */
 	ODR current_odr();
+	
+	/*
+	 * Get the current range.
+	 */
 	Range current_range();
 };
 

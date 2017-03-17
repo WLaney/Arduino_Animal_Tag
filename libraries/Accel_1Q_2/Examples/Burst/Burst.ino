@@ -1,4 +1,4 @@
-#include <Accel_1Q.h>
+#include <Accel_1Q_2.h>
 
 Accel::sample_raw buffer[32];
 

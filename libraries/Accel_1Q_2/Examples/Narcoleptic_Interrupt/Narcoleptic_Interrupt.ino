@@ -5,7 +5,7 @@
  * This differs from the previous sketch in that the Arduino powers
  * down in between thingamajigs.
  */
-#include <Accel_1Q.h>
+#include <Accel_1Q_2.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 

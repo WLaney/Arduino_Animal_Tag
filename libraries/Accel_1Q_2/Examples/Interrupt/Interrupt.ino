@@ -2,7 +2,7 @@
  * In this demo, the accelerometer interrupt 1 pin should be connected to pin 3
  * on the Arduino.
  */
-#include <Accel_1Q.h>
+#include <Accel_1Q_2.h>
 
 volatile signed char fifo_ovr = 0;
 Accel::sample_raw buffer[32];
