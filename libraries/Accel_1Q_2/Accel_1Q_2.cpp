@@ -110,6 +110,7 @@ namespace Accel {
 			I2c.read(address, static_cast<byte>(Register::OUT_X_MSB), sizeof(temp), (byte *) temp);
 			s[i] = temp[0];
 		}
+		read_single(Register::STATUS);
 		return n;
 	}
 	

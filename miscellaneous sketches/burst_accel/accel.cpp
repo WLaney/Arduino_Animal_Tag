@@ -14,7 +14,7 @@
 constexpr signed char buffer_h = 32;
 // The number of samples in our software buffer. This can be changed,
 // but it affects RAM consumption and read/write frequency.
-constexpr signed char buffer_s = 32;
+constexpr signed char buffer_s = 64;
 
 static Accel::sample_raw buffer[buffer_s];
 static byte buffer_i;
@@ -29,7 +29,7 @@ bool accel_setup(Accel::Range rng, Accel::ODR odr, bool down) {
 	
 	downscale = down;
 	Accel::set_fifo(Accel::FIFO_Mode::FILL);
-	//Accel::set_fifo_interrupt(true);
+	Accel::set_fifo_interrupt(true);
 	Accel::set_active(true);
 	accel_reset();
 	switch (rng) {

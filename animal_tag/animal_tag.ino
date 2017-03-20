@@ -30,6 +30,7 @@ void setup()
   Accel::Range ascale;
   Accel::ODR aodr;
   SAMPLE_RATE odr;
+  bool downscale;
   
   // Get configuration from EEPROM
   for (byte i=0; i<4; i++) {
@@ -47,37 +48,41 @@ void setup()
 		aodr = Accel::ODR::HZ_12_5;
 		godr = FXAS2::ODR::HZ_12_5;
 		sample_delay = byte{1000.0 / 12.5};
+		downscale = false;
 		break;
 	case ODR_25_HZ:
 		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_25;
 		sample_delay = byte{1000.0 / 25.0};
+		downscale = true;
 		break;
 	case ODR_50_HZ:
 		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_50;
+		downscale = false;
 		sample_delay = byte{1000.0 / 50.0};
 		break;
 	default:
-		DBGSTR("Invalid sample rate; assuming you meant 25Hz");
+		DBGSTR("Bad s.rate - will use 25Hz\n");
 		aodr = Accel::ODR::HZ_50;
 		godr = FXAS2::ODR::HZ_25;
+		downscale = true;
 		sample_delay = byte{1000.0 / 25.0};
   }
   
   // Debug commands won't show up if they're
   // turned off in debug.h
   DBEGIN();
-  accel_setup(ascale, aodr); // not a misprint, accel can't do 25Hz
+  accel_setup(ascale, aodr, downscale);
   gyro_setup(gscale, godr);
   temp_setup();
   rtc_setup();
   
   // Start SD card
   if (output_setup()) {
-    DBGSTR("Setup successful\n");
+    DBGSTR("Setup good\n");
   } else {
-    DBGSTR("SD card failed to initialize. Insert it and restart\n");
+    DBGSTR("SD card failed; insert it and restart\n");
     // SPI uses pin 13 for something, so we turn it off
     SPI.end();
     pinMode(LED_BUILTIN, OUTPUT);
@@ -102,33 +107,11 @@ void setup()
 void loop() {
   // We hold the first N gyroscope values in the software buffer; the rest
   // are kept in the hardware buffer
-  for (byte i=0; i<gyro_size(); i++) {
-    accel_read();
-    n_delay(sample_delay);
-  }
-  if (gyro_is_active()) {
-    gyro_read_all();
-  }
   while (!accel_full()) {
-    accel_read();
-    n_delay(sample_delay);
+	  n_delay(sample_delay * 32); // TODO not this? please?
+	  accel_read_all();
+	  gyro_read_all();
   }
-  flush_and_write();
-  accel_reset();
-  gyro_reset();
-  // Right now, the gyroscope is on for every other read
-  // Functionality is subject to change
-  //~if (gyro_is_active()) {
-  //~  gyro_set_active(false);
-  //~} else {
-  //~  gyro_set_active(true);
-  //~}
-}
-
-// Flush the buffer to the SD card, writing temperature and time
-// data as you do.
-void flush_and_write()
-{
   // Read long-term from sensors
   if (++long_term_write_num == long_term_write_max) {
     long_term_write_num = 0;
