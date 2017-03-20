@@ -5,11 +5,6 @@
 #include <SD.h>
 #include "fxas_2.h"
 
-// Size of software buffer (samples)
-constexpr byte gyro_buffer_size = 16;
-// Size of hardware buffer (samples)
-constexpr byte gyro_fifo_size = 32;
-
 void gyro_setup(FXAS2::Range, FXAS2::ODR);
 
 /*
@@ -20,6 +15,14 @@ void gyro_setup(FXAS2::Range, FXAS2::ODR);
  * do nothing.
  */
 void gyro_read_all();
+
+/*
+ * Return if the gyroscope's software buffer is full.
+ * 
+ * If gyro_full() and the FIFO buffer is full, then data is ready to be
+ * written to the SD card.
+ */
+bool gyro_full();
 
 /*
  * Write both the software buffer and the current contents of the hardware
@@ -46,7 +49,6 @@ void gyro_reset();
 void gyro_set_active(bool);
 bool gyro_is_active();
 
-byte gyro_size();
 unsigned short gyro_write_size();
 float gyro_scale();
 

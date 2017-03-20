@@ -17,7 +17,7 @@ constexpr signed char buffer_h = 32;
 constexpr signed char buffer_s = 32;
 
 static Accel::sample_raw buffer[buffer_s];
-static byte buffer_i;
+static signed char buffer_i;
 static bool downscale = false;
 static float scale = 8.0;
 
@@ -59,15 +59,6 @@ void accel_read_all() {
 	}
 	
 	buffer_i += reads;
-	
-}
-
-bool accel_full() {
-	return buffer_i >= buffer_s;
-}
-
-float accel_scale() {
-	return scale;
 }
 
 unsigned short accel_write_size() {
@@ -78,13 +69,12 @@ unsigned short accel_write_size() {
 // Write raw data
 void accel_write(File sd) {
 	sd.write((byte *) buffer, sizeof(buffer));
-	buffer_i = 0;
 	signed char left = (downscale ? buffer_h / 2 : buffer_h);
 	while (left > 0) {
+		buffer_i = 0;
 		left -= buffer_s;
 		accel_read_all();
 		sd.write((byte *) buffer, sizeof(buffer));
-		buffer_i = 0;
 	}
 }
 
@@ -92,31 +82,14 @@ void accel_reset() {
 	buffer_i = 0;
 }
 
-/*
- * Simulates writing data to the SD card
- */
-void accel_print_all() {
-	byte reads = 0;
-	Accel::sample s;
-	for (auto &sr : buffer) {
-		s = Accel::parse_raw(sr);
-		DBG(s.x); DBG('\t');
-		DBG(s.y); DBG('\t');
-		DBGLN(s.z);
-	}
-	buffer_i = 0;
-	signed char left = (downscale ? buffer_h / 2 : buffer_h);
-	while (left > 0) {
-		left -= buffer_s;
-		accel_read_all();
-		for (auto &sr : buffer) {
-			s = Accel::parse_raw(sr);
-			DBG(s.x); DBG('\t');
-			DBG(s.y); DBG('\t');
-			DBGLN(s.z);
-		}
-		reads++;
-		buffer_i = 0;
-	}
-	DBGSTR("Reads: "); DBGLN(reads);
+bool accel_full() {
+	return buffer_i >= buffer_s;
+}
+
+float accel_scale() {
+	return scale;
+}
+
+bool accel_downscaled() {
+	return downscale;
 }

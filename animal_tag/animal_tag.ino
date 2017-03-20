@@ -12,9 +12,9 @@
 
 // Copied from configure.ino
 enum SAMPLE_RATE {
-	ODR_12_5_HZ,
-	ODR_25_HZ,
-	ODR_50_HZ
+    ODR_12_5_HZ,
+    ODR_25_HZ,
+    ODR_50_HZ
 };
 
 constexpr byte long_term_write_max = 3;
@@ -41,33 +41,38 @@ void setup()
   EEPROM.get(9,  header.gy);
   EEPROM.get(13, header.gz);
   ascale = static_cast<Accel::Range>(EEPROM.read(17));
+  // TODO add accel range checking
   gscale = static_cast<FXAS2::Range>(EEPROM.read(18));
+  if (gscale < FXAS2::Range::DPS_2000 || gscale > FXAS2::Range::DPS_250) {
+    DBGSTR("ERROR: G.Scale invalid\n");
+    gscale = FXAS2::Range::DPS_250;
+  }
   odr    = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
-	case ODR_12_5_HZ:
-		aodr = Accel::ODR::HZ_12_5;
-		godr = FXAS2::ODR::HZ_12_5;
-		sample_delay = byte{1000.0 / 12.5};
-		downscale = false;
-		break;
-	case ODR_25_HZ:
-		aodr = Accel::ODR::HZ_50;
-		godr = FXAS2::ODR::HZ_25;
-		sample_delay = byte{1000.0 / 25.0};
-		downscale = true;
-		break;
-	case ODR_50_HZ:
-		aodr = Accel::ODR::HZ_50;
-		godr = FXAS2::ODR::HZ_50;
-		downscale = false;
-		sample_delay = byte{1000.0 / 50.0};
-		break;
-	default:
-		DBGSTR("Bad s.rate - will use 25Hz\n");
-		aodr = Accel::ODR::HZ_50;
-		godr = FXAS2::ODR::HZ_25;
-		downscale = true;
-		sample_delay = byte{1000.0 / 25.0};
+    case ODR_12_5_HZ:
+        aodr = Accel::ODR::HZ_12_5;
+        godr = FXAS2::ODR::HZ_12_5;
+        sample_delay = byte{1000.0 / 12.5};
+        downscale = false;
+        break;
+    case ODR_25_HZ:
+        aodr = Accel::ODR::HZ_50;
+        godr = FXAS2::ODR::HZ_25;
+        sample_delay = byte{1000.0 / 25.0};
+        downscale = true;
+        break;
+    case ODR_50_HZ:
+        aodr = Accel::ODR::HZ_50;
+        godr = FXAS2::ODR::HZ_50;
+        downscale = false;
+        sample_delay = byte{1000.0 / 50.0};
+        break;
+    default:
+        DBGSTR("Bad s.rate - will use 25Hz\n");
+        aodr = Accel::ODR::HZ_50;
+        godr = FXAS2::ODR::HZ_25;
+        downscale = true;
+        sample_delay = byte{1000.0 / 25.0};
   }
   
   // Debug commands won't show up if they're
@@ -105,12 +110,20 @@ void setup()
 }
 
 void loop() {
-  // We hold the first N gyroscope values in the software buffer; the rest
-  // are kept in the hardware buffer
-  while (!accel_full()) {
-	  n_delay(sample_delay * 32); // TODO not this? please?
+  if (accel_downscaled()) {
+	while (!accel_full()) {
+	  n_delay(sample_delay * 16); // TODO again, not this!
+	  accel_read_all();
+	  n_delay(sample_delay * 16);
 	  accel_read_all();
 	  gyro_read_all();
+	}
+  } else {
+    while (!accel_full()) {
+      n_delay(sample_delay * 32); // TODO not this? please?
+      accel_read_all();
+      gyro_read_all();
+    }
   }
   // Read long-term from sensors
   if (++long_term_write_num == long_term_write_max) {
@@ -119,6 +132,8 @@ void loop() {
   } else {
     output_write_data(false);
   }
+  accel_reset();
+  gyro_reset();
 }
 
 // A special version of delay() with

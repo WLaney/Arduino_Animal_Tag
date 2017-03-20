@@ -68,9 +68,9 @@ void output_write_data(bool long_data) {
       file.print("LONG");
       rtc_write(file);
       temp_write(file);
+      DBGSTR("wrote long-term\n");
     }
     file.close();
-    DBGSTR("wrote long-term\n");
   } else {
     DBGSTR("ERROR: COULD NOT WRITE LONG-TERM DATA\n");
   }
