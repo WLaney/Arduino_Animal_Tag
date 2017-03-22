@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	// Verbosity
-	std::clog << "Creating " << data_fname << " and " << header_fname
+	std::cout << "Creating " << data_fname << " and " << header_fname
 	          << " from " << in_fname << std::endl;
 	// Start trying to open files
 	std::ifstream in_file(in_fname, std::ios::binary);
@@ -237,6 +237,6 @@ int main(int argc, char *argv[]) {
 		in_file.unget();
 	}
 	
-	std::clog << "Successfully wrote to files." << std::endl;
+	std::cout << "Successfully wrote to files." << std::endl;
 	return EXIT_SUCCESS;
 }
