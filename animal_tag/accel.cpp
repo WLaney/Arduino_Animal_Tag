@@ -71,7 +71,7 @@ void accel_write(File sd) {
 	sd.write((byte *) buffer, sizeof(buffer));
 	signed char left = (downscale ? buffer_h / 2 : buffer_h);
 	while (left > 0) {
-		buffer_i = 0;
+		accel_reset();
 		left -= buffer_s;
 		accel_read_all();
 		sd.write((byte *) buffer, sizeof(buffer));
@@ -80,6 +80,11 @@ void accel_write(File sd) {
 
 void accel_reset() {
 	buffer_i = 0;
+#if CLEAR_BUFFERS
+	for (int i=0; i<buffer_s; i++) {
+		buffer[i] = {0, 0, 0};
+	}
+#endif
 }
 
 bool accel_full() {

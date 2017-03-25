@@ -24,6 +24,7 @@ byte sample_delay;
 
 void setup()
 {
+  DBEGIN();
   header_data header;
   FXAS2::Range gscale;
   FXAS2::ODR godr;
@@ -50,18 +51,21 @@ void setup()
   odr    = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
     case ODR_12_5_HZ:
+	DBGSTR("12hz\n");
         aodr = Accel::ODR::HZ_12_5;
         godr = FXAS2::ODR::HZ_12_5;
         sample_delay = byte{1000.0 / 12.5};
         downscale = false;
         break;
     case ODR_25_HZ:
+	DBGSTR("25Hz\n");
         aodr = Accel::ODR::HZ_50;
         godr = FXAS2::ODR::HZ_25;
         sample_delay = byte{1000.0 / 25.0};
         downscale = true;
         break;
     case ODR_50_HZ:
+	DBGSTR("50hz\n");
         aodr = Accel::ODR::HZ_50;
         godr = FXAS2::ODR::HZ_50;
         downscale = false;
@@ -111,6 +115,7 @@ void setup()
 
 void loop() {
   if (accel_downscaled()) {
+	// WARNING will not accept different values of buffer_s
 	while (!accel_full()) {
 	  n_delay(sample_delay * 16); // TODO again, not this!
 	  accel_read_all();
@@ -118,12 +123,15 @@ void loop() {
 	  accel_read_all();
 	  gyro_read_all();
 	}
+	// Wait for hardware buffer to fill up
+	n_delay(sample_delay * 16);
   } else {
     while (!accel_full()) {
       n_delay(sample_delay * 32); // TODO not this? please?
       accel_read_all();
       gyro_read_all();
     }
+    n_delay(sample_delay * 32);
   }
   // Read long-term from sensors
   if (++long_term_write_num == long_term_write_max) {

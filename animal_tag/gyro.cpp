@@ -54,7 +54,7 @@ void gyro_write(File sd) {
 	sd.write((byte *) buffer, sizeof(buffer));
 	signed char left = buffer_h;
 	while (left > 0) {
-		buffer_i = 0;
+		gyro_reset();
 		left -= buffer_s;
 		gyro_read_all();
 		sd.write((byte *) buffer, sizeof(buffer));
@@ -74,6 +74,11 @@ bool gyro_full() {
  */
 void gyro_reset() {
   buffer_i = 0;
+#if CLEAR_BUFFERS
+  for (int i=0; i<buffer_s; i++) {
+    buffer[i] = {0, 0, 0};
+  }
+#endif
 }
 
 /*

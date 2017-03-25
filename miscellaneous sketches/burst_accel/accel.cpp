@@ -78,18 +78,21 @@ unsigned short accel_write_size() {
 // Write raw data
 void accel_write(File sd) {
 	sd.write((byte *) buffer, sizeof(buffer));
-	buffer_i = 0;
+	accel_reset();
 	signed char left = (downscale ? buffer_h / 2 : buffer_h);
 	while (left > 0) {
 		left -= buffer_s;
 		accel_read_all();
 		sd.write((byte *) buffer, sizeof(buffer));
-		buffer_i = 0;
+		accel_reset();
 	}
 }
 
 void accel_reset() {
 	buffer_i = 0;
+	for (int i=0; i<buffer_s; i++) {
+		buffer[i] = {0, 0, 0};
+	}
 }
 
 /*
@@ -116,7 +119,7 @@ void accel_print_all() {
 			DBGLN(s.z);
 		}
 		reads++;
-		buffer_i = 0;
+		accel_reset();
 	}
 	DBGSTR("Reads: "); DBGLN(reads);
 }

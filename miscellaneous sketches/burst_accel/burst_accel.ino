@@ -10,7 +10,7 @@ void setup() {
 	//DBEGIN();
 	Serial.begin(38400);
 	bool accel_good = accel_setup(Accel::Range::G2,
-	                              Accel::ODR::HZ_50,
+	                              Accel::ODR::HZ_12_5,
 	                              false);
 	if (!accel_good) {
 		DBGSTR("Accelerometer failed to initialize.\n");
