@@ -7,8 +7,8 @@
 #include <SD.h>
 #include <SPI.h>
 #include <ds3234.h>
-#include <DSRTCLib.h>
-#include <Gyro_FXAS.h>
+#include <DSRTCLib2.h>
+#include <fxas_2.h>
 #include <Light_L3GD20.h>
 #include <SFE_MMA8452Q.h>
 #include <SparkFun_MS5803_I2C.h>
@@ -65,7 +65,7 @@ void setup() {
   Gyro::begin();
 
   DBGSTR("Starting FXAS21002C Gyroscope");
-  FXAS::begin(FXAS::ODR::HZ_12_5, FXAS::Range::DPS_250, true);
+  FXAS2::begin(FXAS2::ODR::HZ_12_5, FXAS2::Range::DPS_250, true);
 
   DBGSTR("Starting DS3234 RTC");
   rtc_mode();
@@ -169,14 +169,14 @@ void test_fxas21002c_gyro() {
          "(x, y, z) values will appear in short bursts.\n" \
          "These values should be within the maximum range of the gyroscope (currently 250DPS).");
   run_until_input([&] () {
-    FXAS::sample data[FXAS::bufferSize];
-    FXAS::readBurst(data, FXAS::bufferSize);
+    FXAS2::sample data[FXAS2::bufferSize];
+    FXAS2::readBurst(data, FXAS2::bufferSize);
     for (auto s : data) {
-      Serial.print(FXAS::sampleToDps(s.x)) ; Serial.write('\t');
-      Serial.print(FXAS::sampleToDps(s.y)) ; Serial.write('\t');
-      Serial.println(FXAS::sampleToDps(s.z));
+      Serial.print(FXAS2::sampleToDps(s.x)) ; Serial.write('\t');
+      Serial.print(FXAS2::sampleToDps(s.y)) ; Serial.write('\t');
+      Serial.println(FXAS2::sampleToDps(s.z));
     }
-    delay(80 * FXAS::bufferSize);
+    delay(80 * FXAS2::bufferSize);
   });
 }
 
