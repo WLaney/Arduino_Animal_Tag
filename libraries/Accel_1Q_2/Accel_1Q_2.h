@@ -159,10 +159,9 @@ namespace Accel {
 	byte read_burst(sample_raw *s, byte n);
 	
 	/*
-	 * Read n*2 elements from the FIFO buffer s (a buffer of size n),
-	 * discarding every even read. This was included mainly to simulate
-	 * a sample rate of 25Hz, which is a common sample rate for many
-	 * gyroscopes.
+	 * Burst-read (n*2) samples from the accelerometer and downsample
+	 * by a factor of 2. This is mostly useful for simulating a 25Hz
+	 * sample rate.
 	 */
 	byte read_burst_dsmp(sample_raw *s, byte n);
 	

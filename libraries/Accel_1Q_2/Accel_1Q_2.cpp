@@ -104,7 +104,7 @@ namespace Accel {
 		byte smps;
 		
 		smps = read_single(Register::STATUS) & 0x3F;
-		if (n*2 > smps) n = smps/2;
+		if (n > smps/2) n = smps/2;
 		
 		for (byte i=0; i<n; i++) {
 			I2c.read(address, static_cast<byte>(Register::OUT_X_MSB), sizeof(temp), (byte *) temp);

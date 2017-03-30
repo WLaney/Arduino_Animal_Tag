@@ -48,12 +48,12 @@ void accel_read_all() {
 		return;
 	}
 	DBGSTR("A.read\n");
-	byte reads_max  = (downscale ? 16 : 32);
+	byte reads_max  = 32 >> downscale;
 	byte reads_left = buffer_s - buffer_i;
 	byte reads = (reads_left < reads_max) ? reads_left : reads_max;
 	
 	if (downscale) {
-		Accel::read_burst_dsmp(&buffer[buffer_i], reads / 2);
+		Accel::read_burst_dsmp(&buffer[buffer_i], reads);
 	} else {
 		Accel::read_burst(&buffer[buffer_i], reads);
 	}
@@ -62,20 +62,19 @@ void accel_read_all() {
 }
 
 unsigned short accel_write_size() {
-	byte h = downscale ? buffer_h / 2 : buffer_h;
+	byte h = buffer_h >> downscale;
 	return sizeof(Accel::sample_raw) * (buffer_s + h);
 }
 
-// Write raw data
+// Write raw data to the SD card
+// Assumes that the software and hardware buffers are both full
 void accel_write(File sd) {
+	// write software buffer first, since it's the oldest
 	sd.write((byte *) buffer, sizeof(buffer));
-	signed char left = (downscale ? buffer_h / 2 : buffer_h);
-	while (left > 0) {
-		accel_reset();
-		left -= buffer_s;
-		accel_read_all();
-		sd.write((byte *) buffer, sizeof(buffer));
-	}
+	// write the hardware buffer next
+	accel_reset();
+	accel_read_all();
+	sd.write((byte *) buffer, sizeof(buffer) >> downscale);
 }
 
 void accel_reset() {
