@@ -11,6 +11,7 @@
 #include <fxas_2.h>
 #include <Light_L3GD20.h>
 #include <SFE_MMA8452Q.h>
+#include <Accel_1Q_2.h>
 #include <SparkFun_MS5803_I2C.h>
 
 #define DBGSTR(s) Serial.println(F(s))
@@ -58,9 +59,12 @@ void setup() {
   DBGSTR("Starting Wire (Everything Else)");
   Wire.begin();
 
-  DBGSTR("Starting Accelerometer");
+  DBGSTR("Starting MMA8452Q Accelerometer");
   accel.init(SCALE_8G, ODR_12);
-
+  
+  DBGSTR("Starting MMA8451Q Accelerometer");
+  Accel::begin(Accel::ODR::HZ_12_5, Accel::Range::G2);
+	
   DBGSTR("Starting L3GD20 Gyroscope");
   Gyro::begin();
 
@@ -84,15 +88,16 @@ void setup() {
 void loop() {
   String response;
   DBGSTR("Choose a test to run: \n"
-         "  a) All (No L3GD20, DS3234)\n"
-         "  b) Accelerometer\n"
-         "  c) L3GD20 Gyroscope\n"
-         "  d) FXAS21002C Gyroscope\n"
-         "  e) Temperature\n"
-         "  f) DS3234 Real-Time Clock\n"
-         "  g) DS1339B Real-Time Clock\n"
-         "  h) SD Card\n"
-         "  i) External Temperature/Pressure\n");
+         "  a) All (New Sensors Only)\n"
+         "  b) MMA8452Q Accelerometer\n"
+         "  c) MMA8451Q Accelerometer\n"
+         "  d) L3GD20 Gyroscope\n"
+         "  e) FXAS21002C Gyroscope\n"
+         "  f) TMP102 Temperature\n"
+         "  g) DS3234 Real-Time Clock\n"
+         "  h) DS1339B Real-Time Clock\n"
+         "  i) SD Card\n"
+         "  j) ms5803 External Temperature/Pressure\n");
   while (!Serial.available())
     ;
   response = Serial.readString();
@@ -101,33 +106,37 @@ void loop() {
   switch (letter) {
     case 'a':
       DBGSTR("All Tests (No Obsolete Sensors)");
-      test_accelerometer();
+      test_mma8451q_accelerometer();
       test_temperature();
+      test_ds1339b_rtc();
       test_sd();
       test_pressure();
       break;
     case 'b':
-      test_accelerometer();
+      test_mma8452q_accelerometer();
       break;
-    case 'c':
+	case 'c':
+	  test_mma8451q_accelerometer();
+	  break;
+    case 'd':
       test_l3gd20_gyro();
       break;
-    case 'd':
+    case 'e':
       test_fxas21002c_gyro();
       break;
-    case 'e':
+    case 'f':
       test_temperature();
       break;
-    case 'f':
+    case 'g':
       test_ds3234_rtc();
       break;
-    case 'g':
+    case 'h':
       test_ds1339b_rtc();
       break;
-    case 'h':
+    case 'i':
       test_sd();
       break;
-    case 'i':
+    case 'j':
       test_pressure();
       break;
     default:
@@ -136,8 +145,19 @@ void loop() {
   }
 }
 
-void test_accelerometer() {
-  DBGSTR("Accelerometer");
+void test_mma8451q_accelerometer() {
+	DBGSTR("Accelerometer\n");
+	run_until_input([] () {
+		Accel::sample s = Accel::read();
+		Serial.print(s.x); Serial.write('\t');
+		Serial.print(s.y); Serial.write('\t');
+		Serial.println(s.z);
+		delay(80);
+	});
+}
+
+void test_mma8452q_accelerometer() {
+  DBGSTR("Accelerometer\n");
   run_until_input([] () {
     while (!accel.available())
       ;
