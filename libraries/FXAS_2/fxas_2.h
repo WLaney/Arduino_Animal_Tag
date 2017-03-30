@@ -71,7 +71,17 @@ namespace FXAS2 {
     void standby();
     void active();
     
+    /*
+     * Read and store a single sample.
+     * Use readBurst when burst-mode is active.
+     */
     void read(sample&);
+    
+    /*
+     * Read up to N samples from the hardware FIFO buffer.
+     * Use this when burst-mode is active.
+	 * Returns the number of bytes read.
+     */
     void readBurst(sample*, size_t);
 	
 	/*

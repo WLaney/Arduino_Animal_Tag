@@ -40,8 +40,8 @@ namespace FXAS2 {
 			return false;
 		
 		if (burst) {
-			// FIFO uses circular buffer mode, no watermark use
-			writeReg(Register::F_SETUP, 0x40);
+			// FIFO uses stop mode, no watermark used
+			writeReg(Register::F_SETUP, 0x80);
 			// Make Z_LSB auto-increment to X_MSB (0x01) instead of STATUS (0x00)
 			writeReg(Register::CTRL_REG3, 0x08);
 		} else {
@@ -68,7 +68,8 @@ namespace FXAS2 {
         if (wai != whoAmIValue)
 			return false;
 		
-		writeReg(Register::CTRL_REG1, 1 << 5);
+		// Set self-test to true AND set to active
+		writeReg(Register::CTRL_REG1, (3 | 1 << 5));
 		return true;
 	}
 	
@@ -95,6 +96,13 @@ namespace FXAS2 {
 		writeReg(Register::CTRL_REG1, ctrl_reg1);
 	}
 
+	inline static void swapBytes(sample &s) {
+		unsigned short temp;
+		temp = s.x; s.x = ((temp & 0xFF00) >> 8) | ((temp & 0x00FF) << 8);
+		temp = s.y; s.y = ((temp & 0xFF00) >> 8) | ((temp & 0x00FF) << 8);
+		temp = s.z; s.z = ((temp & 0xFF00) >> 8) | ((temp & 0x00FF) << 8);
+	}
+
     /*
      * Read data from the gyroscope.
      * If FIFO is activated, then this will read the value at
@@ -106,6 +114,7 @@ namespace FXAS2 {
 	void read(sample& s) {
 		byte *b = (byte *) &s;
 		I2c.read(i2c_addr, static_cast<byte>(Register::OUT_X_MSB), 6, b);
+		swapBytes(s);
     }
 
     /*
@@ -113,11 +122,24 @@ namespace FXAS2 {
      * buffer. This should only be used when FIFO is active.
      */
 	void readBurst(sample* s, size_t n) {
+		byte inBuffer;
 		byte *sb = (byte *) s;
+		
+		inBuffer = readReg(Register::F_STATUS) & 0x3F;
+		if (n > inBuffer) n = inBuffer;
 		byte nb = n * sizeof(sample);
+		
 		I2c.read(i2c_addr, static_cast<byte>(Register::OUT_X_MSB), nb, sb);
-    }
 
+		for (byte i=0; i<nb; i+=2) {
+			byte b1, b2, t;
+			
+			t = sb[i];
+			sb[i] = sb[i+1];
+			sb[i+1] = t;
+		}
+    }
+	
     /*
      * Convert sample to a floating-point number based on the range
      */

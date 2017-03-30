@@ -17,8 +17,8 @@ void setup() {
 void loop() {
 	FXAS2::sample s;
 	FXAS2::read(s);
-	Serial.print("X: ");  Serial.print(s.x);
-	Serial.print(" Y: "); Serial.print(s.y);
-	Serial.print(" Z: "); Serial.println(s.z);
+	Serial.print("X: ");  Serial.print(FXAS2::sampleToDps(s.x));
+	Serial.print("\tY: "); Serial.print(FXAS2::sampleToDps(s.y));
+	Serial.print("\tZ: "); Serial.println(FXAS2::sampleToDps(s.z));
 	delay(80);
 }
