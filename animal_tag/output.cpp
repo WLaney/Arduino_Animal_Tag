@@ -59,7 +59,7 @@ void output_write_data(bool long_data) {
     accel_write(file);
 	if (gyro_is_active()) {
     	file.print("GYRO");
-    	gyro_write(file);
+    	gyro_write(file, accel_downscaled());
 	} else {
 		file.print("GSKP");
 	}

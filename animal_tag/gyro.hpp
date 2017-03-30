@@ -28,10 +28,11 @@ bool gyro_full();
  * Write both the software buffer and the current contents of the hardware
  * buffer to a file, in that order.
  * 
+ * If half is true, only write half of the buffer. (Used with downsampled accelerometer)
  * If the gyroscope is not in active mode, this will print a warning and
  * do nothing.
  */
-void gyro_write(File f);
+void gyro_write(File f, bool half);
 
 /*
  * Flush the gyroscope's buffer. Call this after writing.

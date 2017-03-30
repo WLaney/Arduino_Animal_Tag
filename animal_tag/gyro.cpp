@@ -46,19 +46,18 @@ void gyro_read_all() {
 
 /*
  * Write every value in the software and hardware buffer to the SD card.
+ * If half is true, only write half of the buffer. (Used with downsampled accelerometer)
  */
-void gyro_write(File sd) {
+void gyro_write(File sd, bool half) {
 	if (!gyro_is_active()) {
 		DBGSTR("ERROR: G. not active");
 	}
+	// Write software buffer
 	sd.write((byte *) buffer, sizeof(buffer));
-	signed char left = buffer_h;
-	while (left > 0) {
-		gyro_reset();
-		left -= buffer_s;
-		gyro_read_all();
-		sd.write((byte *) buffer, sizeof(buffer));
-	}
+	// Write hardware buffer
+	gyro_reset();
+	gyro_read_all();
+	sd.write((byte *) buffer, sizeof(buffer) >> half);
 }
 
 /*

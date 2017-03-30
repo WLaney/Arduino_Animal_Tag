@@ -48,7 +48,7 @@ void setup()
     DBGSTR("ERROR: G.Scale invalid\n");
     gscale = FXAS2::Range::DPS_250;
   }
-  odr    = static_cast<SAMPLE_RATE>(EEPROM.read(19));
+  odr = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
     case ODR_12_5_HZ:
 		DBGSTR("12hz\n");
@@ -105,7 +105,12 @@ void setup()
   // Write header
   // Accelerometer, Gyroscope Write Size
   header.aws = accel_write_size();
-  header.gws = gyro_write_size();
+  // TODO not hack
+  if (downscale) {
+	header.gws = accel_write_size();
+  } else {
+    header.gws = gyro_write_size();
+  }
   // Write period (long_term_write_max)
   header.period = long_term_write_max;
   // Scaling
