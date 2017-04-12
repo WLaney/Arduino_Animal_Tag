@@ -25,6 +25,19 @@ byte sample_delay;
 void setup()
 {
   DBEGIN();
+  // Delayed startup
+  rtc_setup();
+  long int delay_time;
+  EEPROM.get(21, delay_time);
+  if (delay_time > 0) {
+    DBGSTR("Sleeping: ");
+    DBG(delay_time);
+    DBGSTR(" seconds\n");
+    DEND();
+    rtc_snooze(delay_time);
+    DBEGIN();
+  }
+
   header_data header;
   FXAS2::Range gscale;
   FXAS2::ODR godr;
@@ -86,7 +99,6 @@ void setup()
   accel_setup(ascale, aodr, downscale);
   gyro_setup(gscale, godr);
   temp_setup();
-  rtc_setup();
   
   // Start SD card
   if (output_setup()) {

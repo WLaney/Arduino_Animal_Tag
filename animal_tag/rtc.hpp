@@ -8,5 +8,6 @@
 void rtc_setup();
 void rtc_update();
 void rtc_write(File sd); // Writes binary data to a file
+void rtc_snooze(long int time);
 
 #endif

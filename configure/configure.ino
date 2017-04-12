@@ -28,8 +28,10 @@ void loop() {
     "d) Set gyroscope scale\n" \
     "e) Set samplerate\n" \
     "f) Set device orientation (for old tags)\n" \
-    "g) Calibrate gyroscope (not implemented)\n" \
-    "h) Write changes\n\n" \
+    "g) Set high-quality accelerometer\n" \
+    "h) Set alarm startup time\n" \
+    "i) Calibrate gyroscope (not implemented)\n" \
+    "j) Write changes\n\n" \
   );
   while (!Serial.available())
     ;
@@ -56,9 +58,15 @@ void loop() {
     set_orientation();
     break;
   case 'g':
-    calibrate();
+    set_hq_accel();
     break;
   case 'h':
+    set_startup_delay();
+    break;
+  case 'i':
+    calibrate();
+    break;
+  case 'j':
     write_changes();
     break;
   default:
@@ -105,6 +113,10 @@ void print_configuration() {
     default:
       PRINTSTR("UNKNOWN VALUE - "); Serial.println(tag.sample_rate);
   }
+  PRINTSTR("HQ Accelerometer: ");
+  Serial.println(tag.accel_hq);
+  PRINTSTR("Alarm startup delay (seconds): ");
+  Serial.println(tag.startup_delay);
 }
 
 void set_name() {
@@ -200,6 +212,16 @@ void set_odr() {
 void set_orientation() {
   bool valid = question("Is your device an early prototype with an incorrect orientation? (y/n)\n");
   tag.orient = (byte)valid;
+}
+
+void set_hq_accel() {
+  bool hq = question("Do you want to let the accelerometer use high-quality oversampling?\n");
+  tag.accel_hq = hq;
+}
+
+void set_startup_delay() {
+  Serial.println(F("Set the startup delay (in seconds)..."));
+  tag.startup_delay = Serial.parseInt();;
 }
 
 void calibrate() {

@@ -48,3 +48,7 @@ void rtc_write(File sd) {
   // other fields are unused, but included in the parser for some reason
   sd.write((byte *) &t, sizeof(t));
 }
+
+void rtc_snooze(long int time) {
+  rtc.snooze(time);
+}
