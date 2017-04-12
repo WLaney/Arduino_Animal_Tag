@@ -151,7 +151,6 @@ void DSRTCLib::setAlarmRepeat(byte repeat)
 	alarm_repeat = repeat;
 }
 
-
 unsigned char DSRTCLib::getRegister(unsigned char registerNumber)
 {
 	byte out;
