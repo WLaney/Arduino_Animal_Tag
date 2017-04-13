@@ -55,7 +55,9 @@ void setup()
   EEPROM.get(9,  header.gy);
   EEPROM.get(13, header.gz);
   ascale = static_cast<Accel::Range>(EEPROM.read(17));
-  // TODO add accel range checking
+  if (ascale < Accel::Range::G2 || ascale > Accel::Range::G8) {
+    DBGSTR("ERROR: A.Scale invalid\n");
+  }
   gscale = static_cast<FXAS2::Range>(EEPROM.read(18));
   if (gscale < FXAS2::Range::DPS_2000 || gscale > FXAS2::Range::DPS_250) {
     DBGSTR("ERROR: G.Scale invalid\n");
