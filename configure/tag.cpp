@@ -66,3 +66,19 @@ void Tag::write() {
 	EEPROM.put(20, accel_hq);
 	EEPROM.put(21, startup_delay);
 }
+
+void Tag::reset() {
+    name[0] = 0xFF;
+    name[1] = 0xFF;
+    name[2] = 0xFF;
+    name[3] = 0xFF;
+	orient = 0xFF;
+	bias_x = 0xFFFFFFFF;
+	bias_y = 0xFFFFFFFF;
+	bias_z = 0xFFFFFFFF;
+	accel_scale = 0xFF;
+	gyro_scale = 0xFF;
+	sample_rate = 0xFF;
+	accel_hq = 0xFF;
+	startup_delay = 0xFFFFFFFF;
+}

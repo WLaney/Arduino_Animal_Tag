@@ -45,6 +45,7 @@ public:
 	
 	void update();
 	void write();
+    void reset();
 };
 
 #endif // __TAG_H__

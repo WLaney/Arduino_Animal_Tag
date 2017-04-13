@@ -16,63 +16,109 @@ Tag tag;
 
 void setup() {
   Serial.begin(9600);
-  PRINTSTR("Device Configuration\n\n");
   tag = Tag(true);
 }
 
 void loop() {
+  PRINTSTR("Current Tag Configuration:\n");
+  print_configuration();
   PRINTSTR(
-    "a) Print current device configuration\n" \
-    "b) Set device name\n" \
-    "c) Set accelerometer scale\n" \
-    "d) Set gyroscope scale\n" \
-    "e) Set samplerate\n" \
-    "f) Set device orientation (for old tags)\n" \
-    "g) Set high-quality accelerometer\n" \
-    "h) Set alarm startup time\n" \
-    "i) Calibrate gyroscope (not implemented)\n" \
-    "j) Write changes\n\n" \
+    "\nMENU\n" \
+    "a) Configure everything (for new tags)\n" \
+    "b) Configure something specific\n" \
+    "c) Reset the EEPROM (for testing only)\n\n"
   );
   while (!Serial.available())
     ;
   char result = Serial.read();
-  // Somewhat janky downcase() method
   if (result < 'a') result = (result - 'A') + 'a';
   switch (result) {
   case 'a':
-    print_configuration();
+    set_name();
+    set_accel_scale();
+    set_gyro_scale();
+    set_odr();
+    set_orientation();
+    set_hq_accel();
+    set_startup_delay();
+    calibrate();
+    write_changes();
     break;
   case 'b':
-    set_name();
+    config_menu();
     break;
   case 'c':
-    set_accel_scale();
-    break;
-  case 'd':
-    set_gyro_scale();
-    break;
-  case 'e':
-    set_odr();
-    break;
-  case 'f':
-    set_orientation();
-    break;
-  case 'g':
-    set_hq_accel();
-    break;
-  case 'h':
-    set_startup_delay();
-    break;
-  case 'i':
-    calibrate();
-    break;
-  case 'j':
+    tag_reset();
     write_changes();
     break;
   default:
-    PRINTSTR("Sorry, didn't quite catch that...");
+    PRINTSTR("Invalid option.\n");
+    break;
   }
-  Serial.println('\n');
+}
+
+void config_menu() {
+  while (true) {
+    PRINTSTR(
+      "a) Print current device configuration\n" \
+      "b) Set device name\n" \
+      "c) Set accelerometer scale\n" \
+      "d) Set gyroscope scale\n" \
+      "e) Set samplerate\n" \
+      "f) Set device orientation (for old tags)\n" \
+      "g) Set high-quality accelerometer\n" \
+      "h) Set alarm startup time\n" \
+      "i) Reset tag EEPROM (not reccomended)\n" \
+      "j) Calibrate gyroscope (not implemented)\n" \
+      "k) Write changes\n" \
+      "l) Exit\n\n"
+    );
+    while (!Serial.available())
+      ;
+    char result = Serial.read();
+    // Somewhat janky downcase() method
+    if (result < 'a') result = (result - 'A') + 'a';
+    switch (result) {
+    case 'a':
+      print_configuration();
+      break;
+    case 'b':
+      set_name();
+      break;
+    case 'c':
+      set_accel_scale();
+      break;
+    case 'd':
+      set_gyro_scale();
+      break;
+    case 'e':
+      set_odr();
+      break;
+    case 'f':
+      set_orientation();
+      break;
+    case 'g':
+      set_hq_accel();
+      break;
+    case 'h':
+      set_startup_delay();
+      break;
+    case 'i':
+      tag_reset();
+      break;
+    case 'j':
+      calibrate();
+      break;
+    case 'k':
+      write_changes();
+      break;
+    case 'l':
+      return;
+    default:
+      PRINTSTR("Sorry, didn't quite catch that...");
+    }
+    Serial.println('\n');
+  }
 }
 
 // Update the current settings here
@@ -82,7 +128,6 @@ void get_configuration() {
 
 // Print the tag's current values
 void print_configuration() {
-  Tag current(true);
   PRINTSTR("Name:   "); Serial.write(tag.name, 4); Serial.write('\n');
   PRINTSTR("Orient: "); Serial.println(tag.orient);
   PRINTSTR("X Bias: "); Serial.println(tag.bias_x);
@@ -131,6 +176,7 @@ void set_name() {
     ;
   Serial.readBytes(tag.name, 4);
   Serial.write((byte *) &tag.name, 4);
+  Serial.println();
 }
 
 void set_accel_scale() {
@@ -150,10 +196,11 @@ void set_accel_scale() {
     a = Tag::ACCEL_8G;
     break;
   default:
-    PRINTSTR("Not a valid option\n");
+    PRINTSTR("Not a valid option");
     return;
   }
   tag.accel_scale = a;
+  Serial.println();
 }
 
 void set_gyro_scale() {
@@ -215,13 +262,25 @@ void set_orientation() {
 }
 
 void set_hq_accel() {
-  bool hq = question("Do you want to let the accelerometer use high-quality oversampling?\n");
+  bool hq = question("Do you want to let the accelerometer use high-quality oversampling? (y/n)\n");
   tag.accel_hq = hq;
 }
 
 void set_startup_delay() {
-  Serial.println(F("Set the startup delay (in seconds)..."));
+  PRINTSTR("Set the startup delay (in seconds)...\n");
+  while (!Serial.available())
+    ;
   tag.startup_delay = Serial.parseInt();;
+}
+
+void tag_reset() {
+  PRINTSTR("WARNING: this will prevent your tag from working until you configure it again.\n");
+  if (question("Are you sure you want to this? (y/n)\n")) {
+    PRINTSTR("Don't say I didn't warn you.\n");
+    tag.reset();
+  } else {
+    PRINTSTR("Smart choice.\n");
+  }
 }
 
 void calibrate() {

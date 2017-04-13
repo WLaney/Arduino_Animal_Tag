@@ -36,6 +36,7 @@ void setup()
     DEND();
     rtc_snooze(delay_time);
     DBEGIN();
+    delay(250);
   }
 
   header_data header;
@@ -57,6 +58,7 @@ void setup()
   ascale = static_cast<Accel::Range>(EEPROM.read(17));
   if (ascale < Accel::Range::G2 || ascale > Accel::Range::G8) {
     DBGSTR("ERROR: A.Scale invalid\n");
+    ascale = Accel::Range::G4;
   }
   gscale = static_cast<FXAS2::Range>(EEPROM.read(18));
   if (gscale < FXAS2::Range::DPS_2000 || gscale > FXAS2::Range::DPS_250) {
@@ -74,7 +76,6 @@ void setup()
         break;
     case ODR_25_HZ:
 		DBGSTR("25Hz\n");
-		DBGSTR("Untested srate - beware\n");
         aodr = Accel::ODR::HZ_50;
         godr = FXAS2::ODR::HZ_25;
         sample_delay = byte{1000.0 / 25.0};
