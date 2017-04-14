@@ -7,6 +7,7 @@
 
 #include "PackedBuffer.h"
 #include "Arduino.h"
+#include "SD.h"
 
 /*
  * Pack the first set of reads in. This will overwrite any
@@ -39,6 +40,32 @@ inline void packed_data::pack2(read x, read y, read z) {
 	this->msb_nibbles.z1_z2 = this->msb_nibbles.z1_z2 | (z & 0x0F00) >> 8;
 }
 
+inline float accel_s2f(short s, float scale) {
+	return s * float{scale / (1 << 11)};
+}
+
+inline short unpack1(byte lsb, byte msb) {
+	short result;
+	short temp;
+	result = lsb;
+	result &= 0x00FF;
+	temp = (msb & 0xF0) << 4;
+	temp <<= 4;
+	temp >>= 4;
+	return result | temp;
+}
+
+inline short unpack2(byte lsb, byte msb) {
+	short result;
+	short temp;
+	result = lsb;
+	result &= 0x00FF;
+	temp = (msb & 0x0F) << 8;
+	temp <<= 4;
+	temp >>= 4;
+	return result | temp;
+}
+
 /*
  * Unpack the data and print its contents to stdout.
  * Used for testing.
@@ -48,31 +75,32 @@ inline void packed_data::unpack_and_print() {
 	// 1. Turn MSB into a signed char so right shifts are arithmetic
 	// 2. Right arithmetic shift keeps sign
 	// 3. Add to short in such a way that it keeps sign
-	x1 = (((int8_t) this->msb_nibbles.x1_x2) >> 4) << 8 | this->lsb_bytes.x1;
-	y1 = (((int8_t) this->msb_nibbles.y1_y2) >> 4) << 8 | this->lsb_bytes.y1;
-	z1 = (((int8_t) this->msb_nibbles.z1_z2) >> 4) << 8 | this->lsb_bytes.z1;
+	x1 = unpack1(lsb_bytes.x1, msb_nibbles.x1_x2);
+	y1 = unpack1(lsb_bytes.y1, msb_nibbles.y1_y2);
+	z1 = unpack1(lsb_bytes.z1, msb_nibbles.z1_z2);
 
-	Serial.print(x1) ; Serial.print('\t');
-	Serial.print(y1) ; Serial.print('\t');
-	Serial.println(z1);
+	Serial.print(accel_s2f(x1, 8.0F)) ; Serial.print('\t');
+	Serial.print(accel_s2f(y1, 8.0F)) ; Serial.print('\t');
+	Serial.println(accel_s2f(z1, 8.0F));
 
 	// 1. Convert MSB to signed short
 	// 2. Move MSB to back, then push back
-	x2 = (int16_t) (this->msb_nibbles.x1_x2 << 12) >> 4 | this->lsb_bytes.x2;
-	y2 = (int16_t) (this->msb_nibbles.y1_y2 << 12) >> 4 | this->lsb_bytes.y2;
-	z2 = (int16_t) (this->msb_nibbles.z1_z2 << 12) >> 4 | this->lsb_bytes.z2;
+	x2 = unpack2(lsb_bytes.x2, msb_nibbles.x1_x2);
+	y2 = unpack2(lsb_bytes.y2, msb_nibbles.y1_y2);
+	z2 = unpack2(lsb_bytes.z2, msb_nibbles.z1_z2);
 
-	Serial.print(x2) ; Serial.print('\t');
-	Serial.print(y2) ; Serial.print('\t');
-	Serial.println(z2);
+	Serial.print(accel_s2f(x2, 8.0F)) ; Serial.print('\t');
+	Serial.print(accel_s2f(y2, 8.0F)) ; Serial.print('\t');
+	Serial.println(accel_s2f(z2, 8.0F));
 }
+
 
 /*
  * Sets up the buffer.
  */
 template<byte packs>
 PackedBuffer<packs>::PackedBuffer() {
-	buffer = new packed_data[packs];
+//	buffer = new packed_data[packs];
 	buffer_i = 0;
 	is_read2 = false;
 }
@@ -82,7 +110,7 @@ PackedBuffer<packs>::PackedBuffer() {
  */
 template<byte packs>
 PackedBuffer<packs>::~PackedBuffer() {
-	delete[] buffer;
+//	delete[] buffer;
 }
 
 /*
@@ -112,7 +140,7 @@ bool PackedBuffer<packs>::push(read x, read y, read z) {
  * Return if the buffer is full.
  */
 template<byte packs>
-bool PackedBuffer<packs>::full() {
+bool const PackedBuffer<packs>::full() {
 	return buffer_i == packs;
 }
 
@@ -120,8 +148,13 @@ bool PackedBuffer<packs>::full() {
  * Return the total capacity of the buffer.
  */
 template<byte packs>
-byte PackedBuffer<packs>::capacity() {
+byte const PackedBuffer<packs>::capacity() {
 	return packs * 2;
+}
+
+template<byte packs>
+size_t const PackedBuffer<packs>::write_size() {
+  return packs * sizeof(packed_data);
 }
 
 /*
@@ -129,10 +162,8 @@ byte PackedBuffer<packs>::capacity() {
  * Used mainly for testing.
  */
 template<byte packs>
-void PackedBuffer<packs>::print_all() {
-	for (byte i = 0; i < packs; i++) {
-		buffer[i].unpack_and_print();
-	}
+void PackedBuffer<packs>::write_all(File sd) {
+	sd.write((byte *) buffer, packs * sizeof(packed_data));
 }
 
 /*
@@ -147,7 +178,19 @@ void PackedBuffer<packs>::reset() {
 }
 
 /*
+ * Print every element in the buffer.
+ * Used mainly for testing.
+ */
+template<byte packs>
+void PackedBuffer<packs>::print_all() {
+	for (byte i = 0; i < packs; i++) {
+		buffer[i].unpack_and_print();
+	}
+}
+
+
+/*
  * Template Specializations
  */
-// packed_accel.ino
-template class PackedBuffer<40>;
+// accel.cpp
+template class PackedBuffer<24>;

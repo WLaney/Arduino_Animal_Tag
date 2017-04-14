@@ -82,6 +82,11 @@ namespace FXAS2 {
 		writeReg(Register::CTRL_REG1, ctrl_reg1);
 	}
 
+
+	inline short swapBytes(short x) {
+		return ((x & 0xFF00) >> 8) | ((x & 0x00FF) << 8);	
+	}
+
     /*
      * Read data from the gyroscope.
      * If FIFO is activated, then this will read the value at
@@ -93,6 +98,7 @@ namespace FXAS2 {
 	void read(sample& s) {
 		byte *b = (byte *) &s;
 		I2c.read(i2c_addr, static_cast<byte>(Register::OUT_X_MSB), 6, b);
+		*b = swapBytes(*b);
     }
 
     /*
@@ -103,6 +109,11 @@ namespace FXAS2 {
 		byte *sb = (byte *) s;
 		byte nb = n * sizeof(sample);
 		I2c.read(i2c_addr, static_cast<byte>(Register::OUT_X_MSB), nb, sb);
+		for (int is=0; is<n; is++) {
+			s[is].x = swapBytes(s[is].x);
+			s[is].y = swapBytes(s[is].y);
+			s[is].z = swapBytes(s[is].z);
+		}
     }
 
     /*

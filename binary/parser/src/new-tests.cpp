@@ -119,7 +119,5 @@ TEST_CASE ( "Individual sections are parsed" ) {
 		CHECK(actual[3].y == Approx(2010.0));
 		CHECK(actual[3].z == Approx(2011.0));
 	}
-	
-
 
 }

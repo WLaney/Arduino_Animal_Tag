@@ -91,6 +91,28 @@ parse_header(std::ifstream &in_file) {
 	return data;
 }
 
+short merge1(byte lsb, byte msb) {
+	short result;
+	short temp;
+	result = lsb;
+	result &= 0x00FF;
+	temp = (msb & 0xF0) << 4;
+	temp <<= 4;
+	temp >>= 4;
+	return result | temp;
+}
+
+short merge2(byte lsb, byte msb) {
+	short result;
+	short temp;
+	result = lsb;
+	result &= 0x00FF;
+	temp = (msb & 0x0F) << 8;
+	temp <<= 4;
+	temp >>= 4;
+	return result | temp;
+}
+
 /*
  * Parse size bytes' worth of accelerometer reads into floats.
  * 
@@ -107,13 +129,13 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
 		read_into<raw_accel_data>(in_file, raw);
 		// First, unpack the raw data into shorts
 		short x1, y1, z1, x2, y2, z2;
-		x1 = (((int8_t) raw.msb_nibbles.x1_x2) >> 4) << 8 | raw.lsb_bytes.x1;
-		y1 = (((int8_t) raw.msb_nibbles.y1_y2) >> 4) << 8 | raw.lsb_bytes.y1;
-		z1 = (((int8_t) raw.msb_nibbles.z1_z2) >> 4) << 8 | raw.lsb_bytes.z1;
-		
-		x2 = (int16_t) (raw.msb_nibbles.x1_x2 << 12) >> 4 | raw.lsb_bytes.x2;
-		y2 = (int16_t) (raw.msb_nibbles.y1_y2 << 12) >> 4 | raw.lsb_bytes.y2;
-		z2 = (int16_t) (raw.msb_nibbles.z1_z2 << 12) >> 4 | raw.lsb_bytes.z2;
+		x1 = merge1(raw.lsb_bytes.x1, raw.msb_nibbles.x1_x2);
+		y1 = merge1(raw.lsb_bytes.y1, raw.msb_nibbles.y1_y2);
+		z1 = merge1(raw.lsb_bytes.z1, raw.msb_nibbles.z1_z2);
+
+		x2 = merge2(raw.lsb_bytes.x2, raw.msb_nibbles.x1_x2);
+		y2 = merge2(raw.lsb_bytes.y2, raw.msb_nibbles.y1_y2);
+		z2 = merge2(raw.lsb_bytes.z2, raw.msb_nibbles.z1_z2);
 		// Convert to floats
 		data1.x = accel_s2f(x1, scale);
 		data1.y = accel_s2f(y1, scale);

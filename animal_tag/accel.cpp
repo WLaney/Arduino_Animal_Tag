@@ -36,7 +36,7 @@ void accel_setup(MMA8452Q_Scale scl, MMA8452Q_ODR odr) {
 void accel_read() {
   accel.read();
   if (!buffer.push(accel.x, accel.y, accel.z)) {
-    DBGSTR("ERROR: ACCEL FULL");
+    DBGSTR("ERROR: ACCEL FULL\n");
   }
   DBGSTR("a.read\n");
 }
@@ -57,7 +57,6 @@ float accel_scale() {
   return scale;
 }
 
-// write data as "{x}\t{y}\t{z}\n"
 void accel_write(File sd) {
   DBGSTR("Accel write\n");
   buffer.write_all(sd);

@@ -2,10 +2,10 @@
 #include "PackedBuffer.h"
 
 // PackedBuffer.cpp
-extern template class PackedBuffer<40>;
+extern template class PackedBuffer<24>;
 
 MMA8452Q accel;
-PackedBuffer<40> buff;
+PackedBuffer<24> buff;
 
 void setup() {
   Serial.begin(9600);
