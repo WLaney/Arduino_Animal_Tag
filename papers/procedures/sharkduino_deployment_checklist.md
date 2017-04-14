@@ -1,5 +1,9 @@
 Sharkduino Deployment Checklist
 ================
+[ ] Seal one side of heat shrink tubing
+
+While heat shrink is cooling:
+
 [ ] Check that battery is charged
 
 [ ] Print aniamal data sheet
@@ -34,13 +38,15 @@ Sharkduino Deployment Checklist
 
 [ ] Tape all sharp parts of tag
 
+[ ] Remove tubing from flat iron
+
+[ ] Check the tubing seal to make sure it looks good
+
 [ ] Cut heat shrink tube to length
 
 [ ] Put orintation tap onto tube
 
 [ ] Take picture of tube with tag on top of it in correct orintation
-
-[ ] Seal tube side that will be closest to the battery
 
 [ ] Fill in any remaning data sheet information
 
@@ -50,4 +56,4 @@ Sharkduino Deployment Checklist
 
 [ ] Insert tag into tube
 
-[ ] Seal tube
+[ ] Seal other side of tube
