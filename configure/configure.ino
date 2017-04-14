@@ -226,6 +226,7 @@ void set_gyro_scale() {
     break;
   case 'd':
     tag.gyro_scale = Tag::GYRO_2000DPS;
+    break;
   default:
     PRINTSTR("Not a valid option\n");
   }
