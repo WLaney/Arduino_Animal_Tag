@@ -37,7 +37,7 @@ bool output_write_header(header_data &header) {
 	byte b = sd.write((byte *) &header, sizeof(header_data));
     rtc_write(sd);
     sd.close();
-    DBGSTR("Header bytes written (minus timer): ");
+    DBGSTR("Header bytes written (minus time): ");
     DBGLN(b);
     return true; 
   } else {
@@ -68,11 +68,11 @@ void output_write_data(bool long_data) {
       file.print("LONG");
       rtc_write(file);
       temp_write(file);
-      DBGSTR("wrote long-term\n");
+      DBGSTR("Long.write\n");
     }
     file.close();
   } else {
-    DBGSTR("ERROR: COULD NOT WRITE LONG-TERM DATA\n");
+    DBGSTR("ERROR: couldn't write to SD\n");
   }
   DBG(millis() - time);
   DBGSTR(" ms to write\n");

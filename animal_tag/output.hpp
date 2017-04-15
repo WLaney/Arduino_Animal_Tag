@@ -1,5 +1,5 @@
 /*
- * Functions for writing data to the SD card from the sensors. 
+ * Functions for writing data to the SD card from the sensors.
  */
 #include <Arduino.h>
 

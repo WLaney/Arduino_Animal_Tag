@@ -45,7 +45,7 @@ void gyro_read_all() {
 }
 
 /*
- * Write every value in the software and hardware buffer to the SD card.
+ * Write every value in the software and then hardware buffer to the SD card.
  * If half is true, only write half of the buffer. (Used with downsampled accelerometer)
  */
 void gyro_write(File sd, bool half) {
@@ -68,8 +68,7 @@ bool gyro_full() {
 }
 
 /*
- * Reset the gyro buffer so that it can be used again. This is currently
- * not used, but may be later
+ * Reset the gyro buffer so that it can be used again.
  */
 void gyro_reset() {
   buffer_i = 0;
@@ -99,7 +98,7 @@ bool gyro_is_active() {
 }
 
 /*
- * Return the gyroscope's scale. This is written to the header
+ * Return the gyroscope's scale in DPS. This is written to the header
  */
 float gyro_scale() {
   switch (FXAS2::currentRange) {

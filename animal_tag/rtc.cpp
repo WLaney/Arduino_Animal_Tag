@@ -20,7 +20,7 @@ struct ts {
 };
 
 constexpr byte int_pin = 2; // Interrupt pin (2 or 3)
-constexpr byte int_num = 0; // Interrupt number (???)
+constexpr byte int_num = 0; // Interrupt number corresponding to that pin
 
 DSRTCLib rtc(int_pin, int_num);
 
@@ -49,6 +49,10 @@ void rtc_write(File sd) {
   sd.write((byte *) &t, sizeof(t));
 }
 
+/*
+ * Put the tag to sleep for long periods of time.
+ * Use n_delay for delays of under, say, 3 seconds
+ */
 void rtc_snooze(long int time) {
   rtc.snooze(time);
 }

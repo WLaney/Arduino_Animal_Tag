@@ -2,11 +2,14 @@
 #define DEBUG_H
 #include <Arduino.h>
 
-// If set to 1, this will clear the buffer to 0 after each write.
-// This is unnecessary, but can help catch bugs.
+// If set to 1, this will clear the software buffers to 0 after each write.
+// This can help catch buffer errors, and uses a minimal amount
+// of power.
 #define CLEAR_BUFFERS 1
 
-#define DEBUG // Comment this line out to remove Serial prints
+// Comment this line out to remove Serial prints.
+// This frees up space and may reduce power usage.
+#define DEBUG
 #ifdef DEBUG
   #define DBEGIN()  Serial.begin(9600)
   #define DEND()    Serial.end()

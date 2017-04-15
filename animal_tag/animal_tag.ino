@@ -22,10 +22,14 @@ byte long_term_write_num = 0;
 
 byte sample_delay;
 
+/*
+ * Start up sensors. Get configuration data from EEPROM.
+ * Write header.
+ */
 void setup()
 {
   DBEGIN();
-  // Delayed startup
+  // Delay startup by N seconds
   rtc_setup();
   long int delay_time;
   EEPROM.get(21, delay_time);
