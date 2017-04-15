@@ -10,4 +10,4 @@ Software Version | Supported Tags
  <v1.0 | Prototype tags are not supported
  v1.0 | 1.0`
  2.0.1 | 2.0
- v3.0 | 2.1, 2.2
+ v3.1 | 2.1, 2.2
