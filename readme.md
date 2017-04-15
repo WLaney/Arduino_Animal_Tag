@@ -3,9 +3,11 @@ This repository contains the main code for the Arduino tag, an SRK to CSV parser
 
 ## Supported Tags
 
+Below are the latest software versions for each hardware tag.
+
 Software Version | Supported Tags
 ---|---
- <1.0 | Prototype tags are not supported
- 1.0 | All tags between `[1.0, 2.0)`
- 2.0 | 2.0
- 3.0 | 2.1, 2.2
+ <v1.0 | Prototype tags are not supported
+ v1.0 | 1.0`
+ 2.0.1 | 2.0
+ v3.0 | 2.1, 2.2
