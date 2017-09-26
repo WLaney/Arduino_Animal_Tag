@@ -244,7 +244,7 @@ void test_pressure() {
   run_until_input([] () {
     float pres = pressure.getPressure(ADC_4096);
     float temp = pressure.getTemperature(CELSIUS, ADC_4096);
-    DBGSTR("Pressure: "); Serial.println(pres);
+    DBGSTR("Pressure (millibars): "); Serial.println(pres);
     DBGSTR("Temperature (C): "); Serial.println(temp);
     delay(1000);
   });
