@@ -46,6 +46,7 @@ bool output_write_header(header_data &header) {
 }
 
 void output_write_data(bool long_data) {
+
   if (long_data) {
     rtc_update();
     temp_update();

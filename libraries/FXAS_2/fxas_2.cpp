@@ -51,6 +51,10 @@ namespace FXAS2 {
 			writeReg(Register::CTRL_REG3, 0x00);
 		}
 		
+		// Need to set CTRL_REG2's PP_OD bit to 1, or else there will
+		// be a short (at least on this board)
+		writeReg(Register::CTRL_REG2, 0x01);
+		
 		// Range is set by last two bits of CTRL_REG0
 		writeReg(Register::CTRL_REG0, (byte) range);
 		// ODR set by bits 4:2 of CTRL_REG1
