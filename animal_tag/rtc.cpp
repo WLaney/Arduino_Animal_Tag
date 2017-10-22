@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <SD.h>
+#include <EEPROM.h>
 #include "rtc.hpp"
 #include "debug.h"
 #include "DSRTCLib2.h"
@@ -25,6 +26,8 @@ constexpr byte int_pin = 2; // Interrupt pin (2 or 3)
 constexpr byte int_num = 0; // Interrupt number corresponding to that pin
 
 DSRTCLib rtc(int_pin, int_num);
+
+ts get_time();
 
 void rtc_setup() {
 	rtc.start();
@@ -100,6 +103,10 @@ long int time_diff() {
   diff += (new_time.mon - old_time.mon)   * 60 * 60 * 24 * 31;
   diff += (new_time.year - old_time.year)  * 60 * 60 * 24 * 365;
   return diff;
+}
+
+void rtc_update_EEPROM() {
+  
 }
 
 /*

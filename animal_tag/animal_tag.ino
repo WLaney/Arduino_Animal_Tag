@@ -17,6 +17,9 @@ enum SAMPLE_RATE {
     ODR_50_HZ
 };
 
+constexpr byte eeprom_check_max = 120;
+byte eeprom_check = 0;
+
 constexpr byte long_term_write_max = 3;
 byte long_term_write_num = 0;
 
@@ -139,18 +142,23 @@ void setup()
 }
 
 void loop() {
+  // Check the EEPROM if necessary
+  if (eeprom_check++ == eeprom_check_max) {
+    eeprom_check = 0;
+    rtc_update_EEPROM();
+  }
   if (accel_downscaled()) {
-	// WARNING will not accept values of buffer_s != 32
-	// TODO Make this not true
-	while (!accel_full()) {
-	  n_delay(sample_delay * 16);
-	  accel_read_all();
-	  n_delay(sample_delay * 16);
-	  accel_read_all();
-	  gyro_read_all();
-	}
-	// Wait for hardware buffer to fill up
-	n_delay(sample_delay * 16);
+  	// WARNING will not accept values of buffer_s != 32
+  	// TODO Make this not true
+  	while (!accel_full()) {
+  	  n_delay(sample_delay * 16);
+  	  accel_read_all();
+  	  n_delay(sample_delay * 16);
+  	  accel_read_all();
+  	  gyro_read_all();
+  	}
+  	// Wait for hardware buffer to fill up
+  	n_delay(sample_delay * 16);
   } else {
     while (!accel_full()) {
       n_delay(sample_delay * 32);
