@@ -26,12 +26,30 @@ void setup() {
   rtc.readTime();
   ts currentTime = get_time();
   print_time(currentTime);
+  delay(1000);
   // Write current time to EEPROM, then print it out
-  
+  rtc.readTime();
+  rtc_write_EEPROM();
+  print_time(rtc_read_EEPROM(128));
   // Write current time to EEPROM, wait 3 seconds,
-  // and write the difference
-
+  // and print the difference
+  rtc.readTime();
+  rtc_write_EEPROM();
+  delay(3000);
+  rtc.readTime();
+  Serial.println(time_diff());
   // Write 3 times and read them all out
+  rtc.readTime();
+  rtc_write_EEPROM();
+  delay(1000);
+  rtc.readTime();
+  rtc_write_EEPROM();
+  delay(2000);
+  rtc.readTime();
+  rtc_write_EEPROM();
+  print_time(rtc_read_EEPROM(addr - sizeof(ts)));
+  print_time(rtc_read_EEPROM(addr - 2*sizeof(ts)));
+  print_time(rtc_read_EEPROM(addr - 3*sizeof(ts)));
 }
 
 void loop() {
@@ -43,7 +61,7 @@ void loop() {
  */
 void rtc_write_EEPROM() {
   ts t = get_time();
-  EEPROM.write(addr, (byte *) &t);
+  EEPROM.put(addr, t);
   addr = addr + sizeof(t);
 }
 
@@ -79,7 +97,7 @@ void print_time(ts t) {
 // Return difference between two times in seconds
 long int time_diff() {
   ts new_time = get_time();
-  ts old_time = rtc_read_EEPROM(current_time_addr());
+  ts old_time = rtc_read_EEPROM(addr - sizeof(ts));
   long int diff = new_time.sec - old_time.sec;
   diff += (new_time.min - old_time.min)   * 60;
   diff += (new_time.hour - old_time.hour) * 60 * 60;
@@ -87,20 +105,4 @@ long int time_diff() {
   diff += (new_time.mon - old_time.mon)   * 60 * 60 * 24 * 31;
   diff += (new_time.year - old_time.year)  * 60 * 60 * 24 * 365;
   return diff;
-}
-
-int current_time_addr() {
-  return 128;
-}
-
-void rtc_print_skips() {
-  rtc_write_EEPROM();
-  delay(10);
-  rtc_write_EEPROM();
-  delay(50);
-  rtc_write_EEPROM();
-  Serial.println("Date-times read from EEPROM:");
-  print_time(rtc_read_EEPROM(128));
-  print_time(rtc_read_EEPROM(128 + sizeof(ts)));
-  print_time(rtc_read_EEPROM(128 + 2*sizeof(ts)));
 }
