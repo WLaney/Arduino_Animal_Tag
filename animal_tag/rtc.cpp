@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "DSRTCLib2.h"
 
-int addr = 128; //current byte to write to in EEPROM
+int addr = 256; //current byte to write to in EEPROM
 
 // Copied from ds3234.h
 // TODO Replace with smaller ts instead of attempting backwards compatibility
@@ -28,6 +28,7 @@ constexpr byte int_num = 0; // Interrupt number corresponding to that pin
 DSRTCLib rtc(int_pin, int_num);
 
 ts get_time();
+rom_buffer skip_buffer<ts>(128, 10);
 
 void rtc_setup() {
 	rtc.start();
@@ -60,7 +61,6 @@ void rtc_write(File sd) {
 void rtc_write_EEPROM() {
   ts t = get_time();
   EEPROM.put(addr, t);
-  addr = addr + sizeof(t);
 }
 
 /*
@@ -95,7 +95,7 @@ void print_time(ts t) {
 // Return difference between two times in seconds
 long int time_diff() {
   ts new_time = get_time();
-  ts old_time = rtc_read_EEPROM(addr - sizeof(ts));
+  ts old_time = rtc_read_EEPROM(addr);
   long int diff = new_time.sec - old_time.sec;
   diff += (new_time.min - old_time.min)   * 60;
   diff += (new_time.hour - old_time.hour) * 60 * 60;
@@ -106,7 +106,19 @@ long int time_diff() {
 }
 
 void rtc_update_EEPROM() {
-  
+  if(time_diff() > 480) {
+    skip_buffer.push(rtc_read_EEPROM(addr));
+    skip_buffer.push(get_time());
+  }
+  rtc_write_EEPROM();
+}
+
+void rtc_print_skips() {
+  ts *skips = skip_buffer.read_all();
+  for(int i = 0; i < skips.length; i++) {
+    print_time(skips[i]);
+  }
+  delete skips;
 }
 
 /*
