@@ -10,6 +10,10 @@
 #include "temp.hpp"
 #include "pressure.hpp"
 
+#define USE_HEARTBEAT_MONITOR 1
+
+inline void n_delay(long);
+
 // Copied from configure.ino
 enum SAMPLE_RATE {
     ODR_12_5_HZ,
@@ -17,8 +21,13 @@ enum SAMPLE_RATE {
     ODR_50_HZ
 };
 
-constexpr byte eeprom_check_max = 120;
-byte eeprom_check = 0;
+#ifdef USE_HEARTBEAT_MONITOR
+// The heartbeat monitor will be run every N loops.
+// At time of writing, a loop takes around 2.4 seconds.
+// You don't want to write to EEPROM very often.
+constexpr int eeprom_check_frequency = 250;
+int eeprom_check_index = 0;
+#endif
 
 constexpr byte long_term_write_max = 3;
 byte long_term_write_num = 0;
@@ -32,8 +41,16 @@ byte sample_delay;
 void setup()
 {
   DBEGIN();
-  // Delay startup by N seconds
   rtc_setup();
+#ifdef USE_HEARTBEAT_MONITOR
+  // Report skips
+  DBGSTR("Heartbeat sensor violations:\n");
+  rtc_print_skips();
+#endif
+  
+  ///////
+  // Delay startup by N seconds
+  ///////
   long int delay_time;
   EEPROM.get(21, delay_time);
   if (delay_time > 0) {
@@ -46,6 +63,9 @@ void setup()
     delay(250);
   }
 
+  ///////
+  // Get configuration from EEPROM
+  ///////
   header_data header;
   FXAS2::Range gscale;
   FXAS2::ODR godr;
@@ -54,7 +74,6 @@ void setup()
   SAMPLE_RATE odr;
   bool downscale;
   
-  // Get configuration from EEPROM
   for (byte i=0; i<4; i++) {
     header.name[i] = EEPROM.read(i);
   }
@@ -102,9 +121,10 @@ void setup()
         downscale = true;
         sample_delay = byte{1000.0 / 25.0};
   }
-  
-  // Debug commands won't show up if they're
-  // turned off in debug.h
+
+  ///////
+  // Initialize sensors and SD card
+  ///////
   DBEGIN();
   accel_setup(ascale, aodr, downscale);
   gyro_setup(gscale, godr);
@@ -142,11 +162,12 @@ void setup()
 }
 
 void loop() {
-  // Check the EEPROM if necessary
-  if (eeprom_check++ == eeprom_check_max) {
-    eeprom_check = 0;
-    rtc_update_EEPROM();
+#ifdef USE_HEARTBEAT_MONITOR
+  if (eeprom_check_frequency == eeprom_check_index) {
+    rtc_update_eeprom();
   }
+  eeprom_check_index++;
+#endif
   if (accel_downscaled()) {
   	// WARNING will not accept values of buffer_s != 32
   	// TODO Make this not true

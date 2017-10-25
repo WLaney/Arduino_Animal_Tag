@@ -10,16 +10,6 @@ private:
 	int max_size;
 	int current_index;
 
-	bool is_initialized(int index) {
-		int addr = get_addr(index);
-		for (int i=0; i<sizeof(T); i++) {
-			int v = EEPROM.read(addr + i);
-			if (v != 0xFF)
-				return true;
-		}
-		return false;
-	}
-
 	int get_addr(int index) {
 		return start_address + index * sizeof(T);
 	}
@@ -46,5 +36,9 @@ public:
 		}
 		return arr;
 	}
+
+ int get_max_size() {
+   return max_size;
+ }
 	
 };
