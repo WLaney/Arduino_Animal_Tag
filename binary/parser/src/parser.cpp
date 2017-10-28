@@ -88,6 +88,9 @@ parse_header(std::ifstream &in_file) {
 	read_into(in_file, data->accel_scale);
 	read_into(in_file, data->gyro_scale);
 	read_time(in_file, data->time);
+	read_into(in_file, data->sample_rate);
+	read_into(in_file, data->hq_accel);
+	read_into(in_file, data->alarm_delay);
 	return data;
 }
 

@@ -75,10 +75,17 @@ void check_magic_word(std::ifstream &in_file, const char *expected) {
  * Write header data to the header_file and initial time data to data_file..
  */
 void write_header(std::ofstream &hfile, std::ofstream &dfile, header_data &header) {
-	hfile << header.name << ','
-		  << header.gyro_bias_x << ','
-		  << header.gyro_bias_y << ','
-		  << header.gyro_bias_z << std::endl;
+	hfile << "Name,"                       << header.name << std::endl
+	      << "Weird-Orientation,"          << int{header.orient} << std::endl
+	      << "Gyro-Bias-X,"                << header.gyro_bias_x << std::endl
+	      << "Gyro-Bias-Y,"                << header.gyro_bias_y << std::endl
+	      << "Gyro-Bias-Z,"                << header.gyro_bias_z << std::endl
+	      << "Accelerometer-Range,"        << header.accel_scale << std::endl
+	      << "Gyroscope-Range,"            << header.gyro_scale << std::endl
+	      << "Start-Time,"                 << header.time << std::endl
+	      << "Sample-Rate"                 << int{header.sample_rate} << std::endl
+	      << "Accelerometer-Oversampling," << int{header.hq_accel} << std::endl
+	      << "Startup-Delay,"              << header.alarm_delay << std::endl;
 	
 	dfile << ",,,,,," << header.time << ",," << std::endl;
 }
@@ -194,7 +201,6 @@ int main(int argc, char *argv[]) {
 	
 	// Write column names
 	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
-	header_file << "name,xbias,ybias,zbias" << std::endl;
     
 	write_header(header_file, data_file, *header);
 	

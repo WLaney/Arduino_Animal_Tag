@@ -34,8 +34,10 @@ bool output_write_header(header_data &header) {
   File sd = SD.open(file_name, FILE_WRITE);
   delay(100);
   if (sd) {
-	byte b = sd.write((byte *) &header, sizeof(header_data));
+    // Bleaugh. Sorry.
+	  byte b = sd.write((byte *) &header, 31);
     rtc_write(sd);
+    b += sd.write(42 + ((byte *) &header), 6);
     sd.close();
     DBGSTR("Header bytes written (minus time): ");
     DBGLN(b);

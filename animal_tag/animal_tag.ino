@@ -158,6 +158,9 @@ void setup()
   // Scaling
   header.as = accel_scale();
   header.gs = gyro_scale();
+  EEPROM.get(19, header.sample_rate);
+  EEPROM.get(20, header.hq_accel);
+  EEPROM.get(21, header.alarm_delay);
   output_write_header(header);
 }
 

@@ -9,8 +9,11 @@ struct header_data
   byte orient;             // Orientation
   float gx, gy, gz;        // Gyroscope Bias
   unsigned short aws, gws; // Accelerometer and Gyroscope write size
-  unsigned short period;
+  unsigned short period;   // How many short-term reads per long read
   float as, gs;            // Accelerometer and gyroscope scale
+  byte sample_rate;        // Samples per second
+  byte hq_accel;           // Accelerometer oversampling
+  long alarm_delay;        // Startup timer delay
 };
 
 // Setup the SD card. Returns if successful.

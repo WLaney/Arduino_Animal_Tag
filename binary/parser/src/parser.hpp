@@ -44,6 +44,9 @@ struct header_data {
 	float accel_scale;
 	float gyro_scale;
 	ts time;
+	byte sample_rate;
+	byte hq_accel;
+	int32_t alarm_delay;
 };
 
 /*

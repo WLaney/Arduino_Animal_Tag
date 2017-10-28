@@ -67,6 +67,9 @@ TEST_CASE ( "Individual sections are parsed" ) {
 		REQUIRE(actual->time.yday   == 7);
 		REQUIRE(actual->time.isdst  == 8);
 		REQUIRE(actual->time.year_s == 9);
+		REQUIRE(actual->sample_rate == 2);
+		REQUIRE(actual->hq_accel    == 1);
+		REQUIRE(actual->alarm_delay == 0x12345678);
 	}
 	
 	SECTION("Long-Term") {
