@@ -45,6 +45,7 @@ void loop() {
     write_changes();
     break;
   case 'b':
+    PRINTSTR("Changes WILL NOT BE SAVED until you write them to EEPROM.\n");
     config_menu();
     break;
   case 'c':
@@ -68,10 +69,9 @@ void config_menu() {
       "f) Set device orientation (for old tags)\n" \
       "g) Set high-quality accelerometer\n" \
       "h) Set alarm startup time\n" \
-      "i) Reset tag EEPROM (not reccomended)\n" \
-      "j) Calibrate gyroscope (not implemented)\n" \
-      "k) Write changes\n" \
-      "l) Exit\n\n"
+      "i) Calibrate gyroscope (not implemented)\n" \
+      "j) Write changes\n" \
+      "k) Exit\n\n"
     );
     while (!Serial.available())
       ;
@@ -104,15 +104,12 @@ void config_menu() {
       set_startup_delay();
       break;
     case 'i':
-      tag_reset();
-      break;
-    case 'j':
       calibrate();
       break;
-    case 'k':
+    case 'j':
       write_changes();
       break;
-    case 'l':
+    case 'k':
       return;
     default:
       PRINTSTR("Sorry, didn't quite catch that...");
@@ -165,7 +162,13 @@ void print_configuration() {
 }
 
 void set_name() {
-  PRINTSTR("Enter a 4-letter name for the device:\n");
+  PRINTSTR(
+    "TAG NAME\n========\n" \
+    "The name for the device.\n" \
+    "The name is on the bottom of the tag; just remove the . and v;\n" \
+    "For example, v2.1a is 21a.\n\n" \
+    "Enter tag name (up to 4 letters): "
+  );
   // Wait for the user to enter 1 byte.
   // Then wait about an eighth of a second for 3 more bytes to complete the name.
   tag.name[0] = ' ';
@@ -180,19 +183,26 @@ void set_name() {
 }
 
 void set_accel_scale() {
-  PRINTSTR("Enter your scale in G's (2, 4, or 8):");
+  PRINTSTR(
+    "ACCEL SCALE\n==========\n" \
+    "The max range of the accelerometer, in g's.\n" \
+    "One g is 9.81 meters per second.\n" \
+    "  a) 2g\n" \
+    "  b) 4g\n" \
+    "  c) 8g\n"
+  );
   while (!Serial.available())
    ;
   char r = Serial.read();
   Tag::ACCEL_SCALE a;
   switch (r) {
-  case '2':
+  case 'a':
     a = Tag::ACCEL_2G;
     break;
-  case '4':
+  case 'b':
     a = Tag::ACCEL_4G;
     break;
-  case '8':
+  case 'c':
     a = Tag::ACCEL_8G;
     break;
   default:
@@ -205,7 +215,8 @@ void set_accel_scale() {
 
 void set_gyro_scale() {
   PRINTSTR(
-    "What'll it be, pal?\n" \
+    "GYRO SCALE\n==========\n" \
+    "Max range of the gyroscope, in degrees per second.\n"
     "a) 250DPS\n" \
     "b) 500DPS\n" \
     "c) 1000DPS\n" \
@@ -234,7 +245,9 @@ void set_gyro_scale() {
 
 void set_odr() {
   PRINTSTR(
-    "What'll it be, pal?\n" \
+    "OUTPUT DATA RATE\n================\n" \
+    "Rate at which accelerometer and gyroscope data are taken.\n" \
+    "Higher values use more power, but are more accurate.\n" \
     "a) 12.5Hz\n" \
     "b) 25Hz\n" \
     "c) 50Hz\n"
@@ -258,17 +271,31 @@ void set_odr() {
 }
 
 void set_orientation() {
-  bool valid = question("Is your device an early prototype with an incorrect orientation? (y/n)\n");
+  PRINTSTR(
+    "ORIENTATION\n=========\n" \
+    "This is an ancient legacy feature, and should be set to 0 on all new tags.\n"
+  );
+  bool valid = question("Is the device an early prototype with an incorrect orientation? (y/n)\n");
   tag.orient = (byte)valid;
 }
 
 void set_hq_accel() {
+  PRINTSTR(
+    "HQ ACCEL\n========\n" \
+    "If enabled, the accelerometer uses more reads for sampling.\n" \
+    "Provides more accurate (and power-intensive) results.\n"
+  );
   bool hq = question("Do you want to let the accelerometer use high-quality oversampling? (y/n)\n");
   tag.accel_hq = hq;
 }
 
 void set_startup_delay() {
-  PRINTSTR("Set the startup delay (in seconds)...\n");
+  PRINTSTR(
+    "STARTUP DELAY\n=============\n" \
+    "The time for which the tag should sleep before activating.\n" \
+    "The tag uses very little power in this state.\n\n" \
+    "Enter startup delay in seconds: "
+  );
   while (!Serial.available())
     ;
   tag.startup_delay = Serial.parseInt();;
@@ -285,7 +312,7 @@ void tag_reset() {
 }
 
 void calibrate() {
-  PRINTSTR("We don't currenty use the calibration feature. Skipping...\n");
+  PRINTSTR("CALIBRATION\n===========\nAn unused feature originally for gyroscope calibration. Currently not used.");
 }
 
 void write_changes() {
@@ -294,7 +321,7 @@ void write_changes() {
   tag.bias_y = 0.0F;
   tag.bias_z = 0.0F;
   tag.write();
-  PRINTSTR("Done.\n");
+  PRINTSTR("Saved.\n");
 }
 
 // Ask a (y/n) question and return the response
