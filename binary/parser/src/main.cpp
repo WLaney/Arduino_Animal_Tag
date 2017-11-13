@@ -151,19 +151,19 @@ int main(int argc, char *argv[]) {
     
 	// Argument parsing
 	if (argc == 2) {
-		// Infer output filenames, leave output names blank
+		// Input filename is supplied
+		// Output filenames will be inferred from header
 		in_fname = std::string(argv[1]);
 	} else if (argc == 4) {
-		// data-csv and header-csv are specified
+		// data-csv and header-csv are specified, no need for inference
 		in_fname = std::string(argv[1]);
 		data_fname = std::string(argv[2]);
 		header_fname = std::string(argv[3]);
 	} else {
-		// incorrect format
+		// Must supply the input filename, at the very least 
 		usage(argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	// Verbosity
 	std::cout << "Creating " << data_fname << " and " << header_fname
 	          << " from " << in_fname << std::endl;
 	// Start trying to open files
@@ -173,7 +173,8 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	
-	// Read header, infer filenames if necessary
+	// Read header.
+	// If the output filenames haven't been specified, get them from the header.
 	header = parse_header(in_file);
     if (data_fname.empty()) {
         std::stringstream prefix_s;
@@ -199,7 +200,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 	
-	// Write column names
+	// Write initial column names to data file
 	data_file << "ax,ay,az,gx,gy,gz,date_time,temp,pressure" << std::endl;
     
 	write_header(header_file, data_file, *header);
