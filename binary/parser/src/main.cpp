@@ -87,7 +87,9 @@ void write_header(std::ofstream &hfile, std::ofstream &dfile, header_data &heade
 	      << "Accelerometer-Oversampling," << int{header.hq_accel} << std::endl
 	      << "Startup-Delay,"              << header.alarm_delay << std::endl;
 	
-	dfile << ",,,,,," << header.time << ",," << std::endl;
+	dfile << ",,,,,,";
+	print_time_for_file(dfile, header.time);
+	dfile << ",," << std::endl;
 }
 
 /*
@@ -122,7 +124,10 @@ void write_short_term_no_gyro(std::ofstream &file,
  * Write long-term data to file.
  */
 void write_long_term(std::ofstream &file, long_term_data &data) {
-	file << ",,,,,," << data.time << ',' << data.celsius << ",0" << std::endl;
+
+	file << ",,,,,,";
+	print_time_for_file(file, data.time);
+	file << ',' << data.celsius << ",0" << std::endl;
 }
 
 
@@ -179,8 +184,11 @@ int main(int argc, char *argv[]) {
     if (data_fname.empty()) {
         std::stringstream prefix_s;
         std::string prefix;
+        std::string noSpaceName;
+        noSpaceName = std::string(header->name);
+        noSpaceName.erase(noSpaceName.find(' '));
         prefix_s << header->time << '_'
-                 << header->name;
+                 << noSpaceName;
         // time << has a tab by default
         prefix = prefix_s.str();
         prefix[prefix.find('\t')] = ' ';

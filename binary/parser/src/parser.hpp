@@ -27,6 +27,7 @@ struct ts {
 	byte year_s;
 };
 std::ostream& operator<<(std::ostream&, const ts&);
+void print_time_for_file(std::ostream &s, const ts &t);
 
 /*
  * Data from the start of the file. Some of this is thrown into the header.csv;

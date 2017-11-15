@@ -4,6 +4,7 @@
  * or incorrect data, which is... possibly bad.
  */
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <memory>
 #include <vector>
@@ -41,12 +42,29 @@ inline void read_into(std::ifstream &f, T &v) {
 }
 
 /*
- * Printing a time struct as Y-M-D h:m:s
+ * Printing a time struct as YYYY-MM-DD_hh-mm-ss for the filename
  */
 std::ostream& operator<<(std::ostream &s, const ts &t) {
-	s << (int) t.year << '-' << (int) t.mon << '-' << (int) t.mday << '\t'
-	  << (int) t.hour << ':' << (int) t.min << ':' << (int) t.sec;
+	s.fill('0');
+	s << (int) t.year << '-'
+	  << std::setw(2) << (int) t.mon << '-'
+	  << std::setw(2) << (int) t.mday << '_'
+	  << std::setw(2) << (int) t.hour << '-'
+	  << std::setw(2) << (int) t.min << '-'
+	  << std::setw(2) << (int) t.sec;
 	return s;
+}
+
+/*
+ * Printing a time struct as Y-M-D h:m:s for times in the file
+ */
+void print_time_for_file(std::ostream &s, const ts &t) {
+	s << (int) t.year << '-'
+	  << (int) t.mon << '-'
+	  << (int) t.mday << '\t'
+	  << (int) t.hour << ':'
+	  << (int) t.min << ':'
+	  << (int) t.sec;
 }
 
 /*
