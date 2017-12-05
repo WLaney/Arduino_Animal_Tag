@@ -112,6 +112,19 @@ parse_header(std::ifstream &in_file) {
 	return data;
 }
 
+short parse_accel_axis(short x) {
+	byte *byte_ptr = (byte *) &x;
+	byte b0 = byte_ptr[0];
+	byte b1 = byte_ptr[1];
+
+	short out;
+	out = b0;
+	out <<= 8;
+	out |= b1;
+	out >>= 2;
+	return out;
+}
+
 /*
  * Parse size bytes' worth of accelerometer reads into floats.
  * 
@@ -127,9 +140,9 @@ parse_accel(std::ifstream &in_file, float scale, uint16_t size) {
 		accel_data prc;
 		read_into<raw_accel_data>(in_file, raw);
 		// Unpack data into little-endian shorts
-		raw.x = (((raw.x & 0xFF00) >> 6) & 0x00FF) | (raw.x & 0x00FF) << 8; raw.x >>= 2;
-		raw.y = (((raw.y & 0xFF00) >> 6) & 0x00FF) | (raw.y & 0x00FF) << 8; raw.y >>= 2;
-		raw.z = (((raw.z & 0xFF00) >> 6) & 0x00FF) | (raw.z & 0x00FF) << 8; raw.z >>= 2;
+		raw.x = parse_accel_axis(raw.x);
+		raw.y = parse_accel_axis(raw.y);
+		raw.z = parse_accel_axis(raw.z);
 		// Convert to floats
 		prc.x = accel_s2f(raw.x, scale);
 		prc.y = accel_s2f(raw.y, scale);

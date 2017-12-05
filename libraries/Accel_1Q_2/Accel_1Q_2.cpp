@@ -114,6 +114,20 @@ namespace Accel {
 		return n;
 	}
 	
+	short parse_raw_axis(short x) {
+		unsigned char *byte_ptr = (unsigned char *) &x;
+	    unsigned char b0 = byte_ptr[0];
+	    unsigned char b1 = byte_ptr[1];
+	  
+	    short out;
+	    out = b0;
+	    out <<= 8;
+	  
+	    out |= b1;
+	    out >>= 2;
+	    return out;
+	}
+	
 	/*
 	 * Convert raw samples into floating-point samples using the current
 	 * accelerometer scale
@@ -123,12 +137,9 @@ namespace Accel {
 		// We could do this far more simply during the read_raw() step,
 		// but since we likely won't use read()/parse_raw() outside of
 		// debugging I think it's cool
-		s.x = ((s.x & 0xFF00) >> 6) & 0x00FF | (s.x & 0x00FF) << 8;
-		s.x >>= 2;
-		s.y = ((s.y & 0xFF00) >> 6) & 0x00FF | (s.y & 0x00FF) << 8;
-		s.y >>= 2;
-		s.z = ((s.z & 0xFF00) >> 6) & 0x00FF | (s.z & 0x00FF) << 8;
-		s.z >>= 2;
+		s.x = parse_raw_axis(s.x);
+		s.y = parse_raw_axis(s.y);
+		s.z = parse_raw_axis(s.z);
 		
 		float range;
 		sample out;
@@ -142,7 +153,7 @@ namespace Accel {
 		out.z = float{s.z} * range;
 		return out;
 	}
-
+	
 	ODR current_odr() {
 		return current_odr_;
 	}
