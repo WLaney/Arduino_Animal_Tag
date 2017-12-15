@@ -191,7 +191,11 @@ int main(int argc, char *argv[]) {
                  << noSpaceName;
         // time << has a tab by default
         prefix = prefix_s.str();
-        prefix[prefix.find('\t')] = ' ';
+		size_t tab_pos = prefix.find('\t');
+		while (tab_pos != std::string::npos) {
+        	prefix[tab_pos] = ' ';
+			tab_pos = prefix.find('\t');
+		}
         data_fname   = prefix + "_data.csv";
         header_fname = prefix + "_header.csv";
     }
