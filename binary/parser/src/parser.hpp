@@ -10,6 +10,19 @@
 
 typedef uint8_t byte;
 
+enum class TAG_VERSION {
+	/*
+	 * A new version of the parser for 2.1 and
+	 * 2.2 tags with some extra metadata.
+	 */
+	NEW_22,
+	/*
+	 * Older versions of the parser, though still
+	 * only for 2.1 and 2.2 tags.
+	 */
+	OLD
+};
+
 /*
  * Data representing time. Taken directly from ds3234.h, it has a lot of
  * irrelevant or unset data. Everything from sec to year should be accurate
@@ -48,6 +61,7 @@ struct header_data {
 	byte sample_rate;
 	byte hq_accel;
 	int32_t alarm_delay;
+	TAG_VERSION version;
 };
 
 /*

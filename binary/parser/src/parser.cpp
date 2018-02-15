@@ -106,9 +106,28 @@ parse_header(std::ifstream &in_file) {
 	read_into(in_file, data->accel_scale);
 	read_into(in_file, data->gyro_scale);
 	read_time(in_file, data->time);
-	read_into(in_file, data->sample_rate);
-	read_into(in_file, data->hq_accel);
-	read_into(in_file, data->alarm_delay);
+	/*
+	 * We have to hack things a little here.
+	 * Old versions of the parser didn't include the
+	 * next three fields and instead went straight to
+	 * the ACCL block.
+	 *
+	 * The next field, sample_rate, is an enum, so this
+	 * code breaks only if sample_rate has value equal to
+	 * 65.
+	 */
+	if (in_file.peek() == 'A') {
+		data->sample_rate = 255;
+		data->hq_accel = 255;
+		data->alarm_delay = -1;
+		data->version = TAG_VERSION::OLD;
+	} else {
+		read_into(in_file, data->sample_rate);
+		read_into(in_file, data->hq_accel);
+		read_into(in_file, data->alarm_delay);
+		data->version = TAG_VERSION::NEW_22;
+	}
+
 	return data;
 }
 

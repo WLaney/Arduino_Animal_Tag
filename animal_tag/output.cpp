@@ -35,7 +35,7 @@ bool output_write_header(header_data &header) {
   delay(100);
   if (sd) {
     // Bleaugh. Sorry.
-	  byte b = sd.write((byte *) &header, 31);
+    byte b = sd.write((byte *) &header, 31);
     rtc_write(sd);
     b += sd.write(42 + ((byte *) &header), 6);
     sd.close();
