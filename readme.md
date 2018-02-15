@@ -16,4 +16,4 @@ Software Version | Supported Tags
  <v1.0 | Prototype tags are not supported
  [v1.0](https://github.com/WLaney/Arduino_Animal_Tag/releases/tag/v1.0) | 1.0 (No Gyro Support)
  [2.0.1](https://github.com/WLaney/Arduino_Animal_Tag/releases/tag/2.0.1) | 2.0
- [v3.1](https://github.com/WLaney/Arduino_Animal_Tag/releases/tag/v3.1) | 2.1, 2.2
+ [v3.2](https://github.com/WLaney/Arduino_Animal_Tag/releases/tag/v3.2) | 2.1, 2.2
