@@ -129,6 +129,11 @@ namespace Accel {
 	void set_fifo_interrupt(bool);
 
 	/*
+	 * Return the number of samples in the FIFO buffer
+	 */
+	int fifo_n_samples();
+
+	/*
 	 * Put the tag into active or standby mode.
 	 * While active, it can receive data, but advanced features cannot
 	 * be used.

@@ -50,6 +50,10 @@ namespace Accel {
 		write_single(Register::CTRL_REG4, active << 6);
 		write_single(Register::CTRL_REG5, 1 << 6);
 	}
+	
+	int fifo_n_samples() {
+		return read_single(Register::STATUS) & (0b00011111);
+	}
 
 	void set_active(bool active) {
 		byte reg1 = read_single(Register::CTRL_REG1);
