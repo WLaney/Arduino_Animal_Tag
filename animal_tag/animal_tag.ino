@@ -10,24 +10,12 @@
 #include "temp.hpp"
 #include "pressure.hpp"
 
-#define USE_HEARTBEAT_MONITOR 1
-
-inline void n_delay(long);
-
 // Copied from configure.ino
 enum SAMPLE_RATE {
     ODR_12_5_HZ,
     ODR_25_HZ,
     ODR_50_HZ
 };
-
-#ifdef USE_HEARTBEAT_MONITOR
-// The heartbeat monitor will be run every N loops.
-// At time of writing, a loop takes around 2.4 seconds.
-// You don't want to write to EEPROM very often.
-constexpr int eeprom_check_frequency = 250;
-int eeprom_check_index = 0;
-#endif
 
 constexpr byte long_term_write_max = 3;
 byte long_term_write_num = 0;
@@ -41,16 +29,8 @@ byte sample_delay;
 void setup()
 {
   DBEGIN();
-  rtc_setup();
-#ifdef USE_HEARTBEAT_MONITOR
-  // Report skips
-  DBGSTR("Heartbeat sensor violations:\n");
-  rtc_print_skips();
-#endif
-  
-  ///////
   // Delay startup by N seconds
-  ///////
+  rtc_setup();
   long int delay_time;
   EEPROM.get(21, delay_time);
   if (delay_time > 0) {
@@ -63,9 +43,6 @@ void setup()
     delay(250);
   }
 
-  ///////
-  // Get configuration from EEPROM
-  ///////
   header_data header;
   FXAS2::Range gscale;
   FXAS2::ODR godr;
@@ -74,6 +51,7 @@ void setup()
   SAMPLE_RATE odr;
   bool downscale;
   
+  // Get configuration from EEPROM
   for (byte i=0; i<4; i++) {
     header.name[i] = EEPROM.read(i);
   }
@@ -94,21 +72,21 @@ void setup()
   odr = static_cast<SAMPLE_RATE>(EEPROM.read(19));
   switch (odr) {
     case ODR_12_5_HZ:
-		DBGSTR("12hz\n");
+    DBGSTR("12hz\n");
         aodr = Accel::ODR::HZ_12_5;
         godr = FXAS2::ODR::HZ_12_5;
         sample_delay = byte{1000.0 / 12.5};
         downscale = false;
         break;
     case ODR_25_HZ:
-		DBGSTR("25Hz\n");
+    DBGSTR("25Hz\n");
         aodr = Accel::ODR::HZ_50;
         godr = FXAS2::ODR::HZ_25;
         sample_delay = byte{1000.0 / 25.0};
         downscale = true;
         break;
     case ODR_50_HZ:
-		DBGSTR("50hz\n");
+    DBGSTR("50hz\n");
         aodr = Accel::ODR::HZ_50;
         godr = FXAS2::ODR::HZ_50;
         downscale = false;
@@ -121,10 +99,9 @@ void setup()
         downscale = true;
         sample_delay = byte{1000.0 / 25.0};
   }
-
-  ///////
-  // Initialize sensors and SD card
-  ///////
+  
+  // Debug commands won't show up if they're
+  // turned off in debug.h
   DBEGIN();
   accel_setup(ascale, aodr, downscale);
   gyro_setup(gscale, godr);
@@ -149,7 +126,7 @@ void setup()
   header.aws = accel_write_size();
   // TODO not hack
   if (downscale) {
-	header.gws = accel_write_size();
+  header.gws = accel_write_size();
   } else {
     header.gws = gyro_write_size();
   }
@@ -158,37 +135,26 @@ void setup()
   // Scaling
   header.as = accel_scale();
   header.gs = gyro_scale();
-  EEPROM.get(19, header.sample_rate);
-  EEPROM.get(20, header.hq_accel);
-  EEPROM.get(21, header.alarm_delay);
   output_write_header(header);
 }
 
 void loop() {
-#ifdef USE_HEARTBEAT_MONITOR
-  if (eeprom_check_frequency == eeprom_check_index) {
-    rtc_update_eeprom();
-  }
-  eeprom_check_index++;
-#endif
   if (accel_downscaled()) {
-  	// WARNING will not accept values of buffer_s != 32
-  	// TODO Make this not true
-  	while (!accel_full()) {
-  	  n_delay(sample_delay * 16);
-  	  accel_read_all();
-  	  n_delay(sample_delay * 16);
-  	  accel_read_all();
-  	  gyro_read_all();
-  	}
-  	// Wait for hardware buffer to fill up
-  	n_delay(sample_delay * 16);
+  // WARNING will not accept values of buffer_s != 32
+  // TODO Make this not true
+  while (!accel_full()) {
+    n_delay(sample_delay * 16);
+    accel_read_all();
+    n_delay(sample_delay * 16);
+    accel_read_all();
+    gyro_read_all();
+  }
+  // Wait for hardware buffer to fill up
+  n_delay(sample_delay * 16);
   } else {
-    while (!accel_full()) {
-      n_delay(sample_delay * 32);
-      accel_read_all();
-      gyro_read_all();
-    }
+    wait_for_buffer();
+    accel_read_all();
+    gyro_read_all();
     n_delay(sample_delay * 32);
   }
   // Read long-term from sensors
@@ -200,6 +166,13 @@ void loop() {
   }
   accel_reset();
   gyro_reset();
+}
+
+void wait_for_buffer(){
+  n_delay(sample_delay * 30);
+  while(accel_n_samples() < 32){
+    n_delay(sample_delay * 0.5);
+  }
 }
 
 // A special version of delay() with
