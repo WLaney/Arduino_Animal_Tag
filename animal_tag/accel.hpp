@@ -11,6 +11,8 @@ bool accel_full();
 void accel_write(File);
 void accel_reset();
 
+int accel_n_samples();
+
 unsigned short accel_write_size();
 float accel_scale();
 bool accel_downscaled();

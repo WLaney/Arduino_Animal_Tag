@@ -86,6 +86,10 @@ void accel_reset() {
 #endif
 }
 
+int accel_n_samples() {
+	return Accel::fifo_n_samples();
+}
+
 bool accel_full() {
 	return buffer_i >= buffer_s;
 }
