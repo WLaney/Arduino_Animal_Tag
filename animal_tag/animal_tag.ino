@@ -140,17 +140,17 @@ void setup()
 
 void loop() {
   if (accel_downscaled()) {
-  // WARNING will not accept values of buffer_s != 32
-  // TODO Make this not true
-  while (!accel_full()) {
-    n_delay(sample_delay * 16);
-    accel_read_all();
-    n_delay(sample_delay * 16);
-    accel_read_all();
-    gyro_read_all();
-  }
-  // Wait for hardware buffer to fill up
-  n_delay(sample_delay * 16);
+      // WARNING will not accept values of buffer_s != 32
+      // TODO Make this not true
+      while (!accel_full()) {
+        n_delay(sample_delay * 16);
+        accel_read_all();
+        n_delay(sample_delay * 16);
+        accel_read_all();
+        gyro_read_all();
+      }
+      // Wait for hardware buffer to fill up
+      n_delay(sample_delay * 16);
   } else {
     wait_for_buffer();
     accel_read_all();
