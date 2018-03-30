@@ -138,46 +138,46 @@ void setup()
   output_write_header(header);
 }
 
+static long sd_write_time = 0;
+
 void loop() {
+  // Move hardware buffers to software buffers.
   if (accel_downscaled()) {
-  // WARNING will not accept values of buffer_s != 32
-  // TODO Make this not true
-  while (!accel_full()) {
-    n_delay(sample_delay * 16);
+    wait_for_buffer(sample_delay * 14 - sd_write_time, 16);
     accel_read_all();
-    n_delay(sample_delay * 16);
+    wait_for_buffer(sample_delay * 14, 16);
     accel_read_all();
     gyro_read_all();
-  }
-  // Wait for hardware buffer to fill up
-  n_delay(sample_delay * 16);
   } else {
-    wait_for_buffer();
+    wait_for_buffer(sample_delay * 30 - sd_write_time, 32);
     accel_read_all();
     gyro_read_all();
-    n_delay(sample_delay * 32);
   }
-  // Read long-term from sensors
+  // Write to SD card while waiting for the buffer to fill up again
+  sd_write_time = millis();
   if (++long_term_write_num == long_term_write_max) {
     long_term_write_num = 0;
     output_write_data(true);
   } else {
     output_write_data(false);
   }
-  accel_reset();
-  gyro_reset();
+  sd_write_time = millis() - sd_write_time;
+  DBG(sd_write_time);
+  DBGSTR(" ms to write to SD\n");
 }
 
-void wait_for_buffer(){
-  n_delay(sample_delay * 30);
-  while(accel_n_samples() < 32){
-    n_delay(sample_delay * 0.5);
+void wait_for_buffer(long millis_before_poll, int max_samples){
+  n_delay(millis_before_poll);
+  while(accel_n_samples() < max_samples){
+    n_delay(1 + sample_delay >> 1);
   }
 }
 
 // A special version of delay() with
 // less accuracy, lower power use
 inline void n_delay(long duration) {
+  if (duration <= 0)
+    return;
   DEND();
   Narcoleptic.delay(duration);
   DBEGIN();

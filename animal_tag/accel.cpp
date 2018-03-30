@@ -12,8 +12,7 @@
 
 // The number of samples in the accelerometer's FIFO buffer. Don't change this.
 constexpr signed char buffer_h = 32;
-// The number of samples in our software buffer. This can be changed,
-// but it affects RAM consumption and read/write frequency.
+// The number of samples in our software buffer.
 constexpr signed char buffer_s = 32;
 
 static Accel::sample_raw buffer[buffer_s];
@@ -62,19 +61,14 @@ void accel_read_all() {
 }
 
 unsigned short accel_write_size() {
-	byte h = buffer_h >> downscale;
-	return sizeof(Accel::sample_raw) * (buffer_s + h);
+	return sizeof(Accel::sample_raw) * buffer_s;
 }
 
-// Write raw data to the SD card
-// Assumes that the software and hardware buffers are both full
+// Write what's in the software buffers to the SD card
 void accel_write(File sd) {
 	// write software buffer first, since it's the oldest
 	sd.write((byte *) buffer, sizeof(buffer));
-	// write the hardware buffer next
 	accel_reset();
-	accel_read_all();
-	sd.write((byte *) buffer, sizeof(buffer) >> downscale);
 }
 
 void accel_reset() {

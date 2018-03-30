@@ -48,13 +48,10 @@ bool output_write_header(header_data &header) {
 }
 
 void output_write_data(bool long_data) {
-
   if (long_data) {
     rtc_update();
     temp_update();
   }
-  DBGSTR("Writing to SD...\n");
-  long time = millis();
   File file = SD.open(file_name, FILE_WRITE);
   if (file) {
     // Accelerometer/gyro writes
@@ -62,7 +59,7 @@ void output_write_data(bool long_data) {
     accel_write(file);
 	if (gyro_is_active()) {
     	file.print("GYRO");
-    	gyro_write(file, accel_downscaled());
+    	gyro_write(file);
 	} else {
 		file.print("GSKP");
 	}
@@ -77,8 +74,6 @@ void output_write_data(bool long_data) {
   } else {
     DBGSTR("ERROR: couldn't write to SD\n");
   }
-  DBG(millis() - time);
-  DBGSTR(" ms to write\n");
 }
 
 /*
